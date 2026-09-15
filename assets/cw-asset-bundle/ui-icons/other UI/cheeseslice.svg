@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>library /icon /cheeseSlice /default</title>
+    <desc>Created with Sketch.</desc>
+    <g id="library-/icon-/cheeseSlice-/default" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-2" transform="translate(2.529571, 3.500000)">
+            <g id="Group">
+                <circle id="Oval" fill="#000000" cx="8.01264847" cy="6.20822662" r="1"></circle>
+                <circle id="Oval-Copy" fill="#000000" cx="11.641476" cy="3.60094777" r="1.28909896"></circle>
+                <path d="M15.8857464,8.76980133 L18.9,12.6826478 C16.7057793,15.5728655 13.6056804,17.0179743 9.59970315,17.0179743 C5.59372593,17.0179743 2.39382488,15.5728655 0,12.6826478 L9.45,0 L12.7920621,4.4853118" id="Path" stroke="#000000" stroke-width="0.75" transform="translate(9.450000, 8.508987) scale(1, -1) translate(-9.450000, -8.508987) "></path>
+                <path d="M16.2799855,8.26657782 C16.2799855,9.8682036 14.9816113,11.1665778 13.3799855,11.1665778 C11.7783598,11.1665778 10.4799855,9.8682036 10.4799855,8.26657782" id="Rectangle" stroke="#000000" stroke-width="0.75" transform="translate(13.379986, 9.716578) scale(1, -1) rotate(56.000000) translate(-13.379986, -9.716578) "></path>
+            </g>
+        </g>
+    </g>
+</svg>

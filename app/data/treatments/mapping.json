@@ -1,0 +1,87 @@
+{
+  "$schema": "cheddar-battles/treatment-mapping@1",
+  "_purpose": "R13: 'A treatment differs from the incumbent in every theme-bound element and matches it in every fixed one; the graph records the mapping.' This file is that record for all three built treatments (incumbent, adjacent=Scrapyard Kings, far=Undercard), plus the R87 conflict resolution CONFLICT-R71-R12 (also recorded in docs/decision-graph.md, node P-R71-NOUN-MAP).",
+
+  "positions": {
+    "incumbent": { "workingTitle": "Cheddar Battles", "logoMark": "CB", "file": "app/data/treatments/incumbent.json" },
+    "adjacent": { "workingTitle": "Scrapyard Kings", "logoMark": "SK", "file": "app/data/treatments/adjacent.json", "card": "docs/concept-cards.md#A1", "rubricScore": 4.00 },
+    "far": { "workingTitle": "Undercard", "logoMark": "UC", "file": "app/data/treatments/far.json", "card": "docs/concept-cards.md#F1", "rubricScore": 4.60 }
+  },
+
+  "roleNouns": {
+    "_r12": "R12: the four role nouns mapped onto identical constants (character/stake unit/headline prize/floor).",
+    "character": { "incumbent": "Wizard", "adjacent": "Bot", "far": "Fighter" },
+    "characterPlural": { "incumbent": "Wizards", "adjacent": "Bots", "far": "Fighters" },
+    "stakeUnit": { "incumbent": "CHEDDAR", "adjacent": "SCRAP", "far": "PURSE" },
+    "stakeUnitAbbrev": { "incumbent": "C", "adjacent": "S", "far": "P" },
+    "headlinePrize": { "incumbent": "Big Cheese", "adjacent": "the Golden Gear", "far": "the Belt" },
+    "floor": { "incumbent": "Blue Mold", "adjacent": "the Crusher", "far": "the Cut" }
+  },
+
+  "theme": {
+    "_r12": "R12: world/fiction, character art, name pool, every color value + hero face, Narrator persona/register/vocabulary/examples, iconography, in-frame copy, ad creative, working title.",
+    "fiction": {
+      "incumbent": "A cheese-lore world of summoned wizard characters in a permanent ledgered duel-world; storybook-cartoon art (the bundle's 2019 character art).",
+      "adjacent": "Junkyard battle machines; deadpan-industrial hazard-stencil art (placeholder-art in this build -- R12/R78: art sources are theme-bound and interchange; no bundled renders exist for this treatment, so the stage renders a clean treatment-colored stage with element iconography per the brief).",
+      "far": "A regional prizefight circuit of human fighters; fight-poster broadcast art (placeholder-art in this build, same reasoning as adjacent)."
+    },
+    "heroFace": { "incumbent": "Pirata One", "adjacent": "Black Ops One", "far": "Alfa Slab One" },
+    "colorRoles": {
+      "_note": "R11: the roles themselves (primary, ground, win, loss, one per element, Narrator accent, surfaces) are fixed; R12: every value is theme-bound. See each treatment.json's `colors` block for the values -- reproduced here for one-screen comparison.",
+      "primary": { "incumbent": "#FFE500", "adjacent": "#FF7A1A", "far": "#D9B24A" },
+      "ground": { "incumbent": "#0A0A08", "adjacent": "#0C0F12", "far": "#08090B" },
+      "win": { "incumbent": "#28C840", "adjacent": "#34D178", "far": "#23A55A" },
+      "loss": { "incumbent": "#D41E30", "adjacent": "#D42A2A", "far": "#C8102E" },
+      "water": { "incumbent": "#1A9FD4", "adjacent": "#2FA8E0", "far": "#1E6FB8" },
+      "fire": { "incumbent": "#E8283C", "adjacent": "#FF4B2E", "far": "#E03A2B" },
+      "air": { "incumbent": "#B0B0B0", "adjacent": "#B7C2CC", "far": "#9AA6B2" },
+      "surfaces": { "incumbent": "#F5F0E8", "adjacent": "#EDEAE3", "far": "#F4F1E9" },
+      "narratorAccent": { "incumbent": "#3ABCBC", "adjacent": "#4FD8EB", "far": "#7FA8BF" }
+    },
+    "narratorPersona": {
+      "incumbent": "an ancient cheese archivist / dry, precise, and British (Terry Pratchett calibration)",
+      "adjacent": "the yard scrutineer who logs every bout in the scrap ledger / deadpan, exact, and mechanical (shop-manual calibration)",
+      "far": "the commission scorekeeper at ringside / terse, plain, and broadcast-neutral"
+    }
+  },
+
+  "fixedAcrossEveryTreatment": {
+    "_r11": "R11: mechanics/constants (§7-8), the sync bracket (§11), the interaction contract (§12), instrumentation (§13), fight-card structure (screen set/layout, 32px grid texture, Bebas Neue display / DM Mono data / Barlow prose), semantic color ROLE names (not values), the Narrator's discipline (format/honesty/ledger rules, verbatim modulo the R87 noun substitution below), the acquisition message 'outsmart for real money', within-run targeting/budget/pacing.",
+    "acquisitionMessage": "Outsmart for real money. (identical string in all three treatment.json copy blocks)",
+    "fonts.display/data/prose": "Bebas Neue / DM Mono / Barlow (identical in all three treatment.json fonts blocks; only fonts.heroFace is theme-bound)",
+    "elementLabels": "Fire / Water / Air kept as the literal label words in every treatment (R74: 'Wind is Air in all copy'); only the icon MOTIF (elements.<el>.iconMotif) is theme-flavored, per t3's brief ('element labels themed if the card says so -- labels only, mechanics fixed'). Neither built card calls for renaming the words themselves.",
+    "mechanicalVocabulary": "Generic engine/state-machine words that are not one of the four role nouns stay identical across treatments, the same way 'Round' is fixed in the Narrator's Voice rules: 'duel', 'bracket', 'round', 'tier', the SITTING state heading, the ledger (R61's 'RETIRE TO THE LEDGER' / 'Holds nothing. The ledger will take the name.' -- the permanent record-keeper concept, distinct from the floor/drain role noun), NPC/HESITATED tags.",
+    "law-literalUIText": "Strings the PRD's LAW text prescribes by exact literal wording, held identical in every treatment: R77's result-card headers 'CLAIMED'/'DRAINED'; R56's win-screen line 'DUEL WON'; R67's Load Funds heading 'PLAY CASH ONLY \u00b7 How much would you like to deposit?'.",
+    "genericChrome": "Copy strings that carry no theme-bound token in the incumbent's original text (no role noun, no world reference) are kept identical rather than manufacturing a difference for its own sake: cashOutHeading/Button, walletHeading, withdrawHeading, reserveHeading/Button/Confirmed, loadFundsContinue/Back, moneyTruthBadge, prizeLine, screenerAgeQuestion/JurisdictionQuestion, signupGrantNotice, tieLineAdvance/Eliminated, npcTagLabel, hesitatedTagLabel."
+  },
+
+  "conflicts": {
+    "CONFLICT-R71-R12": {
+      "status": "resolved (implemented)",
+      "laws": ["R71", "R12", "R13"],
+      "condition": "Any non-incumbent treatment (adjacent, far).",
+      "conflict": "R71 fixes the Narrator's discipline lines VERBATIM in every treatment, but two of those lines contain incumbent theme-bound vocabulary baked into the illustrative text itself: the Voice-rules 'ornate vocabulary' example (\"'Cheddar transferred' not 'coffers depleted'\") and \"Never address the wizard directly.\" R12/R13 require every theme-bound element (including the role nouns these two lines use) to differ per treatment. Under any alternate, the three laws cannot all hold simultaneously.",
+      "resolution": "Hold every discipline rule SEMANTICALLY verbatim; substitute only the role noun (and, for the ornate-vocabulary line, the verb where the substitution reads more naturally) through this file's roleNouns mapping. Every other word in both lines, and every other discipline line in the Format/Voice/Content blocks, stays byte-identical across all three treatments.",
+      "substitutions": {
+        "ornateVocabLine": {
+          "incumbent": "- Never use ornate vocabulary where plain vocabulary works. \"Cheddar transferred\" not \"coffers depleted\". \"Now holds\" not \"ascending to\".",
+          "adjacent": "- Never use ornate vocabulary where plain vocabulary works. \"SCRAP transferred\" not \"coffers depleted\". \"Now holds\" not \"ascending to\".",
+          "far": "- Never use ornate vocabulary where plain vocabulary works. \"PURSE moved\" not \"coffers depleted\". \"Now holds\" not \"ascending to\"."
+        },
+        "addressLine": {
+          "incumbent": "- Never address the wizard directly.",
+          "adjacent": "- Never address the bot directly.",
+          "far": "- Never address the fighter directly."
+        }
+      },
+      "implementation": "app/engine/narratorPrompt.js:composeNarratorPrompt() + buildVoiceBlock(); each treatment.json's narrator.disciplineNounLines carries its own pair (identity mapping for the incumbent). app/tests/narrator-prompt-compose.test.js asserts: (1) composing the incumbent's treatment reproduces app/data/narrator-prompt.txt byte-for-byte; (2) the Format and Content blocks are byte-identical across all three treatments; (3) the Voice block is byte-identical across all three EXCEPT at the two recorded line indices, where it differs exactly per this table.",
+      "signOff": "Recorded as node P-R71-NOUN-MAP in docs/decision-graph.md; owner sign-off is an A3 console decision, demonstrated as one of the operator console's risk/decision sign-off items."
+    }
+  },
+
+  "narrationBodyNouns": {
+    "_note": "The deterministic local Narrator engine (app/engine/narrator.js, standing in for the model call per t1) also emits body prose that mentions the world noun and the stake unit in lowercase prose form (e.g. 'X cheddar changed hands', 'both wizards committed'). This is participant-facing narration text, not the system prompt, but the same R12/R13 differentiation applies to it. app/engine/narrator.js's generateNarration()/renderTemplate() accept a `nouns` argument ({ character, stakeUnitProse }); app/ui/screens/duel.js passes the active treatment's nouns (lowercased) through. Defaults (character:'wizard', stakeUnitProse:'cheddar') exactly match every pre-existing call site and test that does not pass `nouns`, so this is an additive, backward-compatible change -- no existing test's expected output moved.",
+    "stakeUnitProse": { "incumbent": "cheddar", "adjacent": "scrap", "far": "purse" },
+    "characterProse": { "incumbent": "wizard", "adjacent": "bot", "far": "fighter" }
+  }
+}

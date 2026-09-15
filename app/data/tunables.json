@@ -1,0 +1,150 @@
+{
+  "$schema": "cheddar-battles/tunables@1",
+  "_note": "All values a person could want to adjust after delivery, per R85 (§14). Every value here reproduces a value stated in docs/PRD.md; the field-level '_source' comments (in app/README.md's tunables table) point back to the rule. O-item alternatives are listed under 'alternatives' on the same key and are NOT hardcoded elsewhere — the engine and UI read 'default' unless the console (t3) selects an alternative.",
+
+  "engine": {
+    "weights": [78, 79, 81, 86, 100],
+    "weightsSum": 424,
+    "affinityMultiplier": 1.3,
+    "transferCapMultiplier": 7,
+    "elements": ["fire", "water", "air"],
+    "elementBeats": { "fire": "air", "air": "water", "water": "fire" }
+  },
+
+  "floors": {
+    "_formula": "floor = 2 * reentryBonusCheddar (R55). Values below are the shipped values (R55) and equal that formula exactly.",
+    "byTier": { "0": 50, "1": 50, "2": 500, "3": 500, "4": 5000, "5": 5000, "6": 50000 }
+  },
+
+  "economy": {
+    "cheddarPerDollar": 20,
+    "summonUSD": 10,
+    "summonCheddar": 100,
+    "signupGrantUSD": 25,
+    "cashoutRateCheddarPerDollar": 20
+  },
+
+  "tierLadder": {
+    "_note": "R62. prizeUSD/prizeCheddar are the headline prize paid from the external pool on a bracket win at that tier. T6's prize is paid as $999,999.92 CASH plus battle stake at 20:1 (R62).",
+    "tiers": [
+      { "tier": 0, "prizeUSD": 20, "prizeCheddar": 400 },
+      { "tier": 1, "prizeUSD": 25, "prizeCheddar": 500 },
+      { "tier": 2, "prizeUSD": 100, "prizeCheddar": 2000 },
+      { "tier": 3, "prizeUSD": 500, "prizeCheddar": 10000 },
+      { "tier": 4, "prizeUSD": 10000, "prizeCheddar": 200000 },
+      { "tier": 5, "prizeUSD": 100000, "prizeCheddar": 2000000 },
+      { "tier": 6, "prizeUSD": 1000000, "prizeCheddar": 20000000, "payout": { "cashUSD": 999999.92, "remainderAtCheddarPerDollar": 20 } }
+    ]
+  },
+
+  "reentry": {
+    "_note": "R63. Pay the fee, receive the bonus (added to character stake in Cheddar), when re-entering a tier after a loss (SITTING -> re-enter). Full play-through rake 6.3% is a diagnostic figure over the reentry ladder, not a per-transaction deduction.",
+    "fullPlaythroughRake": 0.063,
+    "byTier": {
+      "0": { "usd": 5.00, "bonusCheddar": 25 },
+      "1": { "usd": 15.00, "bonusCheddar": 25 },
+      "2": { "usd": 77.50, "bonusCheddar": 250 },
+      "3": { "usd": 400, "bonusCheddar": 250 },
+      "4": { "usd": 2500, "bonusCheddar": 2500 },
+      "5": { "usd": 12500, "bonusCheddar": 2500 },
+      "6": { "usd": 62500, "bonusCheddar": 25000 }
+    }
+  },
+
+  "bracket": {
+    "seats": 8,
+    "structure": ["quarterfinal", "semifinal", "final"],
+    "topHalfFeedsTopSemifinal": true,
+    "winsToTheTopFromFreshT0": 21,
+    "winsPerBracket": 3,
+    "tiersFromFreshT0": 7,
+    "targetDurationMinutes": [6, 9]
+  },
+
+  "pve": {
+    "_note": "R57. 'entryPar' (used for the hard cap) is read as the tier's re-entry USD*cheddarPerDollar per tier (R63), since R62 does not define a separate per-tier entry fee beyond T0's summon cost -- see app/README.md gotchas.",
+    "opponentRangeUpperMultiplierOfPlayerStake": 2,
+    "hardCapMultiplierOfEntryPar": 1.5,
+    "driftPerSessionPct": 0.03,
+    "rakeOnWinsOnly": 0.05,
+    "floorRuleApplies": false
+  },
+
+  "timers": {
+    "commitWindowSec": { "default": 60, "alternatives": [45, 90], "_oItem": "O5" },
+    "lobbyHumanWaitSec": { "default": 60, "alternatives": [30, 120], "_oItem": "O6" },
+    "revealCadenceMs": { "default": 1170, "alternatives": [900, 1500], "_oItem": "O9" },
+    "npcJoinDelayRangeSec": [2, 10],
+    "npcCommitRangeSec": [10, 45],
+    "intermissionRangeSec": [20, 30],
+    "boardCountdownSec": 30
+  },
+
+  "loadFundsPresets": {
+    "_note": "O8. Multiples of the entry fee (T0 par = $10).",
+    "default": { "label": "entry fee, 10x", "multiples": [1, 10] },
+    "alternatives": [
+      { "label": "entry fee, 5x", "multiples": [1, 5] },
+      { "label": "entry fee, 10x, 50x", "multiples": [1, 10, 50] }
+    ]
+  },
+
+  "npcFillDensity": {
+    "_oItem": "O7",
+    "default": { "id": "fillTo8", "minHumans": 0 },
+    "alternatives": [{ "id": "fillTo8Min2Humans", "minHumans": 2 }]
+  },
+
+  "runActivation": {
+    "_oItem": "O4",
+    "default": "console",
+    "alternatives": ["autoStartOnDeliveryAcceptance"]
+  },
+
+  "narrator": {
+    "temperature": { "default": 0.7, "alternatives": [0.5, 0.9], "_oItem": "O10" },
+    "maxTokens": 200,
+    "timeoutMs": 8000,
+    "maxRegenerations": 2,
+    "_note": "Deterministic local engine (t1) does not call a model; temperature/maxTokens are carried as data for the future live call, per the brief."
+  },
+
+  "gate": {
+    "_note": "R51/C9(f2): the ONE source for gate.js's classification, runSimulator.js's pre-registration text, and the console's O-item/threshold display -- a hand edit here (or a console gate-override patch, app/engine/overrides.js) propagates to every one of those surfaces (AC0 workbook row). Read against gate-cell (incumbent, $10) first-bracket completers.",
+    "reservationRateThreshold": 0.35,
+    "replayAfterLossThreshold": 0.50,
+    "bracketsPerActivePlayerWithin48h": 2,
+    "d1ReturnThreshold": 0.40,
+    "firstBracketCompletionThreshold": 0.50,
+    "d7ReturnDiagnosticThreshold": 0.30,
+    "secondaryRequiredCount": 2,
+    "sequentialRule": {
+      "_note": "C10(f2): a REAL Lan-DeMets/O'Brien-Fleming-type alpha-spending design (app/engine/alphaSpending.js), one-sided, over information fraction t = completers/maxN. The futility boundary is its own separate, non-spending-derived rule (a fixed conservative z, per the brief). plannedLookNs is the boundary-table schedule shown in the pre-registration panel (R21); the live daily gate itself evaluates continuously at the ACTUAL completers count, not just these table rows.",
+      "minLookN": 15,
+      "maxN": 50,
+      "totalAlphaOneSided": 0.05,
+      "spendingFunction": "obrienFleming-lanDeMets-normalApprox",
+      "futilityZ": -0.5,
+      "plannedLookNs": [15, 20, 25, 30, 35, 40, 45, 50]
+    }
+  },
+
+  "doorYield": {
+    "_note": "R22/C12(f2): the door layer -- impressions -> clicks -> intent clicks -> reservations, ahead of (and feeding) the in-game funnel runSimulator.js already modeled. Theme and price arms each read door yield (intent clicks per 1,000 impressions) as their PRIMARY metric; the band rule below names a winner only when its lead over the runner-up exceeds `leadBandPct`, otherwise the incumbent/$10 holds (R22).",
+    "leadBandPct": 0.15,
+    "costPerIntentClickUSDRange": [6.63, 7.00],
+    "clickRatePctOfImpressions": 4.5,
+    "intentClickPctOfClicksBaseline": 0.052
+  },
+
+  "caps": {
+    "costPerReservationDefaultUSD": 100,
+    "hesitateRateWarnAbovePct": 0.10
+  },
+
+  "priceDoorArms": {
+    "_oItem": "O2",
+    "displayedEntryPriceDefaultUSD": 10,
+    "alternatives": { "under": 5, "over": 25, "freePlay": 0 }
+  }
+}

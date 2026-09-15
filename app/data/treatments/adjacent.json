@@ -1,0 +1,392 @@
+{
+  "$schema": "cheddar-battles/treatment@1",
+  "id": "adjacent",
+  "position": "adjacent",
+  "workingTitle": "Scrapyard Kings",
+  "logoMark": "SK",
+  "_r1": "R1/R78: the SK logo mark is sanctioned. The strings 'Cheeze Wizards', 'Cheese Wizards', and standalone 'CW' must never appear in this file or in any participant-facing render.",
+  "_card": "docs/concept-cards.md, card A1 (top adjacent per docs/selection-rubric.md, score 4.00).",
+  "nouns": {
+    "character": "Bot",
+    "characterPlural": "Bots",
+    "stakeUnit": "SCRAP",
+    "stakeUnitAbbrev": "S",
+    "headlinePrize": "the Golden Gear",
+    "floor": "the Crusher"
+  },
+  "elements": {
+    "fire": {
+      "label": "Fire",
+      "beats": "air",
+      "iconMotif": "torch"
+    },
+    "water": {
+      "label": "Water",
+      "beats": "fire",
+      "iconMotif": "coolant"
+    },
+    "air": {
+      "label": "Air",
+      "beats": "water",
+      "iconMotif": "pneumatic",
+      "_note": "Wind is Air in all copy (R74). Element label words are kept identical across treatments (mechanics fixed, R11); iconMotif themes the icon glyph/render only (R12)."
+    }
+  },
+  "colors": {
+    "primary": "#FF7A1A",
+    "ground": "#0C0F12",
+    "win": "#34D178",
+    "loss": "#D42A2A",
+    "surfaces": "#EDEAE3",
+    "narratorAccent": "#4FD8EB",
+    "water": "#2FA8E0",
+    "fire": "#FF4B2E",
+    "air": "#B7C2CC",
+    "_roles": "docs/concept-cards.md card A1 palette, verbatim."
+  },
+  "fonts": {
+    "display": "Bebas Neue",
+    "data": "DM Mono",
+    "prose": "Barlow",
+    "heroFace": "Black Ops One",
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:ital,wght@0,400;0,600;1,400&family=Black+Ops+One&display=swap",
+    "_note": "R11: display/data/prose (Bebas Neue/DM Mono/Barlow) are fixed across every treatment. R12: only the hero-moment face is theme-bound -- Black Ops One per docs/concept-cards.md card A1."
+  },
+  "narrator": {
+    "personaLine": "You are the Narrator of Scrapyard Kings — the yard scrutineer who logs every bout in the scrap ledger.",
+    "registerLine": "Your register is deadpan, exact, and mechanical (shop-manual calibration).",
+    "examples": [
+      "Three rounds to two. Forty-one SCRAP crossed the line. The scrutineer measured twice and logged it once.",
+      "Four rounds produced noise. The fifth produced a transfer. The yard ledger has a column for exactly one of those.",
+      "No rounds won. The scrutineer notes the score and the transfer and nothing else. Both numbers are definitive.",
+      {
+        "text": "The tally is unchanged.",
+        "note": "as a closer — brevity used deliberately after a longer setup"
+      }
+    ],
+    "disciplineNounLines": {
+      "ornateVocabLine": "- Never use ornate vocabulary where plain vocabulary works. \"SCRAP transferred\" not \"coffers depleted\". \"Now holds\" not \"ascending to\".",
+      "addressLine": "- Never address the bot directly.",
+      "_r71r12": "CONFLICT-R71-R12 resolution (docs/decision-graph.md, node P-R71-NOUN-MAP): discipline lines held semantically verbatim; only the role noun swapped through the R13 mapping. Recorded in app/data/treatments/mapping.json."
+    },
+    "_note": "Composed into the full system prompt by app/engine/narratorPrompt.js:composeNarratorPrompt -- see app/tests/narrator-prompt-compose.test.js."
+  },
+  "namePool": [
+    "Haymaker Mk II",
+    "Rustbucket",
+    "The Compactor",
+    "Sparkplug Sally",
+    "Junkyard Duchess",
+    "Camshaft Kelly",
+    "Bent Frame",
+    "Diesel Daisy",
+    "Torque Tommy",
+    "Mother of Sprockets",
+    "Grindhouse",
+    "Piston Pete",
+    "Chainlink Charlie",
+    "The Baler",
+    "Forklift Fiona",
+    "Scrapheap Sovereign",
+    "Undercarriage Ursula",
+    "The Rebar Reverend",
+    "Ratchet Ruth",
+    "Ninefinger Ned",
+    "Ballast Betty",
+    "The Compressor King",
+    "Magnetron",
+    "Widow-Maker Winch",
+    "Flatbed Frannie",
+    "The Alternator",
+    "Corrugated Cassius",
+    "Solenoid Sue",
+    "Two-Stroke Tessa",
+    "The Boneyard Boss",
+    "Cinderblock Cindy",
+    "Jumper-Cable Jack",
+    "The Long Reach",
+    "Gantry Gus",
+    "Weld-Bead Wanda",
+    "Axle Grease Annie",
+    "The Salvage Saint",
+    "Crankshaft Cora",
+    "Bailing-Wire Bill",
+    "The Night Crane"
+  ],
+  "_namePoolNote": "R59: naming is the pool's job alone. The first seven entries are also the R82 seed roster's canonical NPC names.",
+  "seedRoster": [
+    {
+      "name": "Haymaker Mk II",
+      "element": "air",
+      "tendency": {
+        "fire": 0.2,
+        "water": 0.25,
+        "air": 0.55
+      },
+      "canonical": true
+    },
+    {
+      "name": "Rustbucket",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.65,
+        "water": 0.15,
+        "air": 0.2
+      },
+      "canonical": true
+    },
+    {
+      "name": "The Compactor",
+      "element": "water",
+      "tendency": {
+        "fire": 0.2,
+        "water": 0.55,
+        "air": 0.25
+      },
+      "canonical": true
+    },
+    {
+      "name": "Sparkplug Sally",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.35,
+        "water": 0.35,
+        "air": 0.3
+      },
+      "canonical": true
+    },
+    {
+      "name": "Junkyard Duchess",
+      "element": "water",
+      "tendency": {
+        "fire": 0.15,
+        "water": 0.65,
+        "air": 0.2
+      },
+      "canonical": true
+    },
+    {
+      "name": "Camshaft Kelly",
+      "element": "air",
+      "tendency": {
+        "fire": 0.2,
+        "water": 0.2,
+        "air": 0.6
+      },
+      "canonical": true
+    },
+    {
+      "name": "Bent Frame",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.45,
+        "water": 0.3,
+        "air": 0.25
+      },
+      "canonical": true
+    },
+    {
+      "name": "Diesel Daisy",
+      "element": "air",
+      "tendency": {
+        "fire": 0.25,
+        "water": 0.2,
+        "air": 0.55
+      },
+      "canonical": false
+    },
+    {
+      "name": "Torque Tommy",
+      "element": "water",
+      "tendency": {
+        "fire": 0.25,
+        "water": 0.5,
+        "air": 0.25
+      },
+      "canonical": false
+    },
+    {
+      "name": "Mother of Sprockets",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.5,
+        "water": 0.25,
+        "air": 0.25
+      },
+      "canonical": false
+    },
+    {
+      "name": "Grindhouse",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.6,
+        "water": 0.2,
+        "air": 0.2
+      },
+      "canonical": false
+    },
+    {
+      "name": "Piston Pete",
+      "element": "water",
+      "tendency": {
+        "fire": 0.2,
+        "water": 0.6,
+        "air": 0.2
+      },
+      "canonical": false
+    },
+    {
+      "name": "Chainlink Charlie",
+      "element": "air",
+      "tendency": {
+        "fire": 0.2,
+        "water": 0.3,
+        "air": 0.5
+      },
+      "canonical": false
+    },
+    {
+      "name": "The Baler",
+      "element": "water",
+      "tendency": {
+        "fire": 0.3,
+        "water": 0.45,
+        "air": 0.25
+      },
+      "canonical": false
+    },
+    {
+      "name": "Forklift Fiona",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.55,
+        "water": 0.25,
+        "air": 0.2
+      },
+      "canonical": false
+    },
+    {
+      "name": "Scrapheap Sovereign",
+      "element": "air",
+      "tendency": {
+        "fire": 0.3,
+        "water": 0.2,
+        "air": 0.5
+      },
+      "canonical": false
+    },
+    {
+      "name": "Undercarriage Ursula",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.4,
+        "water": 0.3,
+        "air": 0.3
+      },
+      "canonical": false
+    },
+    {
+      "name": "The Rebar Reverend",
+      "element": "water",
+      "tendency": {
+        "fire": 0.2,
+        "water": 0.55,
+        "air": 0.25
+      },
+      "canonical": false
+    },
+    {
+      "name": "Ratchet Ruth",
+      "element": "air",
+      "tendency": {
+        "fire": 0.15,
+        "water": 0.25,
+        "air": 0.6
+      },
+      "canonical": false
+    },
+    {
+      "name": "Ninefinger Ned",
+      "element": "water",
+      "tendency": {
+        "fire": 0.25,
+        "water": 0.5,
+        "air": 0.25
+      },
+      "canonical": false
+    },
+    {
+      "name": "Ballast Betty",
+      "element": "fire",
+      "tendency": {
+        "fire": 0.65,
+        "water": 0.15,
+        "air": 0.2
+      },
+      "canonical": false
+    },
+    {
+      "name": "The Compressor King",
+      "element": "air",
+      "tendency": {
+        "fire": 0.25,
+        "water": 0.25,
+        "air": 0.5
+      },
+      "canonical": false
+    }
+  ],
+  "_seedRosterNote": "R82: the first seven entries are the exact canonical seed roster (names, elements, F/W/A tendencies verbatim to the incumbent's numbers, per t3's brief: 'tendencies may match the incumbent's numbers'). Remaining entries extend the same voice for lobbies needing more than 7 NPC seats.",
+  "copy": {
+    "acquisitionMessage": "Outsmart for real money.",
+    "_acquisitionMessageNote": "R11: the acquisition message is FIXED across every treatment, verbatim -- not theme-bound.",
+    "truthLine": "This is play money. It's free, and it lives right here in the yard. Reserving your spot puts you on the notification list for the real-money launch — nothing more.",
+    "landingSubhead": "Five rounds. One winner. Build a Bot, enter the yard, keep what you take.",
+    "screenerHeading": "Before you're cleared",
+    "screenerBody": "A couple of quick questions — age and location — before the gate opens. This is a simulated verdict for the play-money build.",
+    "screenerAgeQuestion": "Are you 18 or older?",
+    "screenerJurisdictionQuestion": "Do you currently reside in a permitted region?",
+    "screenerRejectedMessage": "The yard isn't open to you yet under these answers. Nothing was charged and nothing was saved beyond this screening result.",
+    "summonHeading": "Build your Bot",
+    "summonBody": "Every Bot rolls out of the yard with a name already stenciled on it. The corkboard names them; you run them.",
+    "summonButton": "Build ($10 — 100S)",
+    "signupGrantNotice": "New account bonus: $25 play CASH, already in your wallet.",
+    "lobbyHeading": "Staging",
+    "lobbyWaiting": "Staging the yard bracket…",
+    "bracketBoardHeading": "The Yard Bracket",
+    "sittingHeading": "SITTING",
+    "sittingBody": "This Bot lost its last bout. Re-enter this tier, cash out, or sit — free, indefinitely.",
+    "emptiedCardLine": "Holds nothing. The ledger will take the name.",
+    "emptiedChampionLine": "Topped the circuit, cashed out its SCRAP at 20:1, and holds nothing now. The ledger will take the name.",
+    "emptiedCardAction": "RETIRE TO THE LEDGER",
+    "tieLine": "All square — coin flip. {ADVANCE_OR_ELIMINATED}. No SCRAP transferred.",
+    "tieLineAdvance": "You advance",
+    "tieLineEliminated": "You're eliminated",
+    "resultClaimedHeader": "CLAIMED",
+    "resultDrainedHeader": "DRAINED",
+    "duelWonLine": "DUEL WON",
+    "prizeLine": "PRIZE",
+    "walletHeading": "Wallet",
+    "reserveHeading": "Reserve your spot",
+    "reserveBody": "Press RESERVE to join the notification list for the real-money launch. Play money is free and stays in the yard either way.",
+    "reserveButton": "RESERVE",
+    "reserveConfirmed": "You're on the list. We'll notify you when the real-money version launches.",
+    "loadFundsHeading": "PLAY CASH ONLY · How much would you like to deposit?",
+    "loadFundsLegal": "Play money is free and lives inside the yard. Deposits here are simulated — no bank, no card, no real funds move.",
+    "loadFundsContinue": "Continue",
+    "loadFundsBack": "Back to app",
+    "cashOutHeading": "Cash Out",
+    "cashOutBody": "Convert this Bot's stake to CASH at 20:1. The Bot is decommissioned. This is the only way to retire a Bot that still holds a stake — an emptied (0 SCRAP) Bot retires to the ledger instead.",
+    "cashOutButton": "Cash Out",
+    "withdrawHeading": "Withdraw",
+    "withdrawBody": "PLAY CASH ONLY. This shows your balance; nothing leaves the yard.",
+    "moneyTruthBadge": "PLAY MONEY · FREE · STAYS IN GAME",
+    "npcTagLabel": "NPC",
+    "hesitatedTagLabel": "HESITATED",
+    "narratorBypassA": "Both bots committed to [ELEMENT]. All five rounds. The scrutineer is familiar with this particular theory of cooperation. The scrutineer is also familiar with how it typically resolves.",
+    "narratorBypassB": "[EEEEE] versus [EEEEE]. The scrutineer notes this is either a remarkable coincidence or a remarkable miscalculation of engineering. Possibly both.",
+    "_narratorBypassNote": "R73 static bypass, re-voiced per register with the same semantics as the incumbent's. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered.",
+    "provisionalStageLabel": "PROVISIONAL RENDER. BOT ART PENDING SUPPLY.",
+    "_provisionalStageLabelNote": "CB-BUILD-007 (docs/cb-build-patch-log.md): R12 as now written -- Scrapyard Kings has no provided character art yet, so the in-game stage is a clearly-marked provisional stage instead of an unlabeled colored box. Voiced in the scrutineer's shop-manual imperative (docs/concept-cards.md card A1), zero exclamation, no apology. Rendered by app/ui/components/battle/stage.js on the placeholder combatant."
+  }
+}

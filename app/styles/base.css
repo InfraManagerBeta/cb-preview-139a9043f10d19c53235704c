@@ -1,0 +1,584 @@
+/* app/styles/base.css
+   R79 design frame: fixed screen set/layout, 32px grid texture at 5-6%,
+   Bebas Neue display / DM Mono data / Barlow prose, incumbent color values.
+   Plain, functional, mobile-first — t3 replaces the fancy battle visuals;
+   this build is the working shell underneath. */
+
+:root {
+  --cb-yellow: #FFE500;
+  --cb-black: #0A0A08;
+  --cb-green: #28C840;
+  --cb-red: #D41E30;
+  --cb-offwhite: #F5F0E8;
+  --cb-teal: #3ABCBC;
+  --cb-water: #1A9FD4;
+  --cb-fire: #E8283C;
+  --cb-air: #B0B0B0;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-data: 'DM Mono', monospace;
+  --font-prose: 'Barlow', sans-serif;
+  --font-hero: 'Pirata One', serif;
+
+  --tap-min: 44px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--cb-black);
+  color: var(--cb-offwhite);
+  font-family: var(--font-prose);
+  min-height: 100%;
+}
+
+body {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,229,0,0.05) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(90deg, rgba(255,229,0,0.05) 0 1px, transparent 1px 32px);
+}
+
+a { color: inherit; }
+
+h1, h2, h3, .cb-display {
+  font-family: var(--font-display);
+  letter-spacing: 1.5px;
+  color: var(--cb-yellow);
+  margin: 0 0 12px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cb-data, .cb-mono, code, .cb-figure {
+  font-family: var(--font-data);
+  letter-spacing: 0.04em;
+}
+
+.cb-hero-face {
+  font-family: var(--font-hero);
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 16px 16px 96px;
+  position: relative;
+}
+
+.cb-screen { display: flex; flex-direction: column; gap: 16px; }
+
+.cb-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 16px;
+  border-bottom: 1px solid rgba(255,229,0,0.15);
+}
+.cb-logo {
+  font-family: var(--font-display);
+  color: var(--cb-yellow);
+  font-size: 22px;
+  letter-spacing: 2px;
+}
+/* .cb-cash-pill is the CASH BALANCE control (a real <button> everywhere —
+   R67; chrome.js's topBar). .cb-price-pill is the landing screen's
+   NON-interactive door-price badge (same skin, no control semantics). */
+.cb-cash-pill, .cb-price-pill {
+  font-family: var(--font-data);
+  font-size: 12px;
+  background: #16140e;
+  border: 1px solid var(--cb-yellow);
+  color: var(--cb-yellow);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+/* CB-BUILD-fix-round-1 #6 (R83/AC1): the pill is a CONTROL — it gets the
+   44px effective tap target every other control clears (it was ~28px tall
+   and escaped the scan because "pill" wasn't in its token list). */
+.cb-cash-pill {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.cb-card {
+  background: #111111;
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+}
+.cb-card.selectable {
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+.cb-card.selected {
+  border-color: var(--cb-yellow);
+  box-shadow: 3px 3px 0 var(--cb-yellow);
+}
+
+.cb-btn {
+  appearance: none;
+  border: 3px solid var(--cb-black);
+  background: var(--cb-yellow);
+  color: var(--cb-black);
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--cb-black);
+  transition: transform 0.08s, box-shadow 0.08s, opacity 0.08s;
+}
+.cb-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--cb-black);
+}
+.cb-btn:disabled, .cb-btn[aria-disabled="true"] {
+  /* R83: disabled state is clearly distinct from active state in fill and weight,
+     not opacity alone. Replace vivid yellow with muted/desaturated fill, drop the
+     drop-shadow so it reads as inert/locked. cursor: not-allowed stays. */
+  background: #5a5a50;
+  color: #888;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.cb-btn.secondary {
+  background: transparent;
+  color: var(--cb-offwhite);
+  border-color: #444;
+  box-shadow: none;
+}
+.cb-btn.danger { background: var(--cb-red); color: var(--cb-offwhite); }
+.cb-btn.win { background: var(--cb-green); color: var(--cb-black); }
+.cb-btn.block { width: 100%; }
+/* The money sheets' Continue (deposit) button — previously an inline style
+   on the element itself, which no stylesheet rule (not even the disabled
+   one) could override. Now a class variant like every other .cb-btn skin,
+   so the disabled cascade below wins for it too. */
+.cb-btn.deposit { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+/* CB-BUILD-fix-round-1 #1 (§12/R83): the disabled treatment must WIN over
+   EVERY variant skin. The plain `.cb-btn:disabled` rule above ties on
+   specificity (0,2,0) with `.cb-btn.secondary` etc., and the variant rules
+   load later in this same sheet, so a disabled secondary/danger/win button
+   was pixel-identical to its enabled self. These variant-qualified
+   selectors are (0,3,0) — they beat every variant rule regardless of
+   source order, keeping the muted-fill + dropped-shadow (fill AND weight)
+   distinction of the base disabled rule. */
+.cb-btn.secondary:disabled, .cb-btn.secondary[aria-disabled="true"],
+.cb-btn.danger:disabled, .cb-btn.danger[aria-disabled="true"],
+.cb-btn.win:disabled, .cb-btn.win[aria-disabled="true"],
+.cb-btn.block:disabled, .cb-btn.block[aria-disabled="true"],
+.cb-btn.deposit:disabled, .cb-btn.deposit[aria-disabled="true"] {
+  background: #5a5a50;
+  color: #888;
+  border-color: #444;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Body copy: prose face (Barlow) per R11. Use .cb-prose for all text players read. */
+.cb-prose {
+  font-family: var(--font-prose);
+  font-size: 14px;
+  letter-spacing: 0;
+  color: var(--cb-offwhite);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+/* CB-BUILD-fix-round-1 #5 (R11): fine-print SENTENCES (legal lines,
+   verification instructions, hypothesis fair-test lines) are still prose a
+   player reads — the FACE is the law, the point size is not. This modifier
+   keeps the small/quiet footprint the old .cb-legal styling gave them while
+   the face stays Barlow via .cb-prose. */
+.cb-prose.cb-prose-small {
+  font-size: 11px;
+  color: #a8a29a;
+  line-height: 1.5;
+}
+
+/* Data/technical content: monospace face (DM Mono) for figures, tags, timestamps, code. */
+.cb-legal, .cb-micro {
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #a8a29a;
+  line-height: 1.5;
+}
+
+.cb-truth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-data);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(58,188,188,0.12);
+  color: var(--cb-teal);
+  border: 1px solid var(--cb-teal);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+/* C7/R8a: the compact one-line variant for tight surfaces (tug bar). Same
+   claim, same source string, smaller footprint -- no badge pill/border. */
+.cb-money-truth-compact {
+  font-family: var(--font-data);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cb-teal);
+  opacity: 0.9;
+  text-align: center;
+  padding: 3px 0;
+}
+
+.cb-npc-tag {
+  font-family: var(--font-data);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  background: #2a2a2a;
+  color: var(--cb-offwhite);
+  border: 1px solid #555;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+.cb-hesitated-tag {
+  font-family: var(--font-data);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  background: rgba(212,30,48,0.15);
+  color: var(--cb-red);
+  border: 1px solid var(--cb-red);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.cb-element-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.cb-element-btn {
+  flex: 1 1 30%;
+  min-height: 56px;
+  border: 2px solid #444;
+  background: #16140e;
+  color: var(--cb-offwhite);
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.cb-element-btn[data-el="fire"] { border-color: var(--cb-fire); }
+.cb-element-btn[data-el="water"] { border-color: var(--cb-water); }
+.cb-element-btn[data-el="air"] { border-color: var(--cb-air); }
+.cb-element-btn.selected { box-shadow: 3px 3px 0 currentColor; transform: translate(-1px,-1px); }
+.cb-element-btn.affinity::after { content: "★"; font-size: 12px; margin-left: 4px; }
+.cb-element-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.cb-round-list { display: flex; flex-direction: column; gap: 6px; }
+.cb-round-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-data);
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+}
+.cb-round-row.win { border-color: var(--cb-green); }
+.cb-round-row.loss { border-color: var(--cb-red); }
+.cb-round-row.draw { border-color: #555; }
+.cb-badge {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.cb-badge.win { background: rgba(40,200,64,0.18); color: var(--cb-green); }
+.cb-badge.loss { background: rgba(212,30,48,0.18); color: var(--cb-red); }
+.cb-badge.draw { background: rgba(255,255,255,0.08); color: #ccc; }
+.cb-badge.big, .cb-badge.critical { background: rgba(255,229,0,0.15); color: var(--cb-yellow); margin-left: 6px; }
+
+.cb-result-card { text-align: center; padding: 24px 16px; }
+.cb-result-card.claimed { border-color: var(--cb-green); }
+.cb-result-card.drained { border-color: var(--cb-red); }
+.cb-result-header { font-size: 34px; }
+.cb-result-line { font-family: var(--font-data); font-size: 13px; margin: 4px 0; }
+/* fix-round-2: the delta moved off <p> (it is a figure, not body copy) —
+   keep its breathing room explicitly now that no UA paragraph margin applies. */
+.cb-result-delta { font-size: 22px; font-family: var(--font-data); margin: 16px 0; }
+
+.cb-timer {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--cb-yellow);
+}
+
+/* CB-BUILD-009/R81: the move-choice screen's commit clock -- a prominent,
+   persistent countdown, never a small data span. Display face (Bebas Neue,
+   the same hero-moment face as the logo), large enough to read at a
+   glance, shifting to the danger color (loss/battle red) as it nears
+   zero. `.pulse` is the optional low-time warning animation. */
+.cb-commit-clock {
+  font-family: var(--font-display);
+  font-size: 40px;
+  letter-spacing: 1px;
+  color: var(--cb-yellow);
+  line-height: 1;
+}
+.cb-commit-clock.danger { color: var(--cb-red); }
+.cb-commit-clock.pulse { animation: cb-commit-clock-pulse 1s ease-in-out infinite; }
+@keyframes cb-commit-clock-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* CB-BUILD-009/R81: pins the clock (and the logo alongside it) in view for
+   the whole selection -- scrolling through five round cards never scrolls
+   the clock out of sight. Scoped to the commit screen alone via this
+   modifier class (`.cb-topbar` itself, used by every other screen, is
+   untouched). */
+.cb-commit-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--cb-black);
+  padding-top: 8px;
+  margin-bottom: 0;
+}
+
+/* CB-BUILD-009: the one-line auto-commit explainer sits directly under the
+   pinned clock, uncramped from the round cards below it. */
+.cb-commit-explainer { margin-top: 8px; }
+
+/* CB-BUILD-011/R11-R79: the move-choice screen brought to the design bar --
+   an uncramped layout with distinct breathing room between the opponent
+   panel (tendency card + whatever scouting/brief card is active -- room
+   for a future scouting panel, not the panel itself) and the five round
+   cards below it. */
+.cb-commit-opponent-panel { display: flex; flex-direction: column; gap: 12px; }
+.cb-commit-rounds { display: flex; flex-direction: column; gap: 14px; }
+/* CB-BUILD-fix-round-1 #2: named `cb-commit-round-card` (was `cb-round-card`)
+   so the commit screen's five cards can never collide with battle.css's
+   reveal-side `.cb-round-card` mono flex row again. */
+.cb-commit-round-card { padding-bottom: 18px; }
+
+
+.cb-bracket-tree { display: flex; flex-direction: column; gap: 10px; }
+.cb-bracket-round-label { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; }
+.cb-bracket-match { display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid #333; border-radius: 6px; font-family: var(--font-data); font-size: 13px; }
+.cb-bracket-match .seat.winner { color: var(--cb-green); }
+.cb-bracket-match .seat.loser { color: #777; text-decoration: line-through; }
+
+.cb-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,8,0.85);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+.cb-sheet {
+  background: var(--cb-black);
+  border-top: 3px solid var(--cb-yellow);
+  border-radius: 12px 12px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cb-sheet-top { display: flex; justify-content: space-between; align-items: center; }
+.cb-sheet-back { font-family: var(--font-data); font-size: 12px; color: #ccc; background: none; border: none; cursor: pointer; min-height: var(--tap-min); }
+
+.cb-amount-card {
+  border: 2px solid var(--cb-yellow);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cb-amount-figure {
+  font-family: var(--font-display);
+  font-size: 42px;
+  color: var(--cb-yellow);
+  text-align: center;
+  flex: 1;
+}
+/* A11/R67: the deposit figure is tap-to-edit (to the cent) -- the button
+   variant (display mode) still reads like the old plain figure but is a
+   real button (>=44px tap target); the input variant (edit mode) is a
+   native number input so mobile keyboards show a numeric/decimal pad. */
+.cb-amount-figure-tappable {
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+.cb-amount-input {
+  background: none;
+  border: none;
+  border-bottom: 2px dashed var(--cb-yellow);
+  min-height: var(--tap-min);
+  width: 100%;
+  -moz-appearance: textfield;
+}
+.cb-stepper {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 2px solid var(--cb-yellow);
+  background: transparent;
+  color: var(--cb-yellow);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.cb-preset-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.cb-pill {
+  border: 2px solid #444;
+  background: transparent;
+  color: var(--cb-offwhite);
+  font-family: var(--font-data);
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+.cb-pill.selected { border-color: var(--cb-yellow); color: var(--cb-yellow); }
+
+.cb-list { display: flex; flex-direction: column; gap: 10px; }
+
+.cb-tag-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+
+.cb-nav-bottom {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  background: rgba(10,10,8,0.95);
+  border-top: 1px solid rgba(255,229,0,0.15);
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+}
+.cb-nav-inner { display: flex; gap: 10px; max-width: 480px; width: 100%; }
+.cb-nav-btn {
+  flex: 1;
+  background: none;
+  border: 1px solid #333;
+  color: #ccc;
+  font-family: var(--font-data);
+  font-size: 11px;
+  padding: 8px 4px;
+  border-radius: 6px;
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+.cb-nav-btn.active { color: var(--cb-yellow); border-color: var(--cb-yellow); }
+
+.cb-narration {
+  font-style: italic;
+  color: var(--cb-teal);
+  border-left: 3px solid var(--cb-teal);
+  padding-left: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cb-emptied-line {
+  font-family: var(--font-prose);
+  font-style: italic;
+  color: #999;
+}
+
+/* CB-BUILD-fix-round-4 (R11): the toast is a RUNTIME text surface —
+   showToast() writes whatever a caller passes (ledger notices, summon
+   errors, reminders: authored participant sentences). R11 constrains what
+   the DATA face may carry, never what the prose face may — figure toasts
+   like "+150C" are fine in prose — so the surface wears the prose face. */
+.cb-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 16px; right: 16px;
+  max-width: 448px;
+  margin: 0 auto;
+  background: var(--cb-yellow);
+  color: var(--cb-black);
+  font-family: var(--font-prose);
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  z-index: 200;
+}
+
+.cb-busy { opacity: 0.6; pointer-events: none; }
+
+.cb-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap-min);
+}
+.cb-checkbox-row input { width: 22px; height: 22px; }
+
+/* CB-BUILD-fix-round-1 #7 (R79, R83/AC1): the screener's DOB field.
+   `.cb-field-row` was referenced by screener.js but defined in NO
+   stylesheet — the funnel's FIRST input rendered browser-default (outside
+   the design frame) and under the 44px bar. Label in the quiet data face,
+   the input styled inside the frame with an explicit >=44px target. */
+.cb-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+.cb-field-row input {
+  min-height: var(--tap-min);
+  background: #16140e;
+  border: 2px solid #444;
+  border-radius: 6px;
+  color: var(--cb-offwhite);
+  font-family: var(--font-data);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  color-scheme: dark; /* the native date picker chrome follows the dark frame */
+}
+.cb-field-row input:focus { border-color: var(--cb-yellow); outline: none; }
+/* The detected location verdict line (CB-BUILD-001/R70) — styled
+   intentionally as a quiet status row under the DOB field. */
+.cb-location-verdict {
+  margin-top: 10px;
+  color: var(--cb-teal);
+}
+
+@media (min-width: 700px) {
+  #app { padding-top: 32px; }
+}

@@ -1,0 +1,159 @@
+{
+  "$schema": "cheddar-battles/treatment@1",
+  "id": "incumbent",
+  "position": "incumbent",
+  "workingTitle": "Cheddar Battles",
+  "logoMark": "CB",
+  "_r1": "R1/R78: the CB logo mark is sanctioned. The strings 'Cheeze Wizards', 'Cheese Wizards', and standalone 'CW' must never appear in this file or in any participant-facing render.",
+
+  "nouns": {
+    "character": "Wizard",
+    "characterPlural": "Wizards",
+    "stakeUnit": "CHEDDAR",
+    "stakeUnitAbbrev": "C",
+    "headlinePrize": "Big Cheese",
+    "floor": "Blue Mold"
+  },
+
+  "elements": {
+    "fire": { "label": "Fire", "beats": "air" },
+    "water": { "label": "Water", "beats": "fire" },
+    "air": { "label": "Air", "beats": "water", "_note": "Wind is Air in all copy (R74)." }
+  },
+
+  "colors": {
+    "primary": "#FFE500",
+    "ground": "#0A0A08",
+    "win": "#28C840",
+    "loss": "#D41E30",
+    "surfaces": "#F5F0E8",
+    "narratorAccent": "#3ABCBC",
+    "water": "#1A9FD4",
+    "fire": "#E8283C",
+    "air": "#B0B0B0",
+    "_roles": "R79/R11 fixed semantic roles (primary, ground, win, loss/opponent, one per element, Narrator accent, surfaces); R12: every VALUE here is theme-bound and supplied in full by each treatment -- see app/data/treatments/mapping.json. air taken from the asset bundle's cb-css globals.css --cb-air token, per R79 ('the air value as set in the bundle's CSS')."
+  },
+
+  "fonts": {
+    "display": "Bebas Neue",
+    "data": "DM Mono",
+    "prose": "Barlow",
+    "heroFace": "Pirata One",
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:ital,wght@0,400;0,600;1,400&family=Pirata+One&display=swap"
+  },
+
+  "narrator": {
+    "personaLine": "You are the Narrator of Cheddar Battles — an ancient cheese archivist.",
+    "registerLine": "Your register is dry, precise, and British (Terry Pratchett calibration).",
+    "examples": [
+      "Three rounds to two. The narrowest acceptable victory. Round five was yours. The Narrator observed it with considerable interest.",
+      "Four rounds produced nothing. One round produced everything. The ledger does not find this proportionate. The ledger records it anyway.",
+      "No rounds won. The Narrator notes the score and the transfer and nothing else. Both numbers are definitive.",
+      { "text": "The pass is unchanged.", "note": "as a closer — brevity used deliberately after a longer setup" }
+    ],
+    "disciplineNounLines": {
+      "ornateVocabLine": "- Never use ornate vocabulary where plain vocabulary works. \"Cheddar transferred\" not \"coffers depleted\". \"Now holds\" not \"ascending to\".",
+      "addressLine": "- Never address the wizard directly.",
+      "_r71r12": "CONFLICT-R71-R12 identity mapping (incumbent maps to itself). See app/data/treatments/mapping.json and docs/decision-graph.md."
+    },
+    "_note": "The full verbatim system prompt (persona + fixed discipline lines) ships as product data at app/data/narrator-prompt.txt per R71/R73, and is reproduced byte-for-byte by engine/narratorPrompt.js:composeNarratorPrompt(incumbentTreatment) -- see app/tests/narrator-prompt-compose.test.js. personaLine/registerLine/examples/disciplineNounLines here are the theme-bound inputs to that composition, duplicated as metadata for any UI surface that wants to label the Narrator's voice without re-deriving the whole prompt."
+  },
+
+  "namePool": [
+    "Velveeta the Verbose", "Manchego the Merciless", "Brie la Terrible", "Colby Jack",
+    "The Gorgon", "Raclette the Ravenous", "Stilton the Wise", "Gouda Golem", "Havarti Half-Moon",
+    "Provolone the Patient", "Pepper Jack Flash", "Muenster of Ceremonies", "Camembert the Cracked",
+    "Edam the Elder", "Feta Fatale", "Gruyere the Grim", "Limburger the Loud", "Asiago Ashcloak",
+    "Roquefort the Ruinous", "Jarlsberg the Just", "Fontina Firebrand", "Emmental the Empty-Eyed",
+    "Cheshire the Sly", "Paneer Pariah", "Halloumi the Hardened", "Mozzarella Mourning-Star",
+    "Parmesan the Petrified", "Pecorino the Pitiless", "Cotija the Cold", "Burrata the Brief",
+    "Comte de Curdle", "Gjetost the Grafted", "Tomme the Tumbledown", "Reblochon the Reckless",
+    "Taleggio the Tattered", "Wensleydale the Wan", "Cheddar Vesper", "Cheddar Marrow",
+    "Queso the Quiet", "Chevre Nocturne", "Ricotta Rimewalker", "Boursin the Brittle",
+    "Gorgonzola the Gaunt", "Manchego Second-Rind", "Brie Thistlecurd", "Colby Duskmold",
+    "Swiss the Sundered", "American the Anonymous", "Cotswold the Crumbling", "Derby the Deathless",
+    "Caerphilly the Calm", "Lancashire the Loud", "Cheshire Gravemold", "Wensleydale Ash-Rind",
+    "Brie the Bereft", "Stilton Blueveined", "Gouda Graveworn", "Edam Hollowrind",
+    "Havarti the Hunted", "Parmesan Dustcurd"
+  ],
+  "_namePoolNote": "R59: naming is the pool's job alone. This pool is drawn on for freshly-summoned player characters at random (minus any name currently in use by a live character or NPC on the shared ledger). The first seven entries are also the R82 seed roster's canonical NPC names; a summon draw skips names currently seated as NPCs in the active lobby.",
+
+  "seedRoster": [
+    { "name": "Velveeta the Verbose", "element": "air", "tendency": { "fire": 0.20, "water": 0.25, "air": 0.55 }, "canonical": true },
+    { "name": "Manchego the Merciless", "element": "fire", "tendency": { "fire": 0.65, "water": 0.15, "air": 0.20 }, "canonical": true },
+    { "name": "Brie la Terrible", "element": "water", "tendency": { "fire": 0.20, "water": 0.55, "air": 0.25 }, "canonical": true },
+    { "name": "Colby Jack", "element": "fire", "tendency": { "fire": 0.35, "water": 0.35, "air": 0.30 }, "canonical": true },
+    { "name": "The Gorgon", "element": "water", "tendency": { "fire": 0.15, "water": 0.65, "air": 0.20 }, "canonical": true },
+    { "name": "Raclette the Ravenous", "element": "air", "tendency": { "fire": 0.20, "water": 0.20, "air": 0.60 }, "canonical": true },
+    { "name": "Stilton the Wise", "element": "fire", "tendency": { "fire": 0.45, "water": 0.30, "air": 0.25 }, "canonical": true },
+
+    { "name": "Gouda Golem", "element": "air", "tendency": { "fire": 0.25, "water": 0.20, "air": 0.55 }, "canonical": false },
+    { "name": "Havarti Half-Moon", "element": "water", "tendency": { "fire": 0.25, "water": 0.50, "air": 0.25 }, "canonical": false },
+    { "name": "Provolone the Patient", "element": "fire", "tendency": { "fire": 0.50, "water": 0.25, "air": 0.25 }, "canonical": false },
+    { "name": "Pepper Jack Flash", "element": "fire", "tendency": { "fire": 0.60, "water": 0.20, "air": 0.20 }, "canonical": false },
+    { "name": "Muenster of Ceremonies", "element": "water", "tendency": { "fire": 0.20, "water": 0.60, "air": 0.20 }, "canonical": false },
+    { "name": "Camembert the Cracked", "element": "air", "tendency": { "fire": 0.20, "water": 0.30, "air": 0.50 }, "canonical": false },
+    { "name": "Edam the Elder", "element": "water", "tendency": { "fire": 0.30, "water": 0.45, "air": 0.25 }, "canonical": false },
+    { "name": "Feta Fatale", "element": "fire", "tendency": { "fire": 0.55, "water": 0.25, "air": 0.20 }, "canonical": false },
+    { "name": "Gruyere the Grim", "element": "air", "tendency": { "fire": 0.30, "water": 0.20, "air": 0.50 }, "canonical": false },
+    { "name": "Limburger the Loud", "element": "fire", "tendency": { "fire": 0.40, "water": 0.30, "air": 0.30 }, "canonical": false },
+    { "name": "Asiago Ashcloak", "element": "water", "tendency": { "fire": 0.20, "water": 0.55, "air": 0.25 }, "canonical": false },
+    { "name": "Roquefort the Ruinous", "element": "air", "tendency": { "fire": 0.15, "water": 0.25, "air": 0.60 }, "canonical": false },
+    { "name": "Jarlsberg the Just", "element": "water", "tendency": { "fire": 0.25, "water": 0.50, "air": 0.25 }, "canonical": false },
+    { "name": "Fontina Firebrand", "element": "fire", "tendency": { "fire": 0.65, "water": 0.15, "air": 0.20 }, "canonical": false },
+    { "name": "Cheshire the Sly", "element": "air", "tendency": { "fire": 0.25, "water": 0.25, "air": 0.50 }, "canonical": false }
+  ],
+  "_seedRosterNote": "R82: the first seven entries are the exact canonical seed roster (names, elements, F/W/A tendencies verbatim). Remaining entries are the same roster 'extended in the same voice' per R82's closing clause, for lobbies needing more than 7 NPC seats across concurrent brackets/tiers. NPC brains apply this tendency distribution as their PvE-policy commit mix.",
+
+  "copy": {
+    "acquisitionMessage": "Outsmart for real money.",
+    "truthLine": "This is play money. It's free, and it lives right here in the game. Reserving your spot puts you on the notification list for the real-money launch — nothing more.",
+    "landingSubhead": "Five rounds. One winner. Summon a Wizard, enter the bracket, keep what you take.",
+    "screenerHeading": "Before you play",
+    "screenerBody": "A couple of quick questions — age and location — before we let you into the arena. This is a simulated verdict for the play-money build.",
+    "screenerAgeQuestion": "Are you 18 or older?",
+    "screenerJurisdictionQuestion": "Do you currently reside in a permitted region?",
+    "screenerRejectedMessage": "The arena isn't open to you yet under these answers. Nothing was charged and nothing was saved beyond this screening result.",
+    "summonHeading": "Summon your Wizard",
+    "summonBody": "Every Wizard comes summoned with a name already on it. The pool names them; you play them.",
+    "summonButton": "Summon ($10 — 100C)",
+    "signupGrantNotice": "New account bonus: $25 play CASH, already in your wallet.",
+    "lobbyHeading": "Lobby",
+    "lobbyWaiting": "Seating the bracket…",
+    "bracketBoardHeading": "The Bracket",
+    "sittingHeading": "SITTING",
+    "sittingBody": "This Wizard lost its last duel. Re-enter this tier, cash out, or sit — free, indefinitely.",
+    "emptiedCardLine": "Holds nothing. The ledger will take the name.",
+    "emptiedChampionLine": "Topped the ladder, cashed out at 20:1, and holds nothing now. The ledger will take the name.",
+    "emptiedCardAction": "RETIRE TO THE LEDGER",
+    "tieLine": "All square — coin flip. {ADVANCE_OR_ELIMINATED}. No cheddar transferred.",
+    "tieLineAdvance": "You advance",
+    "tieLineEliminated": "You're eliminated",
+    "resultClaimedHeader": "CLAIMED",
+    "resultDrainedHeader": "DRAINED",
+    "duelWonLine": "DUEL WON",
+    "prizeLine": "PRIZE",
+    "walletHeading": "Wallet",
+    "reserveHeading": "Reserve your spot",
+    "reserveBody": "Press RESERVE to join the notification list for the real-money launch. Play money is free and stays in the game either way.",
+    "reserveButton": "RESERVE",
+    "reserveConfirmed": "You're on the list. We'll notify you when the real-money version launches.",
+    "loadFundsHeading": "PLAY CASH ONLY · How much would you like to deposit?",
+    "loadFundsLegal": "Play money is free and lives inside the game. Deposits here are simulated — no bank, no card, no real funds move.",
+    "loadFundsContinue": "Continue",
+    "loadFundsBack": "Back to app",
+    "cashOutHeading": "Cash Out",
+    "cashOutBody": "Convert this Wizard's stake to CASH at 20:1. The Wizard retires. This is the only way to retire a Wizard that still holds a stake — an emptied (0C) Wizard retires to the ledger instead.",
+    "cashOutButton": "Cash Out",
+    "withdrawHeading": "Withdraw",
+    "withdrawBody": "PLAY CASH ONLY. This shows your balance; nothing leaves the game.",
+    "moneyTruthBadge": "PLAY MONEY · FREE · STAYS IN GAME",
+    "npcTagLabel": "NPC",
+    "hesitatedTagLabel": "HESITATED",
+    "narratorBypassA": "Both wizards committed to [ELEMENT]. All five rounds. The Narrator is familiar with this particular theory of cooperation. The Narrator is also familiar with how it typically resolves.",
+    "narratorBypassB": "[EEEEE] versus [EEEEE]. The Narrator notes this is either a remarkable coincidence or a remarkable miscalculation of human nature. Possibly both.",
+    "_narratorBypassNote": "R73 static bypass, verbatim. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered.",
+    "provisionalStageLabel": "",
+    "_provisionalStageLabelNote": "CB-BUILD-007 (docs/cb-build-patch-log.md): the incumbent ships bundled character art (assets/cw-asset-bundle/renders/gifs/) and never renders the provisional-stage badge (app/ui/components/battle/stage.js checks treatment.id !== 'incumbent' before showing it). Present here only so every treatment carries the same copy key set (see app/tests/treatments-schema.test.js); left empty because it is unused."
+  }
+}

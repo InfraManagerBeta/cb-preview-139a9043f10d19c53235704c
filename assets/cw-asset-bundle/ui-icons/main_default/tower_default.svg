@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>library /icon /home /default</title>
+    <desc>Created with Sketch.</desc>
+    <g id="library-/icon-/home-/default" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(4.000000, 1.000000)">
+            <g id="outline" transform="translate(0.201321, 0.100000)">
+                <path d="M7.09094623,21.417623 L15.7032583,18.6521417 L13.5435795,3.6124553 L6.16104291,3.22179104 L1.66796929,4.21811783 L0.39935889,19.5920281 L7.09094623,21.417623 Z" id="Path" stroke="#000000" stroke-width="0.75"></path>
+                <path d="M6.32768859,3.51997644 L6.9913852,21.2204665" id="Line" stroke="#000000" stroke-width="0.75" stroke-linecap="square"></path>
+                <path d="M2.64647859,12.0459887 L2.58129301,13.1691865" id="Path" stroke="#000000" stroke-width="0.75" stroke-linecap="round"></path>
+                <path d="M2.46771803,15.2482844 L2.40253245,16.3714822" id="Path-Copy-4" stroke="#000000" stroke-width="0.75" stroke-linecap="round"></path>
+                <path d="M2.82188247,8.84348474 L2.75669689,9.96668256" id="Path-Copy-2" stroke="#000000" stroke-width="0.75" stroke-linecap="round"></path>
+                <path d="M4.73676755,12.1728018 L4.73676755,13.2959996" id="Path-Copy" stroke="#000000" stroke-width="0.75" stroke-linecap="round"></path>
+                <path d="M4.72808648,15.590087 L4.72808648,16.7132848" id="Path-Copy-5" stroke="#000000" stroke-width="0.75" stroke-linecap="round"></path>
+                <path d="M4.72820223,8.90557174 L4.72820223,10.0287696" id="Path-Copy-3" stroke="#000000" stroke-width="0.75" stroke-linecap="round"></path>
+                <path d="M8.42910727,8.84124252 L8.42910727,9.96444034" id="Path-Copy-6" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(8.429107, 9.402841) rotate(-5.000000) translate(-8.429107, -9.402841) "></path>
+                <path d="M9.01251768,15.4407296 L9.01251768,16.5639274" id="Path-Copy-12" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(9.012518, 16.002328) rotate(-5.000000) translate(-9.012518, -16.002328) "></path>
+                <path d="M8.66228866,12.1736616 L8.66228866,13.2968594" id="Path-Copy-9" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(8.662289, 12.735261) rotate(-5.000000) translate(-8.662289, -12.735261) "></path>
+                <path d="M10.4504498,8.58182537 L10.4504498,9.70502319" id="Path-Copy-7" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(10.450450, 9.143424) rotate(-5.000000) translate(-10.450450, -9.143424) "></path>
+                <path d="M11.1525478,14.9097686 L11.1525478,16.0329664" id="Path-Copy-13" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(11.152548, 15.471368) rotate(-5.000000) translate(-11.152548, -15.471368) "></path>
+                <path d="M10.7769701,11.8438931 L10.7769701,12.9670909" id="Path-Copy-10" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(10.776970, 12.405492) rotate(-5.000000) translate(-10.776970, -12.405492) "></path>
+                <path d="M12.3703549,8.35535366 L12.3703549,9.47855148" id="Path-Copy-8" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(12.370355, 8.916953) rotate(-5.000000) translate(-12.370355, -8.916953) "></path>
+                <path d="M13.0979405,14.3784872 L13.0979405,15.501685" id="Path-Copy-14" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(13.097941, 14.940086) rotate(-5.000000) translate(-13.097941, -14.940086) "></path>
+                <path d="M12.730141,11.4562313 L12.730141,12.5794291" id="Path-Copy-11" stroke="#000000" stroke-width="0.75" stroke-linecap="round" transform="translate(12.730141, 12.017830) rotate(-5.000000) translate(-12.730141, -12.017830) "></path>
+                <path d="M3.30258981,3.77595849 C3.39112779,2.75974816 3.65313146,1.34037406 4.42214059,1.06302651 C5.64562393,0.621770222 8.23800461,1.0028552 8.23800461,1.0028552 C8.23800461,1.0028552 11.0660563,1.15829775 11.2164845,2.30155268 C11.2774632,2.76247981 11.3243291,3.15733345 11.3593767,3.47441183" id="Path" stroke="#000000" stroke-width="0.75"></path>
+                <ellipse id="Oval" fill="#000000" fill-rule="nonzero" cx="9.952887" cy="1.31374031" rx="1" ry="1"></ellipse>
+                <polyline id="Path" fill="#000000" fill-rule="nonzero" points="6.26237988 0 10.1133438 0.722055742 10.0180726 1.92548198 6.26237988 1.59955404"></polyline>
+                <ellipse id="Oval" fill="#000000" fill-rule="nonzero" cx="6.26237988" cy="0.802284157" rx="1" ry="1"></ellipse>
+            </g>
+        </g>
+    </g>
+</svg>

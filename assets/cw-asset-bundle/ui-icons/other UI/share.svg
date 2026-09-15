@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>library /icon /share /default</title>
+    <desc>Created with Sketch.</desc>
+    <g id="library-/icon-/share-/default" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-3" transform="translate(3.568709, 2.773372)" stroke="#000000" stroke-width="0.75">
+            <g id="Group-2">
+                <g id="Group" transform="translate(9.900000, 0.000000)">
+                    <rect id="Rectangle" x="0.375" y="0.375" width="5.9803928" height="5.9803928" rx="2.9901964"></rect>
+                    <rect id="Rectangle-Copy" x="0.375" y="12.175" width="5.9803928" height="5.9803928" rx="2.9901964"></rect>
+                </g>
+                <rect id="Rectangle-Copy-2" x="0.375" y="6.5098036" width="5.9803928" height="5.9803928" rx="2.9901964"></rect>
+                <path d="M5.93995415,7.77273125 L10.6437482,4.98568992" id="Line-5" stroke-linecap="square"></path>
+                <path d="M6.07963288,13.7426454 L10.6437482,11.0495493" id="Line-5-Copy" stroke-linecap="square" transform="translate(8.361691, 12.396097) scale(1, -1) translate(-8.361691, -12.396097) "></path>
+            </g>
+        </g>
+    </g>
+</svg>

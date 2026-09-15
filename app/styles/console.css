@@ -1,0 +1,78 @@
+/* app/styles/console.css — operator console layout only. Colors/fonts reuse
+   the same CSS custom properties as the participant app (styles/base.css)
+   so an O1 treatment switch re-skins this surface too; nothing
+   treatment-specific lives in this file. */
+
+#console-root {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px 20px 80px;
+}
+
+.cb-console-header { margin-bottom: 16px; }
+.cb-console-kill-banner {
+  background: var(--cb-red);
+  color: #fff;
+  font-family: var(--font-display);
+  letter-spacing: 1.5px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.cb-console-section {
+  margin-bottom: 28px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(255,255,255,0.1);
+}
+.cb-console-section h2 { margin-bottom: 10px; }
+
+.cb-console-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cb-console-field-label { font-family: var(--font-data); font-size: 13px; }
+.cb-console-oid {
+  display: inline-block;
+  background: var(--cb-yellow);
+  color: var(--cb-black);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+.cb-console-note { color: #888; }
+
+.cb-console-radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.cb-console-radio {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-data); font-size: 12px;
+  border: 1px solid #444; border-radius: 6px; padding: 6px 10px;
+  cursor: pointer;
+}
+.cb-console-radio.selected { border-color: var(--cb-yellow); color: var(--cb-yellow); }
+.cb-console-radio input { margin: 0; }
+
+.cb-console-input {
+  background: #111; color: var(--cb-offwhite); border: 1px solid #444;
+  border-radius: 4px; padding: 6px 8px; font-family: var(--font-data); font-size: 12px;
+  max-width: 220px;
+}
+
+.cb-console-table { width: 100%; border-collapse: collapse; font-family: var(--font-data); font-size: 12px; }
+.cb-console-table td, .cb-console-table th { padding: 5px 8px; border-bottom: 1px solid #292929; text-align: left; }
+.cb-console-table-label { color: #999; white-space: nowrap; }
+.cb-console-table-compact td, .cb-console-table-compact th { padding: 4px 6px; font-size: 11px; }
+
+.cb-console-verdict.win { border-color: var(--cb-green); }
+.cb-console-verdict.loss { border-color: var(--cb-red); }
+.cb-console-verdict.draw { border-color: #999; }
+
+.cb-console-kill.active { border-color: var(--cb-red); box-shadow: 0 0 0 2px var(--cb-red); }
+
+@media (min-width: 700px) {
+  .cb-console-table-compact { font-size: 12px; }
+}

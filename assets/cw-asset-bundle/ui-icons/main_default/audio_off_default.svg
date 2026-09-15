@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>library /icon /audioOff /default</title>
+    <desc>Created with Sketch.</desc>
+    <g id="library-/icon-/audioOff-/default" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-2" transform="translate(1.189202, 3.395219)" stroke="#000000" stroke-width="0.75">
+            <path d="M13.24443,0.0185569553 C12.9304961,-0.0320060678 12.6041854,0.0208906216 12.317711,0.175640092 C12.2973564,0.186429039 12.2779279,0.198879458 12.2603491,0.212158489 L6.31691822,4.7221422 L1.65317022,4.7221422 M1.65316312,12.9851157 L6.3067267,12.9834563 L12.2463681,17.8775752 C12.2685724,17.8958337 12.2917029,17.9116035 12.3166831,17.9248825 C12.5322515,18.0419037 12.7718788,18.1 13.0105729,18.1" id="Shape"></path>
+            <ellipse id="Oval" cx="13.0968681" cy="9.05" rx="1.9507128" ry="9.05"></ellipse>
+            <path d="M1.89019813,4.71241962 C0.846270529,4.71241962 0,6.56456305 0,8.84929775 C0,11.1340325 0.846270529,12.9861759 1.89019813,12.9861759" id="Path"></path>
+            <g id="Shape-2" transform="translate(4.332175, 4.500000)">
+                <path d="M2.26412642,0 C1.69824993,0.32005868 0.865311112,2.14229997 0.812824979,4.23418179 M0.813741767,4.21275186 C0.740169502,7.08917531 1.73837047,8.4549906 2.27226019,8.75071009" id="Shape"></path>
+            </g>
+            <g id="Group" transform="translate(16.810798, 5.604781)" stroke-linecap="round">
+                <path d="M0.000332285714,0.375 L4.89841182,5.51798351" id="Line-2"></path>
+                <path d="M0.000332285714,0.375 L4.89841182,5.51798351" id="Line-2" transform="translate(2.500000, 3.000000) scale(-1, 1) translate(-2.500000, -3.000000) "></path>
+            </g>
+        </g>
+    </g>
+</svg>

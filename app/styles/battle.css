@@ -1,0 +1,429 @@
+/* app/styles/battle.css — §10/R74-R79: the battle presentation. Structure
+   and roles are fixed (R11); every color referenced here is a CSS custom
+   property already set by styles/base.css and overridden live per
+   treatment by ui/theme.js (R12) -- nothing in this file is treatment-
+   specific. Loaded after base.css; additive only. */
+
+.cb-tugbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10,10,8,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+}
+.cb-tugbar-side { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; max-width: 30%; }
+.cb-tugbar-side.right { flex-direction: row-reverse; }
+.cb-tugbar-icon { display: inline-block; flex: 0 0 auto; }
+.cb-tugbar-portrait { display: inline-block; flex: 0 0 auto; width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
+.cb-svg-portrait svg { display: block; }
+.cb-tugbar-name { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cb-tugbar-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 16px;
+  background: #222;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+}
+.cb-tugbar-fill { height: 100%; transition: width 0.6s cubic-bezier(.2,.8,.2,1); }
+.cb-tugbar-fill.p1 { background: var(--cb-green); }
+.cb-tugbar-fill.p2 { background: var(--cb-red); }
+.cb-tugbar-tick {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: rgba(255,255,255,0.8);
+  z-index: 2;
+}
+.cb-tugbar-floor {
+  position: absolute;
+  top: -3px; bottom: -3px;
+  width: 2px;
+  background: rgba(255,255,255,0.35);
+  z-index: 1;
+}
+.cb-tugbar-floor.danger {
+  background: var(--cb-red);
+  animation: cbFloorPulse 900ms ease-in-out infinite;
+}
+@keyframes cbFloorPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.cb-battle-stage { display: flex; flex-direction: column; gap: 10px; }
+.cb-stage-row { display: flex; align-items: stretch; gap: 8px; }
+/* CB-BUILD-005: the persistent shell containers duel.js patches in place --
+   the centre column carries the arena stage (or the alternates' provisional
+   stage) and must own the row's remaining width. */
+.cb-stage-center { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.cb-stage-center > * { flex: 1 1 auto; }
+.cb-rail-container { flex: 0 0 28px; display: flex; }
+.cb-spell-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 28px;
+  align-items: center;
+}
+.cb-rail-square {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #444;
+}
+.cb-rail-square.win { border-color: var(--cb-green); background: rgba(40,200,64,0.15); }
+.cb-rail-square.loss { border-color: var(--cb-red); background: rgba(212,30,48,0.15); }
+.cb-rail-square.draw { border-color: #666; background: rgba(255,255,255,0.06); }
+.cb-rail-square.affinity { box-shadow: 0 0 0 2px var(--cb-yellow) inset; }
+
+.cb-stage-main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 160px;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 12px);
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 12px 6px;
+  position: relative;
+  overflow: hidden;
+}
+.cb-combatant { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cb-combatant-gif { object-fit: contain; image-rendering: auto; }
+.cb-combatant-gif.flip { transform: scaleX(-1); }
+.cb-combatant-placeholder {
+  width: 100px; height: 100px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: #16140e;
+  border: 2px solid var(--cb-yellow);
+  color: var(--cb-yellow);
+}
+/* CB-BUILD-007: the alternate-treatment placeholder stacks its element
+   glyph over a clearly-marked provisional badge instead of standing alone
+   as a bare colored box -- confined to the placeholder path (never applied
+   to the incumbent's <img> art). */
+.cb-combatant-placeholder.cb-provisional-stage {
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 4px;
+}
+.cb-provisional-badge {
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 2px 4px;
+  border: 1px dashed currentColor;
+  border-radius: 4px;
+  max-width: 92px;
+}
+.cb-combatant-placeholder.cb-state-charge, .cb-combatant-placeholder.cb-state-chargeLoop {
+  animation: cbCharge 500ms ease-in-out infinite alternate;
+}
+.cb-combatant-placeholder.cb-state-attack { animation: cbAttack 260ms ease-out; }
+.cb-combatant-placeholder.cb-state-hitSuccess { border-color: var(--cb-green); color: var(--cb-green); animation: cbHitFlash 260ms ease-out; }
+.cb-combatant-placeholder.cb-state-hit { border-color: var(--cb-red); color: var(--cb-red); animation: cbHitShake 320ms ease-in-out; }
+.cb-combatant-placeholder.cb-state-win { border-color: var(--cb-green); color: var(--cb-green); box-shadow: 0 0 16px var(--cb-green); }
+.cb-combatant-placeholder.cb-state-lose { border-color: var(--cb-red); color: #777; opacity: 0.6; }
+.cb-combatant-placeholder.cb-state-power { border-color: var(--cb-teal); color: var(--cb-teal); animation: cbPower 700ms ease-in-out; }
+@keyframes cbCharge { from { transform: scale(1); } to { transform: scale(1.08); } }
+@keyframes cbAttack { 0% { transform: translateX(0); } 40% { transform: translateX(6px); } 100% { transform: translateX(0); } }
+@keyframes cbHitFlash { 0% { filter: brightness(1); } 40% { filter: brightness(1.8); } 100% { filter: brightness(1); } }
+@keyframes cbHitShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@keyframes cbPower { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+.cb-combatant-state-label { letter-spacing: 0.12em; color: #999; }
+.cb-combatant-name { font-size: 12px; }
+
+/* ---- CB-BUILD-005: the incumbent's arena composite --------------------------
+   Layout constants ported from the asset bundle's reference implementation
+   stylesheet (reference/DuelPlayer/DuelPlayer.css): wizards sit
+   at bottom 21%, width 41%, horizontal offset -1.4%, away side mirrored
+   (scaleX(-1)); FX layers sit at bottom 0, width 115%, offset -6.5%;
+   z-order wizard 3 / fx 2 / moment overlay above. The arena background
+   image (the bundle's fightScene/fightBG.svg for the incumbent) is set
+   inline by stage.js from assets.js#arenaSources -- treatment-supplied art
+   never hardcodes into this treatment-agnostic stylesheet. The stage field
+   itself is the app's dark chrome: NEVER bare white. */
+.cb-arena-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 880 / 495; /* the arena art's own viewBox */
+  background-color: var(--cb-black, #0A0A08);
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+.cb-arena-grid {
+  /* R79: the 32px grid texture at 5-6% */
+  position: absolute;
+  inset: 0;
+  background-size: 32px;
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 1;
+}
+.cb-wizard-slot {
+  position: absolute;
+  bottom: 21%;
+  width: 41%;
+  aspect-ratio: 1720 / 1400; /* the shape documents' own frame */
+  z-index: 3;
+}
+.cb-wizard-slot.p1 { left: -1.4%; }
+.cb-wizard-slot.p2 { right: -1.4%; transform: scaleX(-1); }
+.cb-anim-layer {
+  /* One persistent, preloaded player per state -- cross-faded, never
+     re-fetched, never src-swapped (R74: no blank, no flash). The incoming
+     layer fades in while the outgoing layer is still drawn. */
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 140ms linear, visibility 0s linear 140ms;
+  pointer-events: none;
+}
+.cb-anim-layer.visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 140ms linear;
+}
+.cb-anim-layer canvas { display: block; width: 100%; height: 100%; }
+.cb-fx-slot {
+  position: absolute;
+  bottom: 0;
+  width: 115%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+.cb-fx-slot.p1 { left: -6.5%; }
+.cb-fx-slot.p2 { right: -6.5%; transform: scaleX(-1); }
+.cb-fx-anim-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 180ms linear;
+}
+.cb-fx-anim-layer.visible { opacity: 1; }
+.cb-fx-anim-layer canvas { display: block; width: 100%; height: 100%; }
+.cb-fx-backdrop {
+  /* the bundle's per-element backdrop art (client-static/img/duel/
+     wizard-bg-*-win|lose.svg) -- part of the FX pass, not a flat fill */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+.cb-fx-backdrop.visible { opacity: 0.55; }
+.cb-stage-nameplates {
+  position: absolute;
+  left: 0; right: 0; bottom: 4%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6%;
+  z-index: 4;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+.cb-stage-nameplate { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.cb-moment-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.cb-moment-overlay.active {
+  display: flex;
+  background: rgba(10, 10, 8, 0.55); /* a scrim OVER the composite -- the arena and combatants stay behind, never a blank swap */
+}
+.cb-stage-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--cb-black, #0A0A08);
+}
+.cb-stage-loader-img { width: 88px; }
+.cb-stage-progress {
+  width: 140px; height: 10px;
+  border: 1px solid #333;
+  background: #16140e;
+}
+.cb-stage-progress-bar {
+  width: 0;
+  height: 100%;
+  background: var(--cb-yellow);
+  transition: width 160ms linear;
+}
+
+/* ---- the ALTERNATES' provisional affinity FX pulse (R12/CB-BUILD-007: no
+   bundled FX art for the alternates; the incumbent's FX pass is layered
+   from the bundle's sources in stage.js#playAffinityFx, never this) ------ */
+.cb-affinity-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: cbFxPulse 500ms ease-out;
+}
+.cb-fx-fire { background: radial-gradient(circle, var(--cb-fire) 0%, transparent 65%); }
+.cb-fx-water { background: radial-gradient(circle, var(--cb-water) 0%, transparent 65%); }
+.cb-fx-air { background: radial-gradient(circle, var(--cb-air) 0%, transparent 65%); }
+@keyframes cbFxPulse { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
+.cb-round-cards { display: flex; flex-direction: column-reverse; gap: 6px; }
+.cb-round-card {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; border: 1px solid #333; border-radius: 6px; background: #111;
+  font-family: var(--font-data); font-size: 12px;
+  animation: cbCardIn 250ms ease-out;
+}
+.cb-round-card.win { border-color: var(--cb-green); }
+.cb-round-card.loss { border-color: var(--cb-red); }
+.cb-round-card.draw { border-color: #555; }
+@keyframes cbCardIn { from { transform: translateY(-6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.cb-skip-btn {
+  /* A10/R83/AC1: interactive elements must clear a 44px touch target
+     (previously 32px). min-height alone isn't enough once padding/line-
+     height collapse it on some renderers -- box-sizing + an explicit
+     min-width keeps the whole hit area, not just the visible pill, at
+     44px. */
+  align-self: flex-end;
+  background: none; border: 1px solid #444; color: #ccc;
+  font-family: var(--font-data); font-size: 11px; letter-spacing: 0.08em;
+  padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  min-height: 44px; min-width: 44px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.cb-sound-toggle {
+  /* A10/R83/AC1: was ~22px tall (padding 4px 8px around an 11px line) --
+     under the 44px bar. */
+  background: none; border: 1px solid #444; color: #ccc;
+  font-family: var(--font-data); font-size: 11px;
+  padding: 4px 8px; border-radius: 999px; cursor: pointer;
+  min-height: 44px; min-width: 44px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cb-sound-toggle.on { border-color: var(--cb-teal); color: var(--cb-teal); }
+
+/* ---- R75 coverage-gap moments ------------------------------------------ */
+.cb-moment { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px; }
+/* CB-BUILD-fix-round-3 (R11): the moment caption is an authored SENTENCE a
+   player reads ("{loser} — struck from the ledger."), not a figure/tag, so
+   it wears the PROSE face. The 12px top margin restores the clearance the
+   caption had as a <p> (~12px UA margin) on top of .cb-moment's 10px flex
+   gap — same compensation precedent as .cb-result-delta's explicit margin. */
+.cb-moment-caption { font-family: var(--font-prose); font-size: 12px; color: #ccc; margin: 12px 0 0; }
+
+.cb-erosion-wipe {
+  width: 140px; height: 100px;
+  background:
+    repeating-linear-gradient(135deg, var(--cb-teal) 0 6px, transparent 6px 12px),
+    var(--cb-teal);
+  opacity: 0.85;
+  clip-path: inset(0 0 0 0);
+  animation: cbErosionWipe 1100ms ease-in forwards;
+  border-radius: 8px;
+}
+@keyframes cbErosionWipe {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 100% 0); }
+}
+.cb-stamp {
+  font-family: var(--font-display);
+  font-size: 40px;
+  letter-spacing: 4px;
+  color: var(--cb-teal);
+  border: 6px solid var(--cb-teal);
+  padding: 8px 20px;
+  transform: rotate(-12deg) scale(2.2);
+  opacity: 0;
+  animation: cbStampSlam 500ms cubic-bezier(.2,1.4,.4,1) forwards;
+}
+@keyframes cbStampSlam {
+  0% { transform: rotate(-12deg) scale(2.2); opacity: 0; }
+  70% { opacity: 1; }
+  100% { transform: rotate(-12deg) scale(1); opacity: 0.9; }
+}
+
+.cb-coin {
+  width: 64px; height: 64px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: cbCoinFlip 1000ms cubic-bezier(.3,.6,.4,1) forwards;
+}
+.cb-coin-face {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: var(--cb-yellow);
+  color: var(--cb-black);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 24px;
+  backface-visibility: hidden;
+  border: 3px solid var(--cb-black);
+}
+.cb-coin-face.back { transform: rotateY(180deg); }
+@keyframes cbCoinFlip { from { transform: rotateY(0deg) rotateX(0deg); } to { transform: rotateY(1440deg) rotateX(0deg); } }
+
+.cb-strobe-split { display: flex; width: 220px; height: 70px; border-radius: 8px; overflow: hidden; }
+.cb-strobe-half {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-data); font-size: 12px;
+  animation: cbStrobe 900ms steps(6, end);
+}
+.cb-strobe-half.left { background: var(--cb-green); color: var(--cb-black); }
+.cb-strobe-half.right { background: var(--cb-red); color: var(--cb-black); }
+@keyframes cbStrobe { from { opacity: 0.3; } to { opacity: 1; } }
+
+.cb-prize-banner {
+  font-family: var(--font-display);
+  color: var(--cb-yellow);
+  font-size: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.cb-prize-counter {
+  font-family: var(--font-data);
+  font-size: 32px;
+  color: var(--cb-yellow);
+  animation: cbPrizeGlow 900ms ease-in-out infinite alternate;
+}
+@keyframes cbPrizeGlow { from { text-shadow: none; } to { text-shadow: 0 0 14px var(--cb-yellow); } }
+
+.cb-trophy-flip { width: 180px; height: 90px; position: relative; transform-style: preserve-3d; animation: cbTrophyFlip 900ms ease-in-out forwards; }
+.cb-trophy-face {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--cb-yellow); border-radius: 8px;
+  font-family: var(--font-display); font-size: 18px; color: var(--cb-yellow);
+  backface-visibility: hidden;
+}
+.cb-trophy-face.back { transform: rotateY(180deg); }
+@keyframes cbTrophyFlip { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }

@@ -1,0 +1,154 @@
+{
+  "$schema": "cheddar-battles/treatment@1",
+  "id": "far",
+  "position": "far",
+  "workingTitle": "Undercard",
+  "logoMark": "UC",
+  "_r1": "R1/R78: the UC logo mark is sanctioned. The strings 'Cheeze Wizards', 'Cheese Wizards', and standalone 'CW' must never appear in this file or in any participant-facing render.",
+  "_card": "docs/concept-cards.md, card F1 (top far per docs/selection-rubric.md, score 4.60).",
+
+  "nouns": {
+    "character": "Fighter",
+    "characterPlural": "Fighters",
+    "stakeUnit": "PURSE",
+    "stakeUnitAbbrev": "P",
+    "headlinePrize": "the Belt",
+    "floor": "the Cut"
+  },
+
+  "elements": {
+    "fire": { "label": "Fire", "beats": "air", "iconMotif": "corner-shield-flame" },
+    "water": { "label": "Water", "beats": "fire", "iconMotif": "corner-shield-drop" },
+    "air": { "label": "Air", "beats": "water", "iconMotif": "corner-shield-gust", "_note": "Wind is Air in all copy (R74). Element label words are kept identical across treatments (mechanics fixed, R11); iconMotif themes the icon glyph/render only (R12)." }
+  },
+
+  "colors": {
+    "primary": "#D9B24A",
+    "ground": "#08090B",
+    "win": "#23A55A",
+    "loss": "#C8102E",
+    "surfaces": "#F4F1E9",
+    "narratorAccent": "#7FA8BF",
+    "water": "#1E6FB8",
+    "fire": "#E03A2B",
+    "air": "#9AA6B2",
+    "_roles": "docs/concept-cards.md card F1 palette, verbatim."
+  },
+
+  "fonts": {
+    "display": "Bebas Neue",
+    "data": "DM Mono",
+    "prose": "Barlow",
+    "heroFace": "Alfa Slab One",
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:ital,wght@0,400;0,600;1,400&family=Alfa+Slab+One&display=swap",
+    "_note": "R11: display/data/prose (Bebas Neue/DM Mono/Barlow) are fixed across every treatment. R12: only the hero-moment face is theme-bound -- Alfa Slab One per docs/concept-cards.md card F1."
+  },
+
+  "narrator": {
+    "personaLine": "You are the Narrator of Undercard — the commission scorekeeper at ringside.",
+    "registerLine": "Your register is terse, plain, and broadcast-neutral.",
+    "examples": [
+      "Three rounds to two. The purse moved forty-one. The card stands.",
+      "Four even rounds. One round moved the purse. Scored and filed.",
+      "No rounds won. The scorekeeper notes the score and the transfer and nothing else. Both numbers are definitive.",
+      { "text": "The card is unchanged.", "note": "as a closer — brevity used deliberately after a longer setup" }
+    ],
+    "disciplineNounLines": {
+      "ornateVocabLine": "- Never use ornate vocabulary where plain vocabulary works. \"PURSE moved\" not \"coffers depleted\". \"Now holds\" not \"ascending to\".",
+      "addressLine": "- Never address the fighter directly.",
+      "_r71r12": "CONFLICT-R71-R12 resolution (docs/decision-graph.md, node P-R71-NOUN-MAP): discipline lines held semantically verbatim; only the role noun swapped through the R13 mapping ('moved' in place of 'transferred' recorded as this treatment's exact substitution). Recorded in app/data/treatments/mapping.json."
+    },
+    "_note": "Composed into the full system prompt by app/engine/narratorPrompt.js:composeNarratorPrompt -- see app/tests/narrator-prompt-compose.test.js."
+  },
+
+  "namePool": [
+    "Sonny \"The Hammer\" Delgado", "Marcus \"Southpaw\" Reed", "\"Sweet\" Lou Carter",
+    "Ray \"The Butcher\" Molina", "Tommy \"Two-Guns\" Gallagher", "Elena \"La Reina\" Vasquez",
+    "\"Iron\" Ivan Petrov", "Deshawn \"Lights Out\" Brooks", "Nikki \"The Jab\" Okafor",
+    "\"Old School\" Artie Munn", "Beau \"Bayou\" Thibodeaux", "Frankie \"Four Rounds\" Costa",
+    "Darius \"Downtown\" Wells", "Mickey \"The Ledger\" O'Shea", "Priya \"Southpaw Storm\" Nair",
+    "Gustavo \"The Wall\" Reyes", "Big Tino Salerno", "Ronnie \"Redline\" Duval",
+    "Yusuf \"Clean Sweep\" Demir", "Carmen \"The Closer\" Ibarra", "Walt \"Union Card\" Higgins",
+    "Ezra \"Even Money\" Katz"
+  ],
+  "_namePoolNote": "R59: naming is the pool's job alone. The first seven entries are also the R82 seed roster's canonical NPC names, per docs/concept-cards.md card F1's sample pool, extended in the same voice.",
+
+  "seedRoster": [
+    { "name": "Sonny \"The Hammer\" Delgado", "element": "air", "tendency": { "fire": 0.20, "water": 0.25, "air": 0.55 }, "canonical": true },
+    { "name": "Marcus \"Southpaw\" Reed", "element": "fire", "tendency": { "fire": 0.65, "water": 0.15, "air": 0.20 }, "canonical": true },
+    { "name": "\"Sweet\" Lou Carter", "element": "water", "tendency": { "fire": 0.20, "water": 0.55, "air": 0.25 }, "canonical": true },
+    { "name": "Ray \"The Butcher\" Molina", "element": "fire", "tendency": { "fire": 0.35, "water": 0.35, "air": 0.30 }, "canonical": true },
+    { "name": "Tommy \"Two-Guns\" Gallagher", "element": "water", "tendency": { "fire": 0.15, "water": 0.65, "air": 0.20 }, "canonical": true },
+    { "name": "Elena \"La Reina\" Vasquez", "element": "air", "tendency": { "fire": 0.20, "water": 0.20, "air": 0.60 }, "canonical": true },
+    { "name": "\"Iron\" Ivan Petrov", "element": "fire", "tendency": { "fire": 0.45, "water": 0.30, "air": 0.25 }, "canonical": true },
+
+    { "name": "Deshawn \"Lights Out\" Brooks", "element": "air", "tendency": { "fire": 0.25, "water": 0.20, "air": 0.55 }, "canonical": false },
+    { "name": "Nikki \"The Jab\" Okafor", "element": "water", "tendency": { "fire": 0.25, "water": 0.50, "air": 0.25 }, "canonical": false },
+    { "name": "\"Old School\" Artie Munn", "element": "fire", "tendency": { "fire": 0.50, "water": 0.25, "air": 0.25 }, "canonical": false },
+    { "name": "Beau \"Bayou\" Thibodeaux", "element": "fire", "tendency": { "fire": 0.60, "water": 0.20, "air": 0.20 }, "canonical": false },
+    { "name": "Frankie \"Four Rounds\" Costa", "element": "water", "tendency": { "fire": 0.20, "water": 0.60, "air": 0.20 }, "canonical": false },
+    { "name": "Darius \"Downtown\" Wells", "element": "air", "tendency": { "fire": 0.20, "water": 0.30, "air": 0.50 }, "canonical": false },
+    { "name": "Mickey \"The Ledger\" O'Shea", "element": "water", "tendency": { "fire": 0.30, "water": 0.45, "air": 0.25 }, "canonical": false },
+    { "name": "Priya \"Southpaw Storm\" Nair", "element": "fire", "tendency": { "fire": 0.55, "water": 0.25, "air": 0.20 }, "canonical": false },
+    { "name": "Gustavo \"The Wall\" Reyes", "element": "air", "tendency": { "fire": 0.30, "water": 0.20, "air": 0.50 }, "canonical": false },
+    { "name": "Big Tino Salerno", "element": "fire", "tendency": { "fire": 0.40, "water": 0.30, "air": 0.30 }, "canonical": false },
+    { "name": "Ronnie \"Redline\" Duval", "element": "water", "tendency": { "fire": 0.20, "water": 0.55, "air": 0.25 }, "canonical": false },
+    { "name": "Yusuf \"Clean Sweep\" Demir", "element": "air", "tendency": { "fire": 0.15, "water": 0.25, "air": 0.60 }, "canonical": false },
+    { "name": "Carmen \"The Closer\" Ibarra", "element": "water", "tendency": { "fire": 0.25, "water": 0.50, "air": 0.25 }, "canonical": false },
+    { "name": "Walt \"Union Card\" Higgins", "element": "fire", "tendency": { "fire": 0.65, "water": 0.15, "air": 0.20 }, "canonical": false }
+  ],
+  "_seedRosterNote": "R82: the first seven entries are the exact canonical seed roster (names, elements, F/W/A tendencies verbatim to the incumbent's numbers, per t3's brief: 'tendencies may match the incumbent's numbers'). Remaining entries extend the same voice for lobbies needing more than 7 NPC seats.",
+
+  "copy": {
+    "acquisitionMessage": "Outsmart for real money.",
+    "_acquisitionMessageNote": "R11: the acquisition message is FIXED across every treatment, verbatim -- not theme-bound.",
+    "truthLine": "This is play money. It's free, and it lives right here on the card. Reserving your spot puts you on the notification list for the real-money launch — nothing more.",
+    "landingSubhead": "Five rounds. One winner. Buy onto the card, read your man, take the purse.",
+    "screenerHeading": "Before you're cleared",
+    "screenerBody": "A couple of quick questions — age and location — before the card opens. This is a simulated verdict for the play-money build.",
+    "screenerAgeQuestion": "Are you 18 or older?",
+    "screenerJurisdictionQuestion": "Do you currently reside in a permitted region?",
+    "screenerRejectedMessage": "The card isn't open to you yet under these answers. Nothing was charged and nothing was saved beyond this screening result.",
+    "summonHeading": "Sign your Fighter",
+    "summonBody": "Every Fighter buys onto the card with a name already on the sheet. The commission names them; you work their corner.",
+    "summonButton": "Sign ($10 — 100P)",
+    "signupGrantNotice": "New account bonus: $25 play CASH, already in your wallet.",
+    "lobbyHeading": "Weigh-In",
+    "lobbyWaiting": "Filling the card…",
+    "bracketBoardHeading": "The Card",
+    "sittingHeading": "SITTING",
+    "sittingBody": "This Fighter lost its last bout. Re-enter this tier, cash out, or sit — free, indefinitely.",
+    "emptiedCardLine": "Holds nothing. The ledger will take the name.",
+    "emptiedChampionLine": "Topped the card, cashed out its PURSE at 20:1, and holds nothing now. The ledger will take the name.",
+    "emptiedCardAction": "RETIRE TO THE LEDGER",
+    "tieLine": "All square — coin flip. {ADVANCE_OR_ELIMINATED}. No PURSE transferred.",
+    "tieLineAdvance": "You advance",
+    "tieLineEliminated": "You're eliminated",
+    "resultClaimedHeader": "CLAIMED",
+    "resultDrainedHeader": "DRAINED",
+    "duelWonLine": "DUEL WON",
+    "prizeLine": "PRIZE",
+    "walletHeading": "Wallet",
+    "reserveHeading": "Reserve your spot",
+    "reserveBody": "Press RESERVE to join the notification list for the real-money launch. Play money is free and stays on the card either way.",
+    "reserveButton": "RESERVE",
+    "reserveConfirmed": "You're on the list. We'll notify you when the real-money version launches.",
+    "loadFundsHeading": "PLAY CASH ONLY · How much would you like to deposit?",
+    "loadFundsLegal": "Play money is free and lives inside the card. Deposits here are simulated — no bank, no card, no real funds move.",
+    "loadFundsContinue": "Continue",
+    "loadFundsBack": "Back to app",
+    "cashOutHeading": "Cash Out",
+    "cashOutBody": "Convert this Fighter's stake to CASH at 20:1. The Fighter retires. This is the only way to retire a Fighter that still holds a stake — an emptied (0 PURSE) Fighter retires to the ledger instead.",
+    "cashOutButton": "Cash Out",
+    "withdrawHeading": "Withdraw",
+    "withdrawBody": "PLAY CASH ONLY. This shows your balance; nothing leaves the card.",
+    "moneyTruthBadge": "PLAY MONEY · FREE · STAYS IN GAME",
+    "npcTagLabel": "NPC",
+    "hesitatedTagLabel": "HESITATED",
+    "narratorBypassA": "Both fighters committed to [ELEMENT]. All five rounds. The scorekeeper is familiar with this particular theory of cooperation. The scorekeeper is also familiar with how it typically resolves.",
+    "narratorBypassB": "[EEEEE] versus [EEEEE]. The scorekeeper notes this is either a remarkable coincidence or a remarkable miscalculation of preparation. Possibly both.",
+    "_narratorBypassNote": "R73 static bypass, re-voiced per register with the same semantics as the incumbent's. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered.",
+    "provisionalStageLabel": "PROVISIONAL CARD. FIGHTER ART PENDING SUPPLY.",
+    "_provisionalStageLabelNote": "CB-BUILD-007 (docs/cb-build-patch-log.md): R12 as now written -- Undercard has no provided character art yet, so the in-game stage is a clearly-marked provisional stage instead of an unlabeled colored box. Voiced in the scorekeeper's bout-sheet declarative (docs/concept-cards.md card F1), zero exclamation, no apology. Rendered by app/ui/components/battle/stage.js on the placeholder combatant."
+  }
+}

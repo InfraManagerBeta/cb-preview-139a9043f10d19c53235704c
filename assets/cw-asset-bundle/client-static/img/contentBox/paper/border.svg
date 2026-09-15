@@ -1,0 +1,38 @@
+<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+    <svg x="30" y="30">
+        <path d="M 0 10 V 0 h 10 z" fill-rule="evenodd"/>
+    </svg>
+    <svg x="30" y="0">
+        <path d="M 10 10 H 0 V 0 z" fill-rule="evenodd"/>
+    </svg>
+    <svg x="0" y="0">
+        <path d="M 10 0 v 10 H 0 z" fill-rule="evenodd"/>
+    </svg>
+    <svg x="0" y="30">
+        <path d="M 0 0 h 10 v 10 z" fill-rule="evenodd"/>
+    </svg>
+    <svg x="10" y="30" width="20" height="10">
+        <g fill="none" fill-rule="evenodd">
+            <path fill="#ffffff" d="M 20 10 H 0 V 0 h 20 z"/>
+            <path fill="#000000" d="M 20 10 H 0 V 9 h 20 z"/>
+        </g>
+    </svg>
+    <svg x="0" y="10" width="10" height="20">
+        <g fill="none" fill-rule="evenodd">
+            <path fill="#ffffff" d="M 0 20 V 0 h 10 v 20 z"/>
+            <path fill="#000000" d="M 0 20 V 0 h 1 v 20 z"/>
+        </g>
+    </svg>
+    <svg x="30" y="10" width="10" height="20">
+        <g fill="none" fill-rule="evenodd">
+            <path fill="#ffffff" d="M 10 0 v 20 H 0 V 0 z"/>
+            <path fill="#000000" d="M 10 0 v 20 H 9 V 0 z"/>
+        </g>
+    </svg>
+    <svg x="10" y="0" width="20" height="10">
+        <g fill="none" fill-rule="evenodd">
+            <path fill="#ffffff" d="M 0 0 h 20 v 10 H 0 z"/>
+            <path fill="#000000" d="M 0 0 h 20 v 1 H 0 z"/>
+        </g>
+    </svg>
+</svg>
