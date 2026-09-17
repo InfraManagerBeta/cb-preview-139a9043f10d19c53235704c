@@ -1,4 +1,30 @@
 {
+  "ranAt": "2026-09-17T02:34:34.750Z",
+  "node": "v22.22.0",
+  "provenance": {
+    "check": "C",
+    "available": true,
+    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
+    "shortCommit": "0c43a0c",
+    "branch": "rtp/task-4b9567a3-foreman-g1",
+    "dirty": true,
+    "dirtyFiles": [
+      "ools/parity/results/check-a-gifs.json",
+      "tools/parity/results/check-b-wizards.json"
+    ],
+    "dirtySources": [],
+    "node": "v22.22.0",
+    "harnessDigests": {
+      "tools/parity/check-c-timing.mjs": "sha256:407b15214db6e5db8f76afcd0b8b555a6e7d128e85220574dcce0326123a8642",
+      "tools/parity/lib.mjs": "sha256:5ba7f21c083304aff10f508ecf3fafe8c435b4b27d0b1a19fabf1a2a1be2ae2e",
+      "tools/parity/paths.mjs": "sha256:991471a5e5bb9f9621fa999f8e3d38f5b424c403399223970b5220e85920a914"
+    },
+    "engineDigests": {
+      "app/data/rigManifest.js": "sha256:1cbfbf90f8e0a564b63bc2cc63be8c7d6cdf931185d68b4af55838ce42b85577",
+      "app/engine/presentationTimeline.js": "sha256:6277d3ce941c9d4214d13e18e6fb963c20187e0e57a18041e47f41227fe92d98"
+    },
+    "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check C being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
+  },
   "tolerances": {
     "libraryDeviationsMax": 0,
     "gifFpsTarget": 30,

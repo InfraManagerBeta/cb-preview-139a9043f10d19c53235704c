@@ -1,4 +1,37 @@
 {
+  "ranAt": "2026-09-17T02:34:48.077Z",
+  "node": "v22.22.0",
+  "provenance": {
+    "check": "D",
+    "available": true,
+    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
+    "shortCommit": "0c43a0c",
+    "branch": "rtp/task-4b9567a3-foreman-g1",
+    "dirty": true,
+    "dirtyFiles": [
+      "ools/parity/results/check-a-gifs.json",
+      "tools/parity/results/check-b-wizards.json",
+      "tools/parity/results/check-c-timing.json"
+    ],
+    "dirtySources": [],
+    "node": "v22.22.0",
+    "harnessDigests": {
+      "tools/parity/check-d-ac1.mjs": "sha256:61f8188e02b63d5bdde278e9675cbde52a7e3cfb79c50ef5347c7713f0458e63",
+      "tools/parity/lib.mjs": "sha256:5ba7f21c083304aff10f508ecf3fafe8c435b4b27d0b1a19fabf1a2a1be2ae2e",
+      "tools/parity/paths.mjs": "sha256:991471a5e5bb9f9621fa999f8e3d38f5b424c403399223970b5220e85920a914"
+    },
+    "engineDigests": {
+      "app/engine/wizardRig.js": "sha256:5f51f05686d9e752bd0bcafc296774772e9f46d95d0b72342ee1b22fc4c2012e",
+      "app/engine/rigRecolor.js": "sha256:08f8609c7021073ad1dda1b4ee6af4e4b90a54b980ddbe54a8f22f05f9306889",
+      "app/data/rigManifest.js": "sha256:1cbfbf90f8e0a564b63bc2cc63be8c7d6cdf931185d68b4af55838ce42b85577",
+      "app/data/rigPalette.js": "sha256:ef4f749e6f4b2178c315d191f0d544a38fc166ed541d5e237e6fad3c3bf729e8",
+      "app/ui/components/battle/rigAssets.js": "sha256:4b446e8ed538104189011462107112b4433093cd4c9fe80a1429f70a89621557",
+      "app/ui/components/battle/rigStage.js": "sha256:817a2087b169112a2243d82ee2bc5f9be536aa8a0bb3e2a43b343e4038b2714b",
+      "app/engine/presentationTimeline.js": "sha256:6277d3ce941c9d4214d13e18e6fb963c20187e0e57a18041e47f41227fe92d98",
+      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90"
+    },
+    "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check D being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
+  },
   "tolerances": {
     "pixel": 48,
     "distinctMinPct": 3,
@@ -85,21 +118,21 @@
         "sameCombo": false,
         "state": "idle",
         "framesCompared": 3,
-        "distinctPct": 79.73
+        "distinctPct": 73.28
       },
       {
         "pair": "same element+power (water t3 vs water t3)",
         "sameCombo": false,
         "state": "attack",
         "framesCompared": 3,
-        "distinctPct": 79.46
+        "distinctPct": 73.51
       },
       {
         "pair": "same element+power (water t3 vs water t3)",
         "sameCombo": false,
         "state": "win",
         "framesCompared": 3,
-        "distinctPct": 76.88
+        "distinctPct": 70.9
       },
       {
         "pair": "cross element (fire t0 vs air t0)",

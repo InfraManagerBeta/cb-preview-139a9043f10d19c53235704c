@@ -14,6 +14,13 @@ import path from 'node:path';
 import { decodeGif, writeJson, REPO, __dirname } from './lib.mjs';
 import { RIG_BUCKET_BASE, RIG_COMBOS } from '../../app/data/rigManifest.js';
 import { buildDuelTimeline, totalDurationMs } from '../../app/engine/presentationTimeline.js';
+import { runProvenanceFor } from './provenance.mjs';
+
+// The tree this run is being made on, captured BEFORE anything is written
+// (fix round g1). app/tests/parity-harness.test.js asserts these digests:
+// change a file below without re-running this check and the root suite goes
+// red. See tools/parity/freshness.mjs.
+const provenance = runProvenanceFor('C');
 
 const CACHE = path.join(__dirname, 'results', 'cache');
 fs.mkdirSync(CACHE, { recursive: true });
@@ -119,6 +126,9 @@ const cPass = verdicts.every((v) => v.pass);
 console.log(`Check C overall: ${pf(cPass)}`);
 
 const file = writeJson('results/check-c-timing.json', {
+  ranAt: new Date().toISOString(),
+  node: process.version,
+  provenance,
   tolerances: C_TOLERANCES,
   verdicts,
   overall: pf(cPass),

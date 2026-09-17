@@ -11,15 +11,20 @@ export function mountBracketBoard(ctx) {
   const { treatment, tunables } = ctx;
   const session = ctx.refreshSession();
   const { bracket, humanSeatIndex, activeCharacterId } = session;
-  if (!bracket) { ctx.router.navigate('lobby-entry'); return; }
 
   // Fix round f5/R78a [LAW]: the §18 bed carries onto this board (it plays
   // through the bracket as the 2019 client played it) -- so this screen is
   // part of the bracket audio context: leaving it for a NON-bracket route
   // stops the bed; moving on to the duel/sitting carries it.
+  // Round-3 fix g2 (reviewer CRUCIAL): registered BEFORE the no-bracket
+  // guard clause below -- that guard navigates to lobby-entry, and when the
+  // registration came after it, the redirect left NO teardown to run, so a
+  // bed carried in from a stale route kept sounding on lobby-entry.
   if (ctx.router && typeof ctx.router.onUnmount === 'function') {
     ctx.router.onUnmount(() => releaseAudioForRoute(ctx.router.current()));
   }
+
+  if (!bracket) { ctx.router.navigate('lobby-entry'); return; }
 
   const character = ctx.game.snapshot().characters[activeCharacterId];
 

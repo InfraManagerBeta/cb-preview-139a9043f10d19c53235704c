@@ -8,7 +8,7 @@ import { createRouter } from './router.js';
 import { showToast, el } from './components/dom.js';
 import { renderKillStopBanner } from './components/chrome.js';
 import { applyTreatmentTheme } from './theme.js';
-import { installFirstTapArming } from './components/battle/sound.js';
+import { installFirstTapArming, releaseAudioForRoute } from './components/battle/sound.js';
 
 import { mountLanding } from './screens/landing.js';
 import { mountScreener } from './screens/screener.js';
@@ -38,6 +38,41 @@ function applyUrlKillParam() {
 // banner markup/copy, reused by the catch-sites this round added (the
 // reveal's logNarration call in duel.js, the PvE Fight handler in pve.js).
 const renderKilledBanner = renderKillStopBanner;
+
+// Every route checks the kill switch fresh (it may have been flipped in
+// another tab, by the console, or by a reload carrying ?kill=1) before
+// mounting its screen -- R14/AC0: "kill issues ... halts machine spend and
+// operations within a minute."
+//
+// Round-3 fix g2 (A3/R78a [LAW], reviewer CRUCIAL): the audio release is now
+// a ROUTER-LEVEL concern, made here in the wrapper, not only a screen-level
+// onUnmount registration. The f5 screen-level teardown stopped the bed only
+// when the PREVIOUS screen had actually registered one — which never happens
+// when a mount guard-clauses out (bracket-board/sitting redirecting to
+// lobby-entry before registering), and never happens over the kill switch
+// (the screen never mounts at all, so the bed played on over the "Run
+// Stopped" banner, which carries no mute control). Releasing for the route
+// about to mount, on EVERY route mount, removes that whole class: a
+// non-bracket route always gets stopAll() (the A3 guarantee), a
+// bracket-context route keeps only the bed. The kill path silences inside
+// renderKillStopBanner itself (chrome.js — shared with the mid-action
+// catch-sites), before the banner renders.
+//
+// Exported so the behavioural tests (sound-kill-switch.test.js) can exercise
+// the REAL wrapper through the REAL router — the A3-over-kill guarantee is
+// tested where it actually lives, not pinned as a source regex.
+export function guardRoutes(rawRoutes, ctx) {
+  const routes = {};
+  for (const [name, fn] of Object.entries(rawRoutes)) {
+    routes[name] = () => {
+      const live = loadOverrides();
+      if (live.killSwitch) { renderKilledBanner(ctx); return; }
+      releaseAudioForRoute(name);
+      fn();
+    };
+  }
+  return routes;
+}
 
 async function main() {
   applyUrlKillParam();
@@ -99,18 +134,9 @@ async function main() {
     pve: () => mountPve(ctx),
   };
 
-  // Every route checks the kill switch fresh (it may have been flipped in
-  // another tab, by the console, or by a reload carrying ?kill=1) before
-  // mounting its screen -- R14/AC0: "kill issues ... halts machine spend and
-  // operations within a minute."
-  const routes = {};
-  for (const [name, fn] of Object.entries(rawRoutes)) {
-    routes[name] = () => {
-      const live = loadOverrides();
-      if (live.killSwitch) { renderKilledBanner(ctx); return; }
-      fn();
-    };
-  }
+  // Every route checks the kill switch fresh and releases audio for the
+  // route about to mount (see guardRoutes above).
+  const routes = guardRoutes(rawRoutes, ctx);
 
   ctx.router = createRouter(routes, async () => { ctx.refreshSession(); });
 
@@ -149,7 +175,13 @@ async function main() {
   ctx.router.start();
 }
 
-main().catch((err) => {
+// Round-3 fix g2: boot only where a browser actually is (document, window,
+// location are all real there). Under node:test none of the three exists at
+// import time, which is what lets sound-kill-switch.test.js import
+// guardRoutes above WITHOUT triggering a headless boot of the whole app.
+const isBrowserHost = typeof document !== 'undefined' && typeof window !== 'undefined' && typeof location !== 'undefined';
+
+if (isBrowserHost) main().catch((err) => {
   // CB-BUILD-013/§12/R83: no raw/developer error text reaches a
   // participant surface -- this used to dump `err.stack` straight into the
   // participant-facing #app div on any boot failure. `console.error` (a

@@ -96,6 +96,7 @@ function canPlay() {
 
 export function stopAll() {
   cancelScheduledVoices();
+  cancelScheduledBedRestarts(); // g2 advisory: a pending duck-resume must never start audio after a full stop (A3)
   for (const a of cache.values()) { try { a.pause(); } catch { /* ignore */ } }
 }
 
@@ -114,12 +115,57 @@ export function stopLoop() {
 export function playRoundBeat(roundNumber) {
   if (!canPlay()) return;
   const n = Math.min(5, Math.max(1, roundNumber));
+  // Round-3 fix g2 (advisory, R78a "as the 2019 client played it"): the
+  // reference's onDuelPlayerRoundStart does THREE things (assets/cw/
+  // reference/DuelPlayer/soundManager.js:117,131,136) and f5 ported only the
+  // third. Now all three: stop('fightLoop') (:117) — the bed DUCKS under the
+  // round beat…
+  stopLoop();
   safePlay(getAudio(`fight-round-${n}.wav`));
-  // Fix round f5 (R78a/R78): the reference's soundManager.js:136 — each
+  // …restart('fightLoop') at +2.2s (:131), except after the final round
+  // (`if (round !== 4)` in the reference's 0-based indexing = our round 5;
+  // after round 5 the result card's own carryBed() is what resumes it)…
+  if (n !== 5) scheduleBedRestart(BED_RESTART_ON_ROUND_START_DELAY_MS);
+  // Fix round f5 (R78a/R78): …and the reference's soundManager.js:136 — each
   // round start schedules the NEXT round's vocal sample ("we have to look
-  // one round ahead here") at +3.6s, except after the final round
-  // (`if (round !== 4)` in the reference's 0-based indexing = our round 5).
+  // one round ahead here") at +3.6s, except after the final round.
   if (n !== 5) scheduleVoice(n + 1, VOICE_ON_ROUND_START_DELAY_MS);
+}
+
+// ---- Round-3 fix g2 (advisory): the bed's duck-and-resume under round beats --
+// Reference soundManager.js:131 — `scheduleOnceIn(2.2, () => this.restart(
+// 'fightLoop'))` on every non-final round start. Same offset, plain timers
+// (the reference used Tone.Transport, same as the voices above). The pending
+// restart is part of the BED's own lifecycle, so stopAllExceptBed() (skip /
+// a carry to another bracket-context screen) leaves it pending — the bed
+// resumes mid-duck exactly as it would have on the duel screen — while
+// stopAll() (leaving the bracket, the kill switch's stop banner, a mute)
+// cancels it outright: a timer that STARTS audio must never outlive the A3
+// guarantee. The fire re-checks canPlay(), and is idempotent (a bed already
+// resumed by carryBed() is left sounding, not reset — the reference's
+// restart-from-the-top only ever ran against a stopped loop).
+export const BED_RESTART_ON_ROUND_START_DELAY_MS = 2200; // reference soundManager.js:131
+
+const bedTimers = new Set();
+
+function scheduleBedRestart(delayMs) {
+  if (!canPlay()) return; // muted/unarmed: schedule nothing (parity with scheduleVoice's gate)
+  const handle = setTimeout(() => {
+    bedTimers.delete(handle);
+    if (!canPlay()) return;
+    const a = getAudio('fight-loop.wav');
+    if (!a) return;
+    a.loop = true;
+    if (a.paused === false || a.playing === true) return; // already sounding (carryBed beat us to it) — don't reset it
+    safePlay(a);
+  }, delayMs);
+  if (handle && typeof handle.unref === 'function') handle.unref(); // never hold a Node process open
+  bedTimers.add(handle);
+}
+
+export function cancelScheduledBedRestarts() {
+  for (const handle of bedTimers) clearTimeout(handle);
+  bedTimers.clear();
 }
 
 // ---- Fix round f5 (R78a/R78): the §18 round voices --------------------------

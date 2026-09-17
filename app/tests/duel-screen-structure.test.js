@@ -175,17 +175,19 @@ test('f4/A-i: duel.js registers ctx.router.onUnmount at all three timer sites (c
   assert.ok(/ctx\.router\.onUnmount\(\(\) => { clearInterval\(intermissionTimer\); releaseAudioForRoute\(ctx\.router\.current\(\)\); }\);/.test(src), 'expected showIntermission to re-register its own teardown for intermissionTimer, also releasing audio route-aware (the bed sounds through the intermission)');
 });
 
-test('f5/A3 + fix round f5/R78a: unmounting the duel screen releases battle audio route-aware -- one-shots always stop; the bed carries ONLY to another bracket-context screen and stops everywhere else', async () => {
-  const src = await read('ui/screens/duel.js');
-  assert.ok(src.includes("import { isSoundEnabled, setSoundEnabled, playIntro, playLoop, playRoundBeat, scheduleDuelReadyVoice, stopAllExceptBed, releaseAudioForRoute, carryBed, soundToggleButton } from '../components/battle/sound.js';"), 'expected duel.js to import the route-aware release (and the rest of the f5 sound API) from the battle sound module');
-  const teardownLine = src.split('\n').find((l) => l.includes('ctx.router.onUnmount') && l.includes('timerHandle'));
-  assert.ok(teardownLine && teardownLine.includes('releaseAudioForRoute(ctx.router.current())'), 'expected the mount-time onUnmount teardown to call releaseAudioForRoute with the route being mounted next');
-  // The A3 guarantee itself lives in sound.js now: releaseAudioForRoute
-  // stops EVERYTHING for a non-bracket route (see sound-bed-carry.test.js
-  // for the behavioral checks in both directions).
-  const soundSrc = await read('ui/components/battle/sound.js');
-  assert.ok(/export function releaseAudioForRoute\(nextRoute\) {\n  if \(bedCarriesTo\(nextRoute\)\) stopAllExceptBed\(\);\n  else stopAll\(\);\n}/.test(soundSrc), 'expected releaseAudioForRoute to stop everything for a non-bracket route (the A3 guarantee) and keep only the bed otherwise');
-});
+// Round-3 fix g2: the old test here ('f5/A3 + fix round f5/R78a: unmounting
+// the duel screen releases battle audio route-aware') pinned source regexes
+// over duel.js/sound.js function text and named one of them "the A3
+// guarantee" — a claim the g2 reviewer proved FALSE at the app level (the
+// kill-switch route wrapper never mounts a screen, so no screen-level
+// teardown ever ran, and the bed played on over the "Run Stopped" banner).
+// The guarantee is app-level, so its tests are now BEHAVIOURAL and live in
+// sound-kill-switch.test.js: they drive the REAL router (ui/router.js)
+// through the REAL kill-switch wrapper (ui/app.js's exported guardRoutes)
+// over the REAL screens — the reviewer's own kill-over-the-result-card
+// reproduction, the killed-on-every-route sweep, both mount guard-clause
+// redirects, and the mid-reveal catch-site. The carry direction (the bed
+// riding duel → board → sitting) stays covered in sound-bed-carry.test.js.
 
 test('f4/A-i: app/ui/router.js exports the onUnmount mechanism duel.js relies on', async () => {
   const src = await read('ui/router.js');

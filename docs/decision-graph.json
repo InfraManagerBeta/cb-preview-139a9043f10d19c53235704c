@@ -1,6 +1,6 @@
 {
   "schema": "cheddar-battles/decision-graph@1",
-  "generated": "2026-09-10 (t2) · refreshed f3 (fix-round decisions, review-found conflicts C21, citation-count reconciliation A13) · refreshed f4 (A-j: the R58-vs-R19 door-price conflict declared) — AC2: the graph updates as phases run",
+  "generated": "2026-09-10 (t2) · refreshed f3 (fix-round decisions, review-found conflicts C21, citation-count reconciliation A13) · refreshed f4 (A-j: the R58-vs-R19 door-price conflict declared) · refreshed g3 (round 2 / CB-BUILD-009r + 014-022: seven load-bearing round-2 decisions added as nodes, O6-LOBBY corrected in place, CONFLICT-R74-A-POWER declared, four non-load-bearing round-2 ids noted with reasoning) — AC2: the graph updates as phases run",
   "scope": "Ticket t2 (evidence & documentation pack) of task 85baf1fc; covers every load-bearing decision this documentation build makes and the PRD constraints those decisions hang from. AC2: authority = constraint | ours | provider; evidence.tier = tested | configuration-tested | assumed; status = proposed | accepted | superseded. 'ours' = the owner (Octopus Rodeo / Dapper Labs); 'provider' = the build side.",
   "conflicts": [
     {
@@ -110,6 +110,19 @@
       "evidence": "docs/PRD.md R62 vs R58 arithmetic; docs/tunables-workbook.md note W-13.",
       "law_preserving_configuration": "Reproduce both numbers verbatim in the workbook (done), enforce the ledger-conservation invariant (R86.2) at whichever figure the owner rules, and carry node P-T6-PAYOUT as the open question.",
       "status": "proposed"
+    },
+    {
+      "id": "CONFLICT-R74-A-POWER",
+      "class": "law conflict (R87) — the tension round 2 actually produced between R74 and the round-1 A-power rule; declared as a completed result at fix round g3 (re-measured independently, not copied from the reviewer's figures)",
+      "laws": [
+        "R74",
+        "A-power rule (round-1 fix F2)"
+      ],
+      "condition": "any wizard whose tier-0 cosmetic combo (head/cape/hat/wand) is not among the manifest's curated part tuples for its NEW live-tier power family, at any tier advance 0->1 through 0->6",
+      "statement": "R74 [LAW]: 'each combatant is the actual summoned wizard — its parts composited from its own traits.' Fix round F2 (round 1) made the rendered power family track the player's LIVE game tier, matching the 2019 reference's own behaviour (app/engine/wizardRig.js:powerForTier). Each power family lists only a curated subset of head/cape/hat/wand tuples (RIG_COMBOS), so a wizard whose exact tier-0 tuple is not curated at its new power cannot literally keep 'its own traits' at that tier — carryTraits() (N-R74/F3b, wired into the read path at fix round F3) computes the deterministic nearest match instead. R74's 'its own traits' and F2's 'power tracks the live tier' cannot both hold literally for these wizards; they can only be reconciled by a nearest-match compromise (churn) or by giving up F2's live-tracking (zero churn, but a 2019-reference mismatch).",
+      "evidence": "Independently re-measured over app/engine/wizardRig.js's deriveTraits/deriveIdentity (not copied from the reviewer's numbers): 400 synthetic ids (char-0..char-399) x 3 elements (fire/water/air) x tiers 1-6 = 7,200 tier-0-to-live-tier transitions, comparing deriveTraits(id,el,0) against deriveIdentity(id,el,tier).traits on head/cape/hat/wand only (power/comboKey excluded from the comparison, since power tracking the live tier is F2's rule, not the tension under test). Method note: a short ad-hoc script, not committed (out of this order's named scope — docs/decision-graph.* and its test only); reproducible from the pure, deterministic functions cited above by anyone re-running the same id/element/tier sweep. Result: 3,211/7,200 (44.6%) transitions change NO part; of the 3,989 that change anything, 3,970 (55.1% of the 7,200 total; 99.5% of the changed set) change EXACTLY one part, 19 (0.3% of total; 0.5% of changed) change exactly two, and NONE change three or four. Per-part change rate (of the 7,200 total): cape 0/7,200 (0.0%), head 363/7,200 (5.0%), wand 1,085/7,200 (15.1%), hat 2,560/7,200 (35.6%) — sums to 4,008 = 3,970x1 + 19x2, consistent by construction. The palette (derivePalette) is keyed only on characterId, never on tier, so it is 100% stable across every tier transition measured (0 changes / 7,200), matching §18's 'a wizard's identity is its own colours filling that shape's slots.' These figures are close to but not identical to the reviewer's cited 45.1%/54.7%/0.2%/head 5.2%/wand 13.1%/hat 36.8% — expected variance re-verifying independently rather than copying; the qualitative claims (roughly 45% no-op, the overwhelming remainder a single-part swap, never more than two parts, cape always stable, hat the most volatile part) hold in both measurements.",
+      "law_preserving_configuration": "DELIVERED (unchanged by this order): F2's live-tracking power family wins, and carryTraits' deterministic nearest-match (most tier-0 parts preserved, ties broken by the existing summon hash) is the closest available reconciliation — it already minimizes churn under the F2 constraint (only 0.3% of all transitions lose more than one part, and never more than two). The CLOSEST LAW-PRESERVING CONFIGURATION for R74 taken completely literally is different and NOT shipped: pin each wizard's power family at its tier-0 power for cosmetic purposes only (never re-deriving head/cape/hat/wand from a later power family at all), which drives the churn to exactly zero but departs from the 2019 reference's own live-tracking behaviour that F2 was built to match — trading one law's letter for another's. Recorded here as the R87 completed result, left as shipped like CONFLICT-R57-INTERNAL; revisitable under an owner ruling (no ruling requested yet — no P-node opened for it).",
+      "status": "accepted (delivered configuration unchanged; declared g3)"
     }
   ],
   "nodes": [
@@ -427,15 +440,15 @@
     },
     {
       "id": "O6-LOBBY",
-      "title": "O6 lobby human wait 60s (30s/120s built)",
+      "title": "O6 lobby human wait 30s (60s/120s built) — REVERSED at round 2 (CB-BUILD-017) from the t2 default of 60s (was 30s/120s alternatives); a solo tester in an NPC-filled room waited a full 60s for humans who never come",
       "authority": "constraint",
       "evidence": {
-        "tier": "assumed",
-        "kind": "PRD default",
-        "source": "PRD §5 O6"
+        "tier": "tested",
+        "kind": "implemented + tested (was PRD-default/assumed only at t2; round 2 also added a workbook<->tunables.json consistency test so the two cannot diverge silently again)",
+        "source": "app/data/tunables.json timers.lobbyHumanWaitSec (default 30, alternatives [60, 120]); app/engine/sync.js:createLobby; app/tests/link-to-first-seal.test.js (CB-BUILD-017/O6 cases); docs/cb-build-patch-log.md CB-BUILD-017; commits 7696a65 (default flip), b369368 (fix round f4 Finding 1: workbook W-34 row corrected + consistency test)"
       },
       "status": "accepted",
-      "rationale": "Workbook W-34; collusion and sync-timing surfaces (F-2, F-5) read it."
+      "rationale": "PRD §5 O6 was written for a paid launch with real humans; AC1's own pilot found the 60s default too long for a solo/NPC-filled test lobby, so round 2 reversed the default to 30s (60s/120s now the alternatives). Fix round f4 additionally caught the workbook (W-34) still reporting the OLD default/alternatives after the code changed — a smaller instance of the exact staleness this order's own new schema test now guards against for the graph — and added a workbook<->tunables.json consistency test. Load-bearing: O6 directly gates lobby wait time and human-vs-human share (O7)."
     },
     {
       "id": "O7-FILL",
@@ -872,6 +885,102 @@
         }
       ],
       "rationale": "SUPERSEDED (f7): per-round scouting is now implemented from the slim per-round ledger record f6 introduced; card 1 satisfies R26(1) as written for every current-schema event. Legacy (pre-f6) events fall back to summary-only, honestly marked -- the one remaining, unavoidable (no-migration) caveat, not a revisitable trade-off anymore."
+    },
+    {
+      "id": "D-R81-FULL-RANDOM-REVERT",
+      "title": "CB-BUILD-009r (round 2): R81's missed-clock rule REVERSED by owner ruling (2026-09-15) from round-1's preserve-partial behaviour back to the original uniform-random FIVE-move auto-commit -- the whole hand, including rounds already picked",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (full-random auto-commit restored; no picked-moves parameter accepted)",
+        "source": "app/engine/sync.js:autoCommitHesitated (restored signature `autoCommitHesitated(window, seatId, now, random = Math.random)`, no pickedElementIndices parameter); app/tests/commit-clock-autocommit.test.js; docs/cb-outcome-spec.md R81; docs/cb-build-patch-log.md CB-BUILD-009r; commit 2e18836"
+      },
+      "status": "accepted",
+      "rationale": "Round 1 preserved a player's already-selected moves and randomised only the blanks -- the rule as originally specified. The owner reversed this on 2026-09-15: preserving partial picks needs the device online at the instant of expiry, and a rule that holds only sometimes is the worst experience, so a missed clock now re-rolls the WHOLE five-move hand uniformly at random every time, flags the duel `hesitated`, and is excluded from staked-duel metrics (R42). Load-bearing on both counts AC2 names: it changes what a lapsed player's duel actually does (funnel/mechanics) and which duels count toward staked numbers (invariant/metrics compliance)."
+    },
+    {
+      "id": "C-R78A-SOUND",
+      "title": "CB-BUILD-016 (round 2): new LAW R78a -- sound ON by default, arms on the player's first tap, first heard at the summon ceremony (R74a), mute control visible wherever sound plays",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested; round-2 fix rounds extended coverage (f5: audio bed persists through the whole bracket, round voices play on the 2019 reference's own triggers/timings, a keydown also arms the audio layer for keyboard/AT users who never generate a pointerdown)",
+        "source": "app/ui/components/battle/sound.js; app/engine/overrides.js:defaultOverrides (soundEnabled: true); app/tests/sound-arming.test.js; docs/cb-outcome-spec.md R78a; docs/cb-build-patch-log.md CB-BUILD-016; commits 8bdf3a6, 9dd37db (f5 finding 1: bed carries the bracket), 6936bed (f5 finding 2: round voices on reference triggers), 99d3886 (f5 advisory: keydown arming)"
+      },
+      "status": "accepted",
+      "rationale": "No PRD rule stated a sound default before this round; the build had guessed OFF and cited a rule (R78, the playback engine) that says nothing about sound. R78a closes that gap as a LAW: on by default rather than hidden behind an easy-to-miss toggle. Load-bearing under AC2's 'retention' branch -- a duel's audio bed is now heard by every player by default, not opted into by the few who find the toggle."
+    },
+    {
+      "id": "D-SUMMON-CEREMONY",
+      "title": "CB-BUILD-014 (round 2): new LAW R74a -- pressing SUMMON plays the full 2019 summon sequence for the chosen element and ends in the reveal of a random wizard of that element, its rig-derived parts/palette and name revealed together; seal-to-reveal duration instrumented",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (6 tests)",
+        "source": "app/ui/components/summon/ceremony.js; app/ui/screens/summon.js; app/tests/summon-ceremony.test.js; a SUMMON_CEREMONY_REVEALED ledger event carries the seal-to-reveal duration; docs/cb-outcome-spec.md R74a; docs/cb-build-patch-log.md CB-BUILD-014; commit 12c7319"
+      },
+      "status": "accepted",
+      "rationale": "R58/R59 specified the summon transaction and the name, not the presentation, so the delivered build landed on a bare form (pick element, press button, next screen) with the bundle's own summon animation wired to nothing. R74a now requires the full ceremony, ending in first sight of the actual generated wizard (coordinated with CB-BUILD-022: parts/palette come from the same read-time rig derivation, never a recorded field). Load-bearing under AC2's 'funnel' branch: the ceremony runs BEFORE any bracket exists, squarely inside the AC1 link-to-first-seal window it is itself instrumented against (seal-to-reveal duration), so its length is part of the funnel AC1 gates on, not mere presentation polish."
+    },
+    {
+      "id": "D-AC1-LINK-OPENED-CLOCK",
+      "title": "CB-BUILD-017 fix round f4/Finding 2 (round 2): AC1's link-to-first-seal clock now starts at a new boot-time LINK_OPENED ledger event, not at ACCOUNT_CREATED/screener pass",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (defect repro + fix, with a dedicated repro case matching the finding's own numbers)",
+        "source": "app/engine/game.js:recordLinkOpened (LINK_OPENED written once at boot, independent of screener pass/fail); app/engine/ledger.js EVENT_TYPES.LINK_OPENED; app/engine/retention.js:linkToFirstSeal (prefers LINK_OPENED, falls back to ACCOUNT_CREATED only for ledgers/fixtures that predate the event); app/tests/retention.test.js (fix round f4/Finding 2 cases); app/tests/link-to-first-seal.test.js; docs/cb-build-patch-log.md CB-BUILD-017; commit a36cdbb"
+      },
+      "status": "accepted",
+      "rationale": "CB-BUILD-017 first measured link-to-first-seal from ACCOUNT_CREATED under the claim 'opening the link spins up the account (R70)' -- false: `ensureAccount` only fires on a PASSED screener (A15, CB-BUILD-001), so the clock silently excluded the whole landing+screener interval (R8a copy, date-of-birth entry, jurisdiction check), biasing AC1's 'median under two minutes' bar downward -- the finding's own repro (link t=0, screener pass t=40s, first seal t=100s) used to report 60s, not the true 100s. Fixed by measuring from LINK_OPENED instead. Load-bearing by definition: this IS the AC1 measurement AC2 requires evidence for, and getting it wrong biased the acceptance bar itself, not just a side metric."
+    },
+    {
+      "id": "D-IDENTITY-READ-TIME-CARRY",
+      "title": "CB-BUILD-022 (round 2) + fix round F3: character identity derives at READ time from characterId/element/tier alone (never a recorded ledger field) -- AND the wizard's own tier-0 cosmetic combo carries forward across tiers via the deterministic nearest-match rule (N-R74/F3b), restored after round 2's own initial cut silently dropped it",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested; F3 added a whole-tier-ladder (0..6) walk and moved coverage of the carry guarantee onto the read path itself (wizardIdentity/deriveIdentity), not just the carryTraits utility, per the reviewer's finding that the regression slipped through exactly because coverage had moved off the read path",
+        "source": "app/engine/wizardRig.js: deriveTraits/carryTraits/deriveIdentity/wizardIdentity; app/tests/identity-read-time.test.js; app/tests/rig-cosmetic-carry.test.js; app/tests/rig-power-tier.test.js; docs/cb-outcome-spec.md R74/§18; docs/cb-build-patch-log.md CB-BUILD-022; commits 954cc19 (round 2), b40446a + 04a52d6 (fix round F3)"
+      },
+      "status": "accepted",
+      "history": [
+        {
+          "at": "round 2 (CB-BUILD-022, 954cc19)",
+          "status": "accepted",
+          "rationale": "Round-1 preferred traits/palette RECORDED at summon (ledger fields), falling back to derivation only when absent -- binding the read path to the ledger's identity model, the heavier of two valid designs with the playback engine slated for replacement (R78). Round 2 moved to deterministic derivation ALWAYS, from characterId/element/live-tier alone, never reading `character.traits`/`character.palette`."
+        },
+        {
+          "at": "fix round F3 (reviewer CRUCIAL; manager reproduced 900/900 T0-vs-T1 differing)",
+          "status": "accepted",
+          "rationale": "The round-2 cut over-corrected: re-deriving head/cape/hat/wand from a fresh hash pool at the LIVE tier (rather than carrying the wizard's own tier-0 combo forward) silently reintroduced the exact bug N-R74/F3b (round 1) had already fixed -- almost every wizard's cosmetic set changed on any tier advance, violating R74's 'its own traits' literally rather than only under the A-power tension (see CONFLICT-R74-A-POWER). F3 restores the guarantee WITHOUT reintroducing a ledger read: the wizard's own combo is derived once at tier 0 (still a pure function of characterId/element, no ledger field) and carried into the live tier's power family via carryTraits (also pure). CB-BUILD-022's 'never read the ledger' and N-R74's 'keep the wizard's own combo across tiers' are simultaneously satisfiable because the tier-0 combo was never a ledger fact to begin with."
+        }
+      ],
+      "rationale": "Load-bearing under AC2's 'invariant compliance' branch: this is the read path every duel-stage render and CB-BUILD-014's reveal call, and it directly determines whether R74's LAW ('its parts composited from its own traits') holds at every tier, not just at summon. See CONFLICT-R74-A-POWER for the residual, LAW-level tension this decision does not (and structurally cannot) fully resolve."
+    },
+    {
+      "id": "D-BUST-RETENTION-BRACKET",
+      "title": "CB-BUILD-018 (round 2): bustToTopUp (R49) now matches bracket-duel busts (nested payload.combatants), not only the flat practice-mode payload shape",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested; fix round f4 advisory hardened the matcher (if/else) so an event carrying both payload shapes cannot double-count the same bust as two identical records",
+        "source": "app/engine/retention.js (bust matcher scans payload.combatants matched against the player's own characterId, in addition to the existing flat payload.stakeAfter === 0 path); app/tests/retention.test.js; docs/cb-build-patch-log.md CB-BUILD-018; commits 2617e7c, 5e79981"
+      },
+      "status": "accepted",
+      "rationale": "Not named in the reviewer's five headline examples, but independently load-bearing under AC2's own test: R49's bust-to-top-up measurement only ever observed practice-mode busts before this fix -- real bracket-duel busts carry the stake nested one-per-seat and were invisible to the matcher, half-blinding the exact retention signal the deposit wall exists to serve. This directly moves the retention metric AC2 calls out by name, so it is recorded here rather than left to the 'reviewed, not independently load-bearing' note below."
+    },
+    {
+      "id": "NOTE-ROUND2-NON-LOAD-BEARING",
+      "title": "Round 2 ids reviewed against AC2's load-bearing test and NOT given full decision nodes: CB-BUILD-015, CB-BUILD-019, CB-BUILD-020, CB-BUILD-021",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "reasoned classification against AC2's own definition ('moves the funnel, the economy, retention, or invariant compliance'); no test asserts this classification beyond the presence check in decision-graph-freshness.test.js",
+        "source": "docs/cb-build-patch-log.md CB-BUILD-015, CB-BUILD-019, CB-BUILD-020, CB-BUILD-021 entries"
+      },
+      "status": "accepted",
+      "rationale": "CB-BUILD-015 (id-keyed parity harness) is AC1's OWN required verification tool -- it produces evidence for R74/CB-BUILD-006 compliance but is not itself a decision that moves the funnel, economy, retention, or invariant compliance; its re-run (fix round, canonical wizard pre-registered as an injected identity) is a measurement refinement, not a new rule. CB-BUILD-019 (tests reachable from the preview) is a verifiability practice with zero runtime effect on any of AC2's four branches. CB-BUILD-020 (one spec file in the repo) is repo hygiene -- deleting a duplicate and fixing dangling doc references, no behaviour change. CB-BUILD-021 (typography pardons audited) closes an audit gap under an EXISTING rule (R11, already carried as C-R11-FIXED-FRAME) rather than establishing a new one -- every pardon now has a recorded reason or was fixed, but R11 itself did not move. None of the four is padded into a full evidence/rationale decision node; this entry exists only so the ids are not silently absent from the graph, and so a reader (or the schema/freshness test) can see they were considered and why they were excluded, per this order's own instruction not to pad the graph with non-load-bearing content."
     }
   ],
   "edges": [
@@ -1199,6 +1308,31 @@
       "from": "D-LEDGER-SLIM-VS-SCOUTING",
       "to": "H-R26-1",
       "type": "constrains"
+    },
+    {
+      "from": "D-R81-FULL-RANDOM-REVERT",
+      "to": "O5-COMMIT",
+      "type": "constrains"
+    },
+    {
+      "from": "D-SUMMON-CEREMONY",
+      "to": "D-IDENTITY-READ-TIME-CARRY",
+      "type": "reads"
+    },
+    {
+      "from": "D-AC1-LINK-OPENED-CLOCK",
+      "to": "O6-LOBBY",
+      "type": "informs"
+    },
+    {
+      "from": "D-IDENTITY-READ-TIME-CARRY",
+      "to": "CONFLICT-R74-A-POWER",
+      "type": "conflicts-with"
+    },
+    {
+      "from": "D-BUST-RETENTION-BRACKET",
+      "to": "C-R55-FLOOR",
+      "type": "informs"
     }
   ]
 }

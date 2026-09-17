@@ -20,13 +20,17 @@ each instance is handed a **node-canvas 2D context** in place of a DOM
 container (no mount, no layout, no CSS — see "Residual" below). What headless
 execution cannot measure is named in "Residual" below — nothing is claimed
 beyond the verdict table. Committed results were produced in this repo's CI
-container (Node v22.22.0); every recorded run names the commit it was made at
-and digests the sources it measured (`results/check-e-idparity.json`
-`.provenance`). Re-run with:
+container (Node v22.22.0); **all five recorded runs below were made at commit
+`0c43a0c`** — every run names the commit it was made at and digests the
+sources it measured (`results/check-*.json` `.provenance`), and those digests
+are **asserted**, so a run that no longer describes the tree fails the root
+test suite instead of quietly reading as if it did (see "A recorded result is
+a claim about ONE tree" below). Re-run with:
 
 ```
 cd tools/parity && npm install && npm run all          # checks A-E
 cd tools/parity && npm run parity -- --id <wizardId>   # check E for ONE wizard id
+node tools/parity/freshness.mjs                        # are the recorded runs still this tree's? (offline, no deps)
 ```
 
 (`find-canonical.mjs` is the one-off search that identified the canonical
@@ -45,7 +49,7 @@ hardcoded into check A.)
 | A camera anchor | frozen-camera anchor ink IoU ≥ 0.10 | anchor IoU **0.195** | **PASS** |
 | A render similarity (cross-vintage floor) | per non-gap state: mean matched% ≥ 40 at 48/255 AND mean ink IoU ≥ 0.10 | worst state matched **44.89%**, worst ink IoU **0.110** | **PASS** |
 | B structural | geometry digest identical AND 0 colour changes off slot classes (exact) | **18/18** identical, **0** off-slot changes | **PASS** |
-| B recolour explained | unexplained mean ≤ 3%, worst ≤ 5% at 60/255 | mean **1.95%**, worst **3.12%** | **PASS** |
+| B recolour explained | unexplained mean ≤ 3%, worst ≤ 5% at 60/255 | mean **2.03%**, worst **3.13%** | **PASS** |
 | C library constants | 0 deviations from {30fps, 1720×1400, v5.5.2, reference clip lengths} (exact) | **0** over 50 live-sampled files | **PASS** |
 | C render rate | every bundle GIF within 30 ± 0.5 fps | worst \|fps−30\| = **0.1** | **PASS** |
 | C duel ceiling (R75) | worst-case duel < 45,000 ms at EVERY switchable O9 arm | 900 ms → **24,310 ms**; 1170 ms (default) → **31,482 ms**; 1500 ms → **40,350 ms** | **PASS** |
@@ -151,15 +155,23 @@ tolerance 60/255):
 - geometry digest identical (recolour changed colours and NOTHING else):
   **18/18** → declared exact, **PASS**
 - colour changes off slot classes: **0** → declared exact, **PASS**
-- pixels identical: **41.27%** mean (the outline ink, head skin, wand wood,
+- pixels identical: **41.11%** mean (the outline ink, head skin, wand wood,
   FX — everything that must NOT change)
-- pixels explained as the wizard's own recolour: **56.78%** mean
-- pixels unexplained: **1.95%** mean, **3.12%** worst (antialiased slot
+- pixels explained as the wizard's own recolour: **56.86%** mean
+- pixels unexplained: **2.03%** mean, **3.13%** worst (antialiased slot
   edges, where the blend sits between palette and outline) → declared
   mean ≤ 3% / worst ≤ 5%, **PASS**
 
-**98.05% of every rendered pixel is exactly "the reference's output, with
+**97.97% of every rendered pixel is exactly "the reference's output, with
 this wizard's own colours in the slots" — per arbitrary unseen wizard.**
+
+*Re-measured at `0c43a0c` in fix round g1. The previous numbers here (mean
+1.95%, worst 3.12%, identical 41.27%) were measured before fix round f3
+rewrote `deriveIdentity`: check B derives its six wizards' identities from
+their ids too, so f3 moved which combos they resolve to, and the old figures
+described wizards this engine no longer produces for those ids. Same six
+ids, same tolerances, every verdict still PASS — and the digest gate below
+now makes that kind of drift fail the suite rather than sit unnoticed.*
 
 ## Check C — timing vs the reference constants (`check-c-timing.mjs`)
 
@@ -198,7 +210,10 @@ Full deltas (incl. `timeline.ceilingByO9Arm`) in
   and the hardest case: two wizards colliding on the SAME shape combo,
   distinct by palette alone — that pair still measures **32.54–36.43%** of
   content pixels differing (declared floor 3%). Cross-element and
-  different-combo pairs run 68–80%.
+  different-combo pairs run 68.87–73.51% (re-measured at `0c43a0c`: fix
+  round f3's `deriveIdentity` change moved which combos the sampled ids
+  resolve to, so these per-pair figures moved with it; every verdict number
+  above — the 32.54% floor included — is unchanged).
 - **D2 arena-composite.** The actual arena source
   (`client-static/img/fightScene/fightBG.svg`) rasterized (100% ink — a
   drawn scene, not a bare field) and both combatants composited at the
@@ -278,7 +293,8 @@ both facts, and fails if a tolerance is edited without re-running).
 
 **The run** (recorded in `results/check-e-idparity.json`, reported per state
 per wizard in [`PARITY-REPORT.md`](PARITY-REPORT.md)): made at commit
-`248eb12` on a clean tree, `2026-09-17T00:24:58Z`, Node v22.22.0 — the
+`0c43a0c` (nothing it measures uncommitted), `2026-09-17T02:39:03Z`, Node
+v22.22.0 — the
 canonical 2019 demo wizard (the pre-registered identity, combo
 `NEUTRAL-1-head01-cape01-hat01-wand01` from check A's own identification and
 its fitted palette, injected into both sides) plus **8 generated wizards
@@ -292,6 +308,17 @@ pixels within 8/255, **silhouette IoU 1.0**, **MAE 0/255**, **0** colour
 differences between the two recoloured documents, **0** slot-map
 disagreements, clip lengths exactly the reference constants (34/42/18/32/60/
 60/112/112/112 frames at 30 fps, 1720×1400), **0 ms** duration delta.
+
+*This run replaces one made at `248eb12`, which was measured before fix round
+f3 rewrote `deriveIdentity` in `app/engine/wizardRig.js`. The seed, the sample
+size and the eight drawn **ids** are unchanged and pre-registered; what
+changed is the **combo each id resolves to** — f3 carries the tier-0 cosmetic
+combo into the live power family, so all 8 generated rows now compare a
+different combo (e.g. `parity015-884bbe80-1`: `WIND-2-head02-cape03-hat01-wand05`
+→ `WIND-2-head03-cape03-hat03-wand03`), at the same palettes and the same
+power families. The canonical row (tier 0, injected declaration) is
+unchanged. No tolerance was touched; every verdict above is from this run.
+The digest gate below exists so that this cannot happen again unnoticed.*
 
 That the two sides agree exactly is the *expected* result and the reason the
 declared tolerance is tight: both play the same per-combo geometry with the
@@ -355,16 +382,27 @@ recolour is not merely self-consistent; it matches what the portraits meant.
   injected identity is the pre-registered declaration and the read path would
   derive a different wizard for that id; the difference is recorded in the
   result and stated in the report, not smoothed over.
-- **A recorded result is a claim about ONE tree.** Every check-E run records
-  the commit it ran at, whether the tree was dirty, and a sha256 of each
-  harness source and each engine module it measures
-  (`results/check-e-idparity.json` `.provenance`).
-  `app/tests/parity-harness.test.js` fails if the shipped run was made on a
-  dirty tree, at a commit that is not an ancestor of HEAD, or with a harness
-  source that has changed since. The ENGINE digests are recorded but not
-  asserted: re-running needs bucket access and a native canvas build, which
-  not every container has, so a reader compares them and re-runs deliberately
-  (`cd tools/parity && npm install && npm run check-e`).
+- **A recorded result is a claim about ONE tree — and the claim is GATED.**
+  Every recorded run (A–E) records the commit it ran at, whether the tree was
+  dirty, which of ITS OWN sources were uncommitted (`dirtySources` — always
+  empty here), and a sha256 of each harness source and each engine module it
+  measures (`results/check-*.json` `.provenance`; the per-check file lists are
+  declared in `tools/parity/provenance.mjs` `CHECK_RUNS`).
+  `app/tests/parity-harness.test.js` fails if a run was made with one of its
+  own sources uncommitted, at a commit that is not an ancestor of HEAD, or
+  with **any of those files — harness OR engine — changed since the run**. The
+  engine digests used to be recorded and not asserted, on the argument that a
+  re-run needs bucket access and a native canvas build; check E's run then
+  went stale a second time (f3's `deriveIdentity` rewrite), the mechanism
+  detected it and nothing surfaced it — and checks B and D had gone stale the
+  same way. So the cost is now paid deliberately: an engine change that
+  invalidates any of these AC1 deliverables turns `node --test
+  app/tests/*.test.js` red, naming the files and the check to re-run
+  (`cd tools/parity && npm install && npm run all`); a container that cannot
+  re-run them cannot be green and has to say so. `node
+  tools/parity/freshness.mjs` (or `npm run freshness`) prints the same verdict
+  per file for all five runs in one offline command, and
+  [`PARITY-REPORT.md`](PARITY-REPORT.md) opens with it.
 - **Device-matrix timing** (AC1's p95 visual-acknowledgment target on
   mid-range Android) is out of this harness's reach and is NOT claimed;
   the recolour cost measurement lives with the reviewer's findings and the

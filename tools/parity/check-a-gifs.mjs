@@ -31,6 +31,13 @@ import { makeRenderer, decodeGif, contentBBox, diffImages, remapToBox, writeJson
 import { RIG_BUCKET_BASE } from '../../app/data/rigManifest.js';
 import { recolorAnimation } from '../../app/engine/rigRecolor.js';
 import { CANONICAL_COLOURS, SLOT_NAMES } from '../../app/data/rigPalette.js';
+import { runProvenanceFor } from './provenance.mjs';
+
+// The tree this run is being made on, captured BEFORE anything is written
+// (fix round g1). app/tests/parity-harness.test.js asserts these digests:
+// change a file below without re-running this check and the root suite goes
+// red. See tools/parity/freshness.mjs.
+const provenance = runProvenanceFor('A');
 
 const GIF_DIR = path.join(REPO, 'assets', 'cw', 'renders', 'gifs');
 const CACHE = path.join(__dirname, 'results', 'cache');
@@ -295,6 +302,9 @@ const aPass = verdicts.every((v) => v.pass);
 console.log(`Check A overall: ${pf(aPass)}`);
 
 const file = writeJson('results/check-a-gifs.json', {
+  ranAt: new Date().toISOString(),
+  node: process.version,
+  provenance,
   combo: CANONICAL_COMBO, tolerance: TOLERANCE, tolerances: A_TOLERANCES, verdicts, overall: pf(aPass), paletteFit: { palette, fitReport }, states,
   notes: [
     'png-seq (renders/png-seq, 265 files) are Finder screen captures, not duel frames — the GIFs are the pixel parity reference.',

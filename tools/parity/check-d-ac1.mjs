@@ -40,6 +40,13 @@ import { recolorAnimation, geometryDigest, colourInventory, CLASS_TO_SLOT } from
 import { createRigLoadout, DUEL_STATES } from '../../app/ui/components/battle/rigAssets.js';
 import { STEP_TO_CLIP, LOOP_CLIPS } from '../../app/ui/components/battle/rigStage.js';
 import { buildDuelTimeline } from '../../app/engine/presentationTimeline.js';
+import { runProvenanceFor } from './provenance.mjs';
+
+// The tree this run is being made on, captured BEFORE anything is written
+// (fix round g1). app/tests/parity-harness.test.js asserts these digests:
+// change a file below without re-running this check and the root suite goes
+// red. See tools/parity/freshness.mjs.
+const provenance = runProvenanceFor('D');
 
 const CACHE = path.join(__dirname, 'results', 'cache');
 fs.mkdirSync(CACHE, { recursive: true });
@@ -432,6 +439,9 @@ const d4Pass = verdict(
 const allPass = d1Pass && d2Pass && d3Pass && d4Pass;
 console.log(`\nCheck D overall: ${pf(allPass)} (distinctness ${pf(d1Pass)}, arena-composite ${pf(d2Pass)}, no-blank ${pf(d3Pass)}, FX-fidelity ${pf(d4Pass)})`);
 const file = writeJson('results/check-d-ac1.json', {
+  ranAt: new Date().toISOString(),
+  node: process.version,
+  provenance,
   tolerances: TOLERANCES,
   verdicts,
   d1: { pairs: d1Rows, minDistinctPct: d1MinDistinct },

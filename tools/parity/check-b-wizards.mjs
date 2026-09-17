@@ -21,6 +21,13 @@ import { makeRenderer, writeJson, __dirname } from './lib.mjs';
 import { RIG_BUCKET_BASE } from '../../app/data/rigManifest.js';
 import { wizardIdentity } from '../../app/engine/wizardRig.js';
 import { recolorAnimation, geometryDigest, colourInventory, CLASS_TO_SLOT } from '../../app/engine/rigRecolor.js';
+import { runProvenanceFor } from './provenance.mjs';
+
+// The tree this run is being made on, captured BEFORE anything is written
+// (fix round g1). app/tests/parity-harness.test.js asserts these digests:
+// change a file below without re-running this check and the root suite goes
+// red. See tools/parity/freshness.mjs.
+const provenance = runProvenanceFor('B');
 
 const CACHE = path.join(__dirname, 'results', 'cache');
 fs.mkdirSync(CACHE, { recursive: true });
@@ -152,6 +159,6 @@ for (const v of verdicts) console.log(`VERDICT ${v.criterion}: tolerance [${v.to
 const bPass = verdicts.every((v) => v.pass);
 console.log(`Check B overall: ${pf(bPass)}`);
 
-const file = writeJson('results/check-b-wizards.json', { tolerance: TOLERANCE, tolerances: B_TOLERANCES, verdicts, overall: pf(bPass), wizards: results, summary });
+const file = writeJson('results/check-b-wizards.json', { ranAt: new Date().toISOString(), node: process.version, provenance, tolerance: TOLERANCE, tolerances: B_TOLERANCES, verdicts, overall: pf(bPass), wizards: results, summary });
 console.log('written:', file);
 process.exitCode = bPass ? 0 : 1;

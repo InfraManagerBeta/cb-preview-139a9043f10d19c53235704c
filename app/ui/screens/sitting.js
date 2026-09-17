@@ -22,7 +22,6 @@ export function mountSitting(ctx) {
   const { treatment, tunables } = ctx;
   const session = ctx.refreshSession();
   const character = ctx.game.snapshot().characters[session.activeCharacterId];
-  if (!character) { ctx.router.navigate('lobby-entry'); return; }
 
   // Fix round f5/R78a [LAW]: an eliminated player lands HERE from the loss
   // result card with the bed still sounding (the bed plays through the
@@ -30,9 +29,15 @@ export function mountSitting(ctx) {
   // bracket live" door below leads back to the board). So this screen is
   // part of the bracket audio context too: leaving it for a NON-bracket
   // route (wallet, lobby-entry, ...) stops the bed; the board carries it.
+  // Round-3 fix g2 (reviewer CRUCIAL): registered BEFORE the no-character
+  // guard clause below -- that guard navigates to lobby-entry, and when the
+  // registration came after it, the redirect left NO teardown to run, so a
+  // carried bed kept sounding on lobby-entry.
   if (ctx.router && typeof ctx.router.onUnmount === 'function') {
     ctx.router.onUnmount(() => releaseAudioForRoute(ctx.router.current()));
   }
+
+  if (!character) { ctx.router.navigate('lobby-entry'); return; }
 
   if (economy.isEmptied(character)) {
     // f4/N2 fix: a topped-out (T6) champion also lands here -- its stake

@@ -1,4 +1,29 @@
 {
+  "ranAt": "2026-09-17T02:34:15.405Z",
+  "node": "v22.22.0",
+  "provenance": {
+    "check": "A",
+    "available": true,
+    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
+    "shortCommit": "0c43a0c",
+    "branch": "rtp/task-4b9567a3-foreman-g1",
+    "dirty": false,
+    "dirtyFiles": [],
+    "dirtySources": [],
+    "node": "v22.22.0",
+    "harnessDigests": {
+      "tools/parity/check-a-gifs.mjs": "sha256:39901e752c14b83b64beadafd5b803bcf532b3cb6b34eb9aeb8aaeb1e38bae2a",
+      "tools/parity/lib.mjs": "sha256:5ba7f21c083304aff10f508ecf3fafe8c435b4b27d0b1a19fabf1a2a1be2ae2e",
+      "tools/parity/paths.mjs": "sha256:991471a5e5bb9f9621fa999f8e3d38f5b424c403399223970b5220e85920a914"
+    },
+    "engineDigests": {
+      "app/engine/rigRecolor.js": "sha256:08f8609c7021073ad1dda1b4ee6af4e4b90a54b980ddbe54a8f22f05f9306889",
+      "app/data/rigPalette.js": "sha256:ef4f749e6f4b2178c315d191f0d544a38fc166ed541d5e237e6fad3c3bf729e8",
+      "app/data/rigManifest.js": "sha256:1cbfbf90f8e0a564b63bc2cc63be8c7d6cdf931185d68b4af55838ce42b85577",
+      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90"
+    },
+    "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check A being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
+  },
   "combo": "NEUTRAL-1-head01-cape01-hat01-wand01",
   "tolerance": 48,
   "tolerances": {

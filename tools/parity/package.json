@@ -10,6 +10,7 @@
     "all": "node check-a-gifs.mjs && node check-b-wizards.mjs && node check-c-timing.mjs && node check-d-ac1.mjs && node check-e-idparity.mjs",
     "check-d": "node check-d-ac1.mjs",
     "check-e": "node check-e-idparity.mjs",
+    "freshness": "node freshness.mjs",
     "parity": "node parity-wizard.mjs"
   },
   "dependencies": {

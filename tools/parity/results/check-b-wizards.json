@@ -1,4 +1,32 @@
 {
+  "ranAt": "2026-09-17T02:34:27.230Z",
+  "node": "v22.22.0",
+  "provenance": {
+    "check": "B",
+    "available": true,
+    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
+    "shortCommit": "0c43a0c",
+    "branch": "rtp/task-4b9567a3-foreman-g1",
+    "dirty": true,
+    "dirtyFiles": [
+      "ools/parity/results/check-a-gifs.json"
+    ],
+    "dirtySources": [],
+    "node": "v22.22.0",
+    "harnessDigests": {
+      "tools/parity/check-b-wizards.mjs": "sha256:547303e0811f282d1d361fcc43fa4bb34a3516c7b8e3b2e2cb54a814a9f97e36",
+      "tools/parity/lib.mjs": "sha256:5ba7f21c083304aff10f508ecf3fafe8c435b4b27d0b1a19fabf1a2a1be2ae2e",
+      "tools/parity/paths.mjs": "sha256:991471a5e5bb9f9621fa999f8e3d38f5b424c403399223970b5220e85920a914"
+    },
+    "engineDigests": {
+      "app/engine/wizardRig.js": "sha256:5f51f05686d9e752bd0bcafc296774772e9f46d95d0b72342ee1b22fc4c2012e",
+      "app/engine/rigRecolor.js": "sha256:08f8609c7021073ad1dda1b4ee6af4e4b90a54b980ddbe54a8f22f05f9306889",
+      "app/data/rigManifest.js": "sha256:1cbfbf90f8e0a564b63bc2cc63be8c7d6cdf931185d68b4af55838ce42b85577",
+      "app/data/rigPalette.js": "sha256:ef4f749e6f4b2178c315d191f0d544a38fc166ed541d5e237e6fad3c3bf729e8",
+      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90"
+    },
+    "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check B being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
+  },
   "tolerance": 60,
   "tolerances": {
     "pixel": 60,
@@ -17,7 +45,7 @@
     {
       "criterion": "B-recolour-explained",
       "tolerance": "unexplained pixels mean <= 3% and worst <= 5% at 60/255",
-      "measured": "mean 1.95%, worst 3.12%",
+      "measured": "mean 2.03%, worst 3.13%",
       "pass": true
     }
   ],
@@ -137,7 +165,7 @@
         "element": "air",
         "tier": 1
       },
-      "comboKey": "WIND-2-head03-cape03-hat05-wand03",
+      "comboKey": "WIND-2-head03-cape03-hat03-wand03",
       "palette": {
         "boot-accent": "#FF506E",
         "boot-base": "#A66EFF",
@@ -155,33 +183,33 @@
       "states": {
         "idle": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 36,
+          "slottedFillsRecoloured": 28,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 27.96,
-          "explainedRecolourPct": 70.29,
-          "unexplainedPct": 1.75
+          "identicalPct": 27.99,
+          "explainedRecolourPct": 70.19,
+          "unexplainedPct": 1.82
         },
         "charge": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 80,
+          "slottedFillsRecoloured": 72,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 32.69,
-          "explainedRecolourPct": 64.18,
-          "unexplainedPct": 3.12
+          "identicalPct": 32.78,
+          "explainedRecolourPct": 64.09,
+          "unexplainedPct": 3.13
         },
         "win": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 78,
+          "slottedFillsRecoloured": 70,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 33.17,
-          "explainedRecolourPct": 63.84,
-          "unexplainedPct": 3
+          "identicalPct": 33.24,
+          "explainedRecolourPct": 63.79,
+          "unexplainedPct": 2.97
         }
       }
     },
@@ -191,7 +219,7 @@
         "element": "fire",
         "tier": 3
       },
-      "comboKey": "FIRE-4-head04-cape04-hat14-wand04",
+      "comboKey": "FIRE-4-head02-cape04-hat17-wand03",
       "palette": {
         "boot-accent": "#84FF61",
         "boot-base": "#9B4F40",
@@ -209,33 +237,33 @@
       "states": {
         "idle": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 32,
+          "slottedFillsRecoloured": 28,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 39.61,
-          "explainedRecolourPct": 58.49,
-          "unexplainedPct": 1.9
+          "identicalPct": 39.76,
+          "explainedRecolourPct": 58.38,
+          "unexplainedPct": 1.86
         },
         "charge": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 76,
+          "slottedFillsRecoloured": 72,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 46.07,
-          "explainedRecolourPct": 52.07,
-          "unexplainedPct": 1.86
+          "identicalPct": 46.14,
+          "explainedRecolourPct": 52.05,
+          "unexplainedPct": 1.81
         },
         "win": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 74,
+          "slottedFillsRecoloured": 70,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 43.46,
-          "explainedRecolourPct": 54.85,
-          "unexplainedPct": 1.7
+          "identicalPct": 43.53,
+          "explainedRecolourPct": 54.8,
+          "unexplainedPct": 1.67
         }
       }
     },
@@ -245,7 +273,7 @@
         "element": "water",
         "tier": 5
       },
-      "comboKey": "WATER-5-head03-cape02-hat15-wand01",
+      "comboKey": "WATER-5-head03-cape02-hat05-wand01",
       "palette": {
         "boot-accent": "#565656",
         "boot-base": "#5AF99A",
@@ -263,33 +291,33 @@
       "states": {
         "idle": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 30,
+          "slottedFillsRecoloured": 36,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 31.4,
-          "explainedRecolourPct": 67.53,
-          "unexplainedPct": 1.07
+          "identicalPct": 31.7,
+          "explainedRecolourPct": 66.28,
+          "unexplainedPct": 2.02
         },
         "charge": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 74,
+          "slottedFillsRecoloured": 80,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 36.29,
-          "explainedRecolourPct": 61.52,
-          "unexplainedPct": 2.19
+          "identicalPct": 36.62,
+          "explainedRecolourPct": 61.12,
+          "unexplainedPct": 2.26
         },
         "win": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 72,
+          "slottedFillsRecoloured": 78,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 35.48,
-          "explainedRecolourPct": 62.78,
-          "unexplainedPct": 1.74
+          "identicalPct": 35.77,
+          "explainedRecolourPct": 62.43,
+          "unexplainedPct": 1.8
         }
       }
     },
@@ -299,7 +327,7 @@
         "element": "air",
         "tier": 6
       },
-      "comboKey": "WIND-7-head03-cape03-hat01-wand05",
+      "comboKey": "WIND-7-head04-cape03-hat11-wand03",
       "palette": {
         "boot-accent": "#FF85A5",
         "boot-base": "#66EDFF",
@@ -317,33 +345,33 @@
       "states": {
         "idle": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 32,
+          "slottedFillsRecoloured": 30,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 31.38,
-          "explainedRecolourPct": 66.02,
-          "unexplainedPct": 2.6
+          "identicalPct": 29.75,
+          "explainedRecolourPct": 67.52,
+          "unexplainedPct": 2.73
         },
         "charge": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 77,
+          "slottedFillsRecoloured": 74,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 37.33,
-          "explainedRecolourPct": 60.22,
-          "unexplainedPct": 2.44
+          "identicalPct": 35.99,
+          "explainedRecolourPct": 61.46,
+          "unexplainedPct": 2.55
         },
         "win": {
           "geometryIdentical": true,
-          "slottedFillsRecoloured": 75,
+          "slottedFillsRecoloured": 72,
           "changesOffSlotClasses": 0,
           "framesCompared": 3,
           "framesSkippedHeadless": 0,
-          "identicalPct": 36.75,
-          "explainedRecolourPct": 61.05,
-          "unexplainedPct": 2.21
+          "identicalPct": 35.41,
+          "explainedRecolourPct": 62.25,
+          "unexplainedPct": 2.34
         }
       }
     }
@@ -353,9 +381,9 @@
     "statesPerWizard": 3,
     "geometryIdenticalAll": true,
     "changesOffSlotClassesTotal": 0,
-    "meanIdenticalPct": 41.27,
-    "meanExplainedRecolourPct": 56.78,
-    "meanUnexplainedPct": 1.95,
-    "maxUnexplainedPct": 3.12
+    "meanIdenticalPct": 41.11,
+    "meanExplainedRecolourPct": 56.86,
+    "meanUnexplainedPct": 2.03,
+    "maxUnexplainedPct": 3.13
   }
 }

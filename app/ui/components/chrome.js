@@ -1,6 +1,7 @@
 // app/ui/components/chrome.js — top bar (logo + CASH pill) and bottom nav.
 import { el, money, mountScreen } from './dom.js';
 import { openLoadFundsSheet } from './money-sheets.js';
+import { stopAll } from './battle/sound.js';
 
 // CB-BUILD-012/R67: "Load Funds is reachable from every point a player can
 // meet a funds wall: the CASH balance is itself a control that opens the
@@ -52,6 +53,15 @@ export function compactMoneyTruth(ctx) {
  * not a replacement for that check.
  */
 export function renderKillStopBanner(ctx) {
+  // Round-3 fix g2 (AC0 + R78a [LAW], reviewer CRUCIAL): the stop banner
+  // carries no mute control, so NOTHING may sound over it — and every path
+  // that reaches it (the app.js route wrapper, whose screen never mounts and
+  // therefore never registers a teardown; the reveal's logNarration
+  // catch-site; the PvE Fight catch-site) arrives OUTSIDE the screens' own
+  // unmount lifecycle. Silencing here, at the ONE shared source of the stop
+  // screen, is what makes "kill halts operations" true for audio on every
+  // one of those paths at once — the A3 guarantee over the kill switch.
+  stopAll();
   mountScreen([
     el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, ctx.treatment.logoMark)]),
     el('div', { class: 'cb-card', style: 'text-align:center;padding:32px 20px;border-color:var(--cb-red);' }, [

@@ -21,7 +21,10 @@
 //     2019 factory and the stage), never retyped;
 //  6. the SHIPPED RUN describes the tree it was made on — the commit it ran
 //     at is recorded, the tree was clean, that commit is an ancestor of HEAD,
-//     and every harness source still hashes to what the run recorded.
+//     and every harness source AND every measured engine module still hashes
+//     to what the run recorded (fix round g1: the engine list is a GATE now,
+//     not a note — move the engine without re-running check E and this file
+//     goes red).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -35,7 +38,8 @@ import { parsePortraitSlots, buildReferenceSlotMap, referenceRecolor, staticColo
 import { parseReferencePlayerConfig, parseStagePlayerConfig } from '../../tools/parity/player-config.mjs';
 import { compareState, frameMetrics, documentParity } from '../../tools/parity/compare.mjs';
 import { canonicalWizard, identityFor, createDeclaredIdentityLoadout, parseLoadoutFallbackBase, DECLARED_INJECTION } from '../../tools/parity/identity.mjs';
-import { HARNESS_DIGEST_FILES, digestFiles, isAncestorOfHead, gitProvenance } from '../../tools/parity/provenance.mjs';
+import { HARNESS_DIGEST_FILES, ENGINE_DIGEST_FILES, CHECK_RUNS, CHECK_IDS, digestFiles, isAncestorOfHead, gitProvenance } from '../../tools/parity/provenance.mjs';
+import { shippedRunFreshness, allFreshness, freshnessOf, freshnessOfRecord, freshnessBanner, stalenessMessage } from '../../tools/parity/freshness.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(__dirname, '..', '..');
@@ -440,12 +444,18 @@ test('the engine-side player configuration is parsed from the shipped stage (R78
 
 const shippedRun = JSON.parse(fs.readFileSync(path.join(REPO, 'tools', 'parity', 'results', 'check-e-idparity.json'), 'utf8'));
 
-test('the shipped parity run records the commit it ran at, and that the tree was clean', () => {
+test('the shipped parity run records the commit it ran at, and that nothing it measures was uncommitted', () => {
   const p = shippedRun.provenance;
   assert.ok(p, 'results/check-e-idparity.json records its provenance');
   assert.equal(p.available, true, 'the run was made inside a git work tree');
   assert.match(p.commit, /^[0-9a-f]{40}$/, 'the commit the run was made at is recorded in full');
-  assert.equal(p.dirty, false, `the shipped run was made on a clean tree (dirty: ${JSON.stringify(p.dirtyFiles)})`);
+  assert.equal(typeof p.dirty, 'boolean', 'whether the work tree carried uncommitted changes is recorded either way');
+  // The rule with teeth is about the files the numbers depend on, not about
+  // the work tree as a whole: `npm run all` writes results/*.json as it goes,
+  // so a later check legitimately sees a dirty tree containing nothing it
+  // measures. An uncommitted SOURCE is still refused — that run describes no
+  // commit at all.
+  assert.deepEqual(p.dirtySources, [], `no file this run measures may be uncommitted at run time (dirty: ${JSON.stringify(p.dirtyFiles)})`);
   assert.equal(p.node, shippedRun.node, 'the Node version is recorded once and agrees');
 });
 
@@ -464,11 +474,144 @@ test('every harness source still hashes to what the shipped run recorded (edit t
   const now = digestFiles(HARNESS_DIGEST_FILES);
   const stale = HARNESS_DIGEST_FILES.filter((rel) => now[rel] !== recorded[rel]);
   assert.deepEqual(stale, [], `these harness sources changed after the shipped run — re-run \`cd tools/parity && npm run check-e\`: ${stale.join(', ')}`);
-  // the engine modules the run measures are recorded too — not asserted here
-  // (a re-run needs the public bucket and a native canvas build), but present
-  // so a reader can tell a stale result from a fresh one.
+  // the engine modules the run measures are recorded too, and asserted by
+  // the gate below (fix round g1) — recording them without asserting them is
+  // precisely how the shipped run went stale a second time.
   assert.ok(shippedRun.provenance.engineDigests['app/engine/wizardRig.js'], 'the identity layer the run measures is digested in the record');
   assert.ok(shippedRun.provenance.engineDigests['app/ui/components/battle/rigAssets.js'], 'the loadout the run measures is digested in the record');
+});
+
+// ---------------------------------------------------------------------------
+// 6b. THE GATE (fix round g1)
+//
+// The defect these exist for: the digests above were RECORDED and printed,
+// and the engine list was deliberately not asserted — "a reader compares
+// them and re-runs deliberately". Fix round f3 then rewrote `deriveIdentity`
+// in app/engine/wizardRig.js, the shipped run's 8 generated rows started
+// describing combos the engine no longer produces for those ids, the
+// mechanism detected it exactly as designed — and the suite stayed green,
+// because nothing asserted it. A mechanism that records staleness and
+// surfaces it nowhere is the original defect wearing a hat.
+//
+// So: BOTH digest lists are asserted, for EVERY recorded run (A–E), because
+// re-running check E at the integrated head turned up the same defect one
+// file over — checks B and D resolve wizard identities from ids too, so f3
+// moved their sampled combos as well, and check D IS the AC1 four-criteria
+// deliverable. An engine change that invalidates any of those runs now FAILS
+// `node --test app/tests/*.test.js` from the repo root until that check is
+// re-run. The cost is real and deliberate — a container without bucket
+// access or a native canvas build cannot re-run the checks and therefore
+// cannot be green; the honest report of that is the signal, and a green
+// suite over numbers from a tree that no longer exists is what we are
+// refusing.
+// ---------------------------------------------------------------------------
+
+test('THE GATE: every engine module the shipped run MEASURES still hashes to what the run recorded (move the engine without re-running check E and this fails)', () => {
+  const f = shippedRunFreshness();
+  const recorded = shippedRun.provenance.engineDigests;
+  assert.ok(recorded && Object.keys(recorded).length > 0, 'the run recorded a digest per engine module it measures');
+  assert.deepEqual(Object.keys(recorded).sort(), ENGINE_DIGEST_FILES.slice().sort(),
+    'the recorded engine set is the declared engine set — a module added to the list without a re-run was never measured by the shipped run');
+  assert.deepEqual(f.staleEngine, [], stalenessMessage(f));
+  // and the whole verdict, both lists, one place
+  assert.equal(f.fresh, true, stalenessMessage(f));
+  assert.equal(f.commit, shippedRun.provenance.commit, 'the gate reports the commit the run was made at');
+});
+
+test('THE GATE covers EVERY recorded run, not just check E — checks A, B, C and D too', () => {
+  const all = allFreshness();
+  assert.deepEqual(all.checks.map((c) => c.check), CHECK_IDS, 'every declared check is gated');
+  assert.ok(CHECK_IDS.length >= 5, 'A–E are declared');
+  for (const id of CHECK_IDS) {
+    const spec = CHECK_RUNS[id];
+    const record = JSON.parse(fs.readFileSync(path.join(REPO, spec.runFile), 'utf8'));
+    const p = record.provenance;
+    assert.ok(p, `${spec.runFile} records the tree it was made on`);
+    assert.equal(p.check, id, `${spec.runFile} names which check's declared file lists its digests belong to`);
+    assert.match(p.commit, /^[0-9a-f]{40}$/, `${spec.runFile} records the commit it ran at in full`);
+    assert.deepEqual(p.dirtySources, [], `${spec.runFile}: no file this run measures may be uncommitted at run time (dirty: ${JSON.stringify(p.dirtyFiles)})`);
+    assert.deepEqual(Object.keys(p.harnessDigests).sort(), spec.harness.slice().sort(), `${spec.runFile}: the recorded harness set is the declared one`);
+    assert.deepEqual(Object.keys(p.engineDigests).sort(), spec.engine.slice().sort(), `${spec.runFile}: the recorded engine set is the declared one`);
+  }
+  for (const c of all.checks) assert.equal(c.fresh, true, stalenessMessage(c));
+  assert.equal(all.fresh, true, () => all.stale.map(stalenessMessage).join('\n'));
+});
+
+test('THE GATE can fail: a single changed byte in a measured engine module is reported STALE, and the file is named', () => {
+  // The negative control for the gate itself — a gate that cannot fail
+  // proves nothing, which is the same argument check E's own negative
+  // control makes about the pixel comparison. Built from a record that is
+  // fresh BY CONSTRUCTION (the tree as it is right now), so this exercises
+  // the gate's logic whatever state the shipped runs happen to be in.
+  const freshRecord = {
+    ranAt: 'synthetic',
+    provenance: {
+      commit: 'f'.repeat(40),
+      harnessDigests: digestFiles(HARNESS_DIGEST_FILES),
+      engineDigests: digestFiles(ENGINE_DIGEST_FILES),
+    },
+  };
+  assert.equal(freshnessOf(freshRecord).fresh, true, 'a record of the tree as it is now is fresh');
+
+  const doctored = JSON.parse(JSON.stringify(freshRecord));
+  doctored.provenance.engineDigests['app/engine/wizardRig.js'] = 'sha256:0000000000000000000000000000000000000000000000000000000000000000';
+  const f = freshnessOf(doctored);
+  assert.equal(f.fresh, false, 'a changed engine module makes the run stale');
+  assert.deepEqual(f.staleEngine, ['app/engine/wizardRig.js'], 'the gate names the module that moved');
+  assert.deepEqual(f.staleHarness, [], 'and nothing else');
+  assert.match(stalenessMessage(f), /engine modules the run MEASURES changed since the run: app\/engine\/wizardRig\.js/);
+  assert.match(stalenessMessage(f), /npm run check-e/, 'the failure says how to fix it');
+
+  // the same for a harness source …
+  const doctoredHarness = JSON.parse(JSON.stringify(freshRecord));
+  doctoredHarness.provenance.harnessDigests['tools/parity/compare.mjs'] = 'sha256:dead';
+  assert.deepEqual(freshnessOf(doctoredHarness).staleHarness, ['tools/parity/compare.mjs']);
+
+  // … and for a module DROPPED from the record entirely: absence is staleness,
+  // not a pass (the run cannot have measured what it never recorded).
+  const dropped = JSON.parse(JSON.stringify(freshRecord));
+  delete dropped.provenance.engineDigests['app/engine/rigRecolor.js'];
+  assert.equal(freshnessOf(dropped).fresh, false, 'a missing digest is stale, never fresh');
+  assert.ok(freshnessOf(dropped).staleEngine.includes('app/engine/rigRecolor.js'));
+  assert.equal(freshnessOf({ ranAt: 'never', provenance: {} }).fresh, false, 'a record with no digests at all is stale, never fresh');
+
+  // … and per check: every declared check's own lists can go stale on their
+  // own terms (check C measures the timeline, check D the stage, and so on).
+  for (const id of CHECK_IDS) {
+    const spec = CHECK_RUNS[id];
+    const synthetic = { ranAt: 'synthetic', provenance: { commit: 'f'.repeat(40), harnessDigests: digestFiles(spec.harness), engineDigests: digestFiles(spec.engine) } };
+    assert.equal(freshnessOfRecord(synthetic, spec).fresh, true, `check ${id}: a record of this tree is fresh`);
+    const moved = JSON.parse(JSON.stringify(synthetic));
+    const victim = spec.engine[0];
+    moved.provenance.engineDigests[victim] = 'sha256:0';
+    const v = freshnessOfRecord(moved, spec);
+    assert.equal(v.fresh, false, `check ${id}: a moved engine module is stale`);
+    assert.deepEqual(v.staleEngine, [victim], `check ${id}: the gate names ${victim}`);
+    assert.match(stalenessMessage(v), new RegExp(spec.rerun.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `check ${id}: the failure names its own re-run command`);
+  }
+});
+
+test('THE GATE is reachable in one offline command, and the report OPENS with it (a reader meets the rule before the numbers)', () => {
+  // the whole point of the banner: the correction cannot live only where
+  // nobody looks. It is the first thing after the title.
+  const report = fs.readFileSync(path.join(REPO, 'tools', 'parity', 'PARITY-REPORT.md'), 'utf8');
+  const head = report.split('\n').slice(0, 30).join('\n');
+  assert.match(head, /FRESHNESS GATE/, 'the report opens with the freshness gate banner');
+  assert.match(head, new RegExp(shippedRun.provenance.commit.slice(0, 7)), 'the banner names the commit this report describes');
+  assert.match(head, /node tools\/parity\/freshness\.mjs/, 'the banner names the one-command check');
+  assert.match(head, /asserts both lists/i, 'the banner states that the digests are asserted, not merely recorded');
+  assert.equal(head.includes(freshnessBanner(shippedRun.provenance)), true,
+    'the banner in the report is the one the generator emits for this run (regenerate the report: npm run check-e)');
+
+  // the freshness CLI is wired up as a script, so "check it yourself" is true
+  const pkg = JSON.parse(fs.readFileSync(path.join(REPO, 'tools', 'parity', 'package.json'), 'utf8'));
+  assert.equal(pkg.scripts.freshness, 'node freshness.mjs', 'npm run freshness exists');
+
+  // RESULTS.md is the other document a reader reads as "the results"; it must
+  // not be left quoting an older run's commit than the one that shipped.
+  const results = fs.readFileSync(path.join(REPO, 'tools', 'parity', 'RESULTS.md'), 'utf8');
+  assert.match(results, new RegExp(shippedRun.provenance.commit.slice(0, 7)),
+    'RESULTS.md names the commit the shipped check-E run was made at');
 });
 
 test("the shipped run's canonical row is the PRE-REGISTERED wizard, and says where its identity came from", () => {
