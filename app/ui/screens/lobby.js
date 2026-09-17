@@ -26,7 +26,13 @@ export function mountLobby(ctx) {
       const waitingForHuman = lobby.reservedForHumanSeats && lobby.reservedForHumanSeats.includes(i);
       return el('div', { class: 'cb-round-row' }, [
         el('span', {}, `Seat ${i + 1}`),
-        el('span', { class: 'cb-micro' }, waitingForHuman ? '…waiting for a 2nd human (O7)…' : '…waiting…'),
+        // N-C6/R11 [LAW] re-probe fix: the O7 line is a full sentence a
+        // player reads ("…waiting for a 2nd human (O7)…"); the C6 sweep
+        // only ever inspected `cb-micro` literal-string children, missing
+        // this ternary's true branch entirely. Moved to the prose face
+        // (the plain "…waiting…" false branch renders on the SAME element/
+        // class either way, so both branches move together).
+        el('span', { class: 'cb-prose' }, waitingForHuman ? '…waiting for a 2nd human (O7)…' : '…waiting…'),
       ]);
     }
     return el('div', { class: 'cb-round-row' }, [
@@ -43,7 +49,11 @@ export function mountLobby(ctx) {
       el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark)]),
       el('h2', {}, treatment.copy.lobbyWaiting),
       el('div', { class: 'cb-round-list' }, lobby.seats.map(seatRow)),
-      el('p', { class: 'cb-prose cb-prose-small' }, lobby.phase === 'COUNTDOWN' ? 'All seated. Locking the bracket…' : 'Seating humans first, NPCs fill the rest — every NPC seat is tagged.'),
+      // N-C6/R11 [LAW] re-probe fix: both ternary branches here are full
+      // sentences ("All seated. Locking the bracket…" / "Seating humans
+      // first, NPCs fill the rest — every NPC seat is tagged.") -- moved
+      // off the data face (was `cb-micro`) onto the prose face.
+      el('p', { class: 'cb-prose' }, lobby.phase === 'COUNTDOWN' ? 'All seated. Locking the bracket…' : 'Seating humans first, NPCs fill the rest — every NPC seat is tagged.'),
     ]);
   }
 

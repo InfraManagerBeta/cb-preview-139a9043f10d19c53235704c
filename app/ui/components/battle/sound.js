@@ -1,38 +1,66 @@
-// app/ui/components/battle/sound.js — R10 sound, ported to the reference
-// implementation's own schedule (CB-BUILD-005): the bundle's fight-intro/
-// fight-loop/fight-round-N/voice-round-N WAVs, triggered at exactly the
-// offsets the shipped 2019 soundManager used
-// (assets/cw-asset-bundle/reference/DuelPlayer/soundManager.js):
-//   duel ready  → fight-intro; fight-loop at +1.8s; voice-round-1 at +2.2s
-//   round start → stop loop; fight-round-N; and unless it is the final
-//                 round: restart loop at +2.2s, NEXT round's voice at +3.6s
-// All of it sits behind the default-OFF toggle (autoplay policies: a
-// browser will reject/ignore audio.play() before a user gesture, so every
-// call here is best-effort and never throws).
+// app/ui/components/battle/sound.js — R78a [LAW] (CB-BUILD-016): sound is
+// ON BY DEFAULT (the default-OFF guess this replaces cited a rule that said
+// nothing about sound; R78a now does). Because phones withhold audio until
+// a gesture, the audio layer ARMS on the player's first gesture (app.js
+// installs installFirstTapArming on the first `pointerdown` — or `keydown`,
+// for keyboard/AT users — anywhere) and is first
+// heard during the summon ceremony (R74a — the SUMMON press is itself a tap,
+// so the ceremony is always armed). The duel audio bed (the bundle's
+// fight-intro/loop/round WAVs) plays through the bracket as the 2019 client
+// played it; a mute control (soundToggleButton below, the same control the
+// duel screen renders) is visible wherever sound plays. Every play call is
+// best-effort and never throws (autoplay policies can still reject).
+import { el } from '../dom.js';
 import { soundUrl } from './assets.js';
 import { loadOverrides, patchOverrides } from '../../../engine/overrides.js';
 
-// The reference implementation's timing constants, verbatim (soundManager.js
-// scheduleOnceIn calls). Conformance-checked against the reference file by
-// app/tests/battle-stage-port.test.js.
-export const REFERENCE_SOUND_SCHEDULE = Object.freeze({
-  loopAfterIntroSec: 1.8,
-  firstVoiceSec: 2.2,
-  loopRestartAfterRoundSec: 2.2,
-  nextVoiceAfterRoundSec: 3.6,
-  totalRounds: 5,
-});
-
-// The full sample set the reference loads (12 bites), mapped to the
-// bundle's own files.
-export const DUEL_SAMPLES = Object.freeze([
-  'fight-intro.wav', 'fight-loop.wav',
-  'fight-round-1.wav', 'fight-round-2.wav', 'fight-round-3.wav', 'fight-round-4.wav', 'fight-round-5.wav',
-  'voice-round-1.wav', 'voice-round-2.wav', 'voice-round-3.wav', 'voice-round-4.wav', 'voice-round-5.wav',
-]);
-
 const cache = new Map();
+
+// R78a arming: audio is withheld until the player's first gesture. Nothing
+// constructs or plays an Audio element before this flips — which also keeps
+// every play call a no-op under Node (no Audio global) until a test arms
+// explicitly.
+let armed = false;
+
+export function isSoundArmed() {
+  return armed;
+}
+
+export function armSound() {
+  armed = true;
+}
+
+/** Test hook: drop back to the pre-gesture state so arming paths (tap vs
+ * keyboard, f5 advisory) can each be exercised from cold in one process.
+ * Production code never calls this — a real player, once armed, stays armed. */
+export function disarmSoundForTests() {
+  armed = false;
+}
+
+/** Install the one-shot first-tap arming hook (R78a: "arms on the player's
+ * first tap") on `target` (default: the window). `pointerdown` is the
+ * earliest gesture event — it precedes the click that starts the summon
+ * ceremony, so the ceremony's own press both arms and starts the audio.
+ * Fix round f5 (advisory): a keyboard / assistive-technology user never
+ * fires `pointerdown` at all — a `keydown` satisfies browser autoplay
+ * policy equally, so the hook listens for BOTH and whichever gesture lands
+ * first arms (one-shot: both listeners come off together). */
+export function installFirstTapArming(target) {
+  const t = target || (typeof window !== 'undefined' ? window : null);
+  if (!t || typeof t.addEventListener !== 'function') return;
+  const onFirstTap = () => {
+    armSound();
+    if (typeof t.removeEventListener === 'function') {
+      t.removeEventListener('pointerdown', onFirstTap);
+      t.removeEventListener('keydown', onFirstTap);
+    }
+  };
+  t.addEventListener('pointerdown', onFirstTap);
+  t.addEventListener('keydown', onFirstTap);
+}
+
 function getAudio(name) {
+  if (typeof Audio === 'undefined') return null; // no audio host (Node) — every play is a no-op
   if (!cache.has(name)) {
     const a = new Audio(soundUrl(name));
     a.preload = 'none';
@@ -42,6 +70,7 @@ function getAudio(name) {
 }
 
 function safePlay(a) {
+  if (!a) return;
   try {
     a.currentTime = 0;
     const p = a.play();
@@ -49,83 +78,32 @@ function safePlay(a) {
   } catch { /* ignore */ }
 }
 
+// R78a: ON by default — overrides.js's defaultOverrides() now ships
+// soundEnabled: true; an explicit mute (setSoundEnabled(false)) persists.
 export function isSoundEnabled() {
   return !!loadOverrides().soundEnabled;
 }
 
 export function setSoundEnabled(enabled) {
   patchOverrides({ soundEnabled: !!enabled });
-  // CB-BUILD-fix-round-1 #3: the toggle stops AUDIO only. It used to call
-  // stopAll(), which also fired (and nulled) the presentation freeze hook —
-  // flipping SOUND OFF mid-reveal paused every wizard player (a looping
-  // idle never recovers) AND disarmed the real unmount teardown's freeze.
-  if (!enabled) stopAudio();
+  if (!enabled) stopAll();
 }
 
-// ---- scheduling (the reference's Tone.Transport, ported to timeouts) --------
-
-const scheduled = new Set();
-function scheduleOnceIn(seconds, fn) {
-  const handle = setTimeout(() => { scheduled.delete(handle); fn(); }, Math.round(seconds * 1000));
-  scheduled.add(handle);
-  return handle;
-}
-function clearScheduled() {
-  for (const h of scheduled) clearTimeout(h);
-  scheduled.clear();
+/** Enabled AND armed — the one gate every play path checks. */
+function canPlay() {
+  return armed && isSoundEnabled();
 }
 
-// CB-BUILD-005: the battle stage registers a freeze hook so stopAll() (the
-// duel screen's one teardown path — unmount, skip, result) also pauses the
-// visual players, not just the audio bed. One hook at a time; the active
-// stage owns it.
-let presentationFreezeHook = null;
-export function setPresentationFreezeHook(fn) {
-  presentationFreezeHook = typeof fn === 'function' ? fn : null;
-}
-
-/** CB-BUILD-fix-round-2 (re-review A): a stage that is destroyed must
- * release its freeze-hook ownership — but ONLY if it still owns the hook.
- * Identity-compared, so a stale stage's late destroy (the orphan-preload
- * path) can never disarm the hook a NEWER live stage has since taken. */
-export function releasePresentationFreezeHook(fn) {
-  if (presentationFreezeHook === fn) presentationFreezeHook = null;
-}
-
-/** CB-BUILD-fix-round-1 #3: stop the AUDIO bed alone — cancel every
- * scheduled sample and pause everything playing. Never touches the
- * presentation freeze hook, so the SOUND toggle can call it mid-reveal
- * without freezing the combatants or disarming the unmount teardown. */
-export function stopAudio() {
-  clearScheduled();
+export function stopAll() {
+  cancelScheduledVoices();
   for (const a of cache.values()) { try { a.pause(); } catch { /* ignore */ } }
 }
 
-/** The full teardown path (unmount / skip / result): stop the audio bed AND
- * fire the one-shot presentation freeze hook so the visual players pause
- * with it. The sound toggle must NOT call this — see stopAudio above. */
-export function stopAll() {
-  stopAudio();
-  if (presentationFreezeHook) {
-    const hook = presentationFreezeHook;
-    presentationFreezeHook = null;
-    try { hook(); } catch { /* ignore */ }
-  }
-}
-
-/** Warm the duel audio bed alongside the animation preload (the reference
- * loaded every sample before the duel; Audio preload is the browser-native
- * equivalent). Best-effort. */
-export function preloadDuelAudio() {
-  for (const name of DUEL_SAMPLES) {
-    try { getAudio(name).preload = 'auto'; } catch { /* ignore */ }
-  }
-}
-
-export function playIntro() { if (isSoundEnabled()) safePlay(getAudio('fight-intro.wav')); }
+export function playIntro() { if (canPlay()) safePlay(getAudio('fight-intro.wav')); }
 export function playLoop() {
-  if (!isSoundEnabled()) return;
+  if (!canPlay()) return;
   const a = getAudio('fight-loop.wav');
+  if (!a) return;
   a.loop = true;
   safePlay(a);
 }
@@ -134,33 +112,126 @@ export function stopLoop() {
   if (a) a.pause();
 }
 export function playRoundBeat(roundNumber) {
-  if (!isSoundEnabled()) return;
+  if (!canPlay()) return;
   const n = Math.min(5, Math.max(1, roundNumber));
   safePlay(getAudio(`fight-round-${n}.wav`));
-}
-function playVoice(roundNumber) {
-  if (!isSoundEnabled()) return;
-  const n = Math.min(5, Math.max(1, roundNumber));
-  safePlay(getAudio(`voice-round-${n}.wav`));
-}
-
-/** The reference's onDuelPlayerReady, verbatim schedule: intro now, the
- * loop at +1.8s, the round-1 voice at +2.2s. */
-export function scheduleDuelStart() {
-  if (!isSoundEnabled()) return;
-  playIntro();
-  scheduleOnceIn(REFERENCE_SOUND_SCHEDULE.loopAfterIntroSec, () => playLoop());
-  scheduleOnceIn(REFERENCE_SOUND_SCHEDULE.firstVoiceSec, () => playVoice(1));
+  // Fix round f5 (R78a/R78): the reference's soundManager.js:136 — each
+  // round start schedules the NEXT round's vocal sample ("we have to look
+  // one round ahead here") at +3.6s, except after the final round
+  // (`if (round !== 4)` in the reference's 0-based indexing = our round 5).
+  if (n !== 5) scheduleVoice(n + 1, VOICE_ON_ROUND_START_DELAY_MS);
 }
 
-/** The reference's onDuelPlayerRoundStart, verbatim schedule. `roundIndex`
- * is 0-based (0–4), exactly as the reference passes it. */
-export function scheduleRoundStart(roundIndex) {
-  if (!isSoundEnabled()) return;
-  stopLoop();
-  playRoundBeat(roundIndex + 1);
-  if (roundIndex !== REFERENCE_SOUND_SCHEDULE.totalRounds - 1) {
-    scheduleOnceIn(REFERENCE_SOUND_SCHEDULE.loopRestartAfterRoundSec, () => playLoop());
-    scheduleOnceIn(REFERENCE_SOUND_SCHEDULE.nextVoiceAfterRoundSec, () => playVoice(roundIndex + 2));
+// ---- Fix round f5 (R78a/R78): the §18 round voices --------------------------
+// `voice-round-1…5.wav` play on the 2019 reference's OWN triggers and
+// timings (assets/cw/reference/DuelPlayer/soundManager.js, the in-repo
+// authority): voiceRound0 (= voice-round-1.wav) at +2.2s on player-ready
+// (:112), and voiceRound{round+1} at +3.6s on each non-final round start
+// (:136). Scheduled with plain timers here (the reference used
+// Tone.Transport.scheduleOnce — same offsets, different clock); every fire
+// re-checks canPlay() so a mute landing inside the window silences the
+// voice, and stopAll()/stopAllExceptBed() cancel whatever is still pending.
+export const VOICE_ON_READY_DELAY_MS = 2200; // reference soundManager.js:112
+export const VOICE_ON_ROUND_START_DELAY_MS = 3600; // reference soundManager.js:136
+
+const voiceTimers = new Set();
+
+function scheduleVoice(n, delayMs) {
+  if (!canPlay()) return; // muted/unarmed: schedule nothing (parity with every other play path's gate)
+  if (n < 1 || n > 5) return;
+  const handle = setTimeout(() => {
+    voiceTimers.delete(handle);
+    if (canPlay()) safePlay(getAudio(`voice-round-${n}.wav`));
+  }, delayMs);
+  if (handle && typeof handle.unref === 'function') handle.unref(); // never hold a Node process open
+  voiceTimers.add(handle);
+}
+
+/** The reveal's player-ready beat: voice-round-1 at +2.2s (soundManager.js:112). */
+export function scheduleDuelReadyVoice() {
+  scheduleVoice(1, VOICE_ON_READY_DELAY_MS);
+}
+
+export function cancelScheduledVoices() {
+  for (const handle of voiceTimers) clearTimeout(handle);
+  voiceTimers.clear();
+}
+
+// ---- Fix round f5 (R78a [LAW]): the bed carries through the bracket ---------
+// "the duel audio bed (§18 sound/) plays through the bracket as the 2019
+// client played it" — the 2019 sound layer lived at the duel-player level
+// and stopped only when the player LEFT that context, never on every
+// internal transition. This app renders the bracket context across routes
+// (the duel screen's own commit/reveal/result/intermission phases, the
+// bracket board, and sitting — the eliminated player's own screen and the
+// door to post-elimination spectating), so screen teardowns call
+// releaseAudioForRoute(nextRoute): the looping bed CARRIES to another
+// bracket-context route (one-shots and pending voices still stop — those
+// are duel-reveal beats) and everything stops on leaving the context
+// (lobby, wallet, landing, …) exactly as the A3 fix required.
+export const BED_ROUTES = ['duel', 'bracket-board', 'sitting'];
+
+export function bedCarriesTo(route) {
+  return BED_ROUTES.includes(route);
+}
+
+/** Stop every one-shot (intro sting, round beats, voices — fired and
+ * pending) but leave the looping bed sounding. */
+export function stopAllExceptBed() {
+  cancelScheduledVoices();
+  for (const [name, a] of cache.entries()) {
+    if (name === 'fight-loop.wav') continue;
+    try { a.pause(); } catch { /* ignore */ }
   }
+}
+
+/** Route-aware teardown: the one call every bracket-context screen makes on
+ * unmount, with the route being mounted NEXT (ctx.router.current() inside an
+ * onUnmount callback — the hash has already moved by then). */
+export function releaseAudioForRoute(nextRoute) {
+  if (bedCarriesTo(nextRoute)) stopAllExceptBed();
+  else stopAll();
+}
+
+/** Idempotent: make sure the bed is sounding (armed + enabled) without
+ * resetting its loop point when it already is. The result card calls this —
+ * the bed reaches the result even on a path that never ran the reveal
+ * (a legacy replay-unavailable duel commits straight to the result card). */
+export function carryBed() {
+  if (!canPlay()) return;
+  const a = getAudio('fight-loop.wav');
+  if (!a) return;
+  a.loop = true;
+  if (a.paused === false || a.playing === true) return; // already sounding — don't reset it
+  safePlay(a);
+}
+
+// ---- R74a/R78a: the summon ceremony's audio ------------------------------
+// The bundle ships no summon-specific WAV; the ceremony opens on the bed's
+// own intro sting and carries the loop for its duration — the first thing
+// the player hears (R78a), from the same §18 sound set the bracket plays.
+export function playSummonCeremony() {
+  playIntro();
+  playLoop();
+}
+export function stopSummonCeremony() {
+  stopLoop();
+}
+
+// ---- R78a: the mute control ----------------------------------------------
+/** The visible mute control (R78a: "a mute control visible wherever sound
+ * plays") — same class/copy as the duel screen's own toggle, packaged so
+ * every surface that plays sound can render one. */
+export function soundToggleButton() {
+  const label = () => (isSoundEnabled() ? '\uD83D\uDD0A SOUND ON' : '\uD83D\uDD07 SOUND OFF');
+  const btn = el('button', {
+    class: `cb-sound-toggle${isSoundEnabled() ? ' on' : ''}`,
+    onClick: () => {
+      setSoundEnabled(!isSoundEnabled());
+      btn.className = `cb-sound-toggle${isSoundEnabled() ? ' on' : ''}`;
+      btn.innerHTML = '';
+      btn.appendChild(document.createTextNode(label()));
+    },
+  }, label());
+  return btn;
 }

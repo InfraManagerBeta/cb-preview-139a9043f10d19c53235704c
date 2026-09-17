@@ -100,12 +100,11 @@ test('f4/A-a/A-b: the spectate button (sitting.js) and the screener Continue but
   const screenerSrc = await read('ui/screens/screener.js');
   assert.ok(/let submitting = false/.test(screenerSrc), 'expected the screener to declare a submitting guard');
   assert.ok(/if \(submitting\) return;.*A-b/.test(screenerSrc) || /f4\/A-b/.test(screenerSrc), 'expected the screener\'s Continue handler to check the submitting guard');
-  // CB-BUILD-001/R70: the completion gate is no longer "both checkboxes
-  // checked" (there is no jurisdiction checkbox any more) -- it's
-  // "canContinue" (DOB entered + the detected location verdict allows
-  // play). The submitting guard itself is unchanged; only the gate's name
-  // moved with the field it now gates.
-  assert.ok(/!canContinue \|\| submitting/.test(screenerSrc), 'expected Continue\'s aria-disabled to also reflect the submitting guard');
+  // CB-BUILD-001: R70 replaced the two-checkbox gate ("bothChecked") with a
+  // detected jurisdiction verdict + a date-of-birth entry; the Continue
+  // button's aria-disabled now reflects DOB validity + the same submitting
+  // guard, not "bothChecked".
+  assert.ok(/!dobValid \|\| submitting/.test(screenerSrc), 'expected Continue\'s aria-disabled to also reflect the submitting guard');
 });
 
 test('f4/A-g: renderResult\'s logNarration call catches KillSwitchFrozenError and renders the stop banner instead of freezing on the reveal\'s last frame', async () => {
@@ -168,17 +167,24 @@ test('f4/A-i: duel.js registers ctx.router.onUnmount at all three timer sites (c
   const src = await read('ui/screens/duel.js');
   const onUnmountCalls = src.match(/ctx\.router\.onUnmount\(/g) || [];
   assert.equal(onUnmountCalls.length, 2, `expected exactly 2 onUnmount registrations (one covering timerHandle for commit+reveal, one for intermissionTimer), found ${onUnmountCalls.length}`);
-  // f5/A3: the mount-time registration also stops every battle sound on
-  // unmount now (stopAll()) -- updated from the bare two-clear-calls form.
-  assert.ok(/ctx\.router\.onUnmount\(\(\) => { clearInterval\(timerHandle\); clearTimeout\(timerHandle\); stopAll\(\); }\);/.test(src), 'expected the mount-time registration to clear timerHandle via both clear functions AND stop all battle sound');
-  assert.ok(/ctx\.router\.onUnmount\(\(\) => clearInterval\(intermissionTimer\)\);/.test(src), 'expected showIntermission to re-register its own teardown for intermissionTimer');
+  // f5/A3, amended by fix round f5/R78a: the mount-time registration stops
+  // battle audio ROUTE-AWARE now (releaseAudioForRoute -- the bed carries to
+  // another bracket-context screen, everything stops on leaving the
+  // context) -- updated from the unconditional stopAll() form.
+  assert.ok(/ctx\.router\.onUnmount\(\(\) => { clearInterval\(timerHandle\); clearTimeout\(timerHandle\); releaseAudioForRoute\(ctx\.router\.current\(\)\); }\);/.test(src), 'expected the mount-time registration to clear timerHandle via both clear functions AND release battle audio route-aware');
+  assert.ok(/ctx\.router\.onUnmount\(\(\) => { clearInterval\(intermissionTimer\); releaseAudioForRoute\(ctx\.router\.current\(\)\); }\);/.test(src), 'expected showIntermission to re-register its own teardown for intermissionTimer, also releasing audio route-aware (the bed sounds through the intermission)');
 });
 
-test('f5/A3: unmounting the duel screen stops every battle sound (sound.stopAll()) -- no lingering loop/intro/beat audible after navigating away', async () => {
+test('f5/A3 + fix round f5/R78a: unmounting the duel screen releases battle audio route-aware -- one-shots always stop; the bed carries ONLY to another bracket-context screen and stops everywhere else', async () => {
   const src = await read('ui/screens/duel.js');
-  assert.ok(src.includes("import { isSoundEnabled, setSoundEnabled, playIntro, playLoop, stopLoop, playRoundBeat, stopAll } from '../components/battle/sound.js';"), 'expected duel.js to import stopAll from the battle sound module');
+  assert.ok(src.includes("import { isSoundEnabled, setSoundEnabled, playIntro, playLoop, playRoundBeat, scheduleDuelReadyVoice, stopAllExceptBed, releaseAudioForRoute, carryBed, soundToggleButton } from '../components/battle/sound.js';"), 'expected duel.js to import the route-aware release (and the rest of the f5 sound API) from the battle sound module');
   const teardownLine = src.split('\n').find((l) => l.includes('ctx.router.onUnmount') && l.includes('timerHandle'));
-  assert.ok(teardownLine && teardownLine.includes('stopAll()'), 'expected the mount-time onUnmount teardown to call stopAll()');
+  assert.ok(teardownLine && teardownLine.includes('releaseAudioForRoute(ctx.router.current())'), 'expected the mount-time onUnmount teardown to call releaseAudioForRoute with the route being mounted next');
+  // The A3 guarantee itself lives in sound.js now: releaseAudioForRoute
+  // stops EVERYTHING for a non-bracket route (see sound-bed-carry.test.js
+  // for the behavioral checks in both directions).
+  const soundSrc = await read('ui/components/battle/sound.js');
+  assert.ok(/export function releaseAudioForRoute\(nextRoute\) {\n  if \(bedCarriesTo\(nextRoute\)\) stopAllExceptBed\(\);\n  else stopAll\(\);\n}/.test(soundSrc), 'expected releaseAudioForRoute to stop everything for a non-bracket route (the A3 guarantee) and keep only the bed otherwise');
 });
 
 test('f4/A-i: app/ui/router.js exports the onUnmount mechanism duel.js relies on', async () => {

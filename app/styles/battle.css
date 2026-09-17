@@ -60,12 +60,6 @@
 
 .cb-battle-stage { display: flex; flex-direction: column; gap: 10px; }
 .cb-stage-row { display: flex; align-items: stretch; gap: 8px; }
-/* CB-BUILD-005: the persistent shell containers duel.js patches in place --
-   the centre column carries the arena stage (or the alternates' provisional
-   stage) and must own the row's remaining width. */
-.cb-stage-center { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
-.cb-stage-center > * { flex: 1 1 auto; }
-.cb-rail-container { flex: 0 0 28px; display: flex; }
 .cb-spell-rail {
   display: flex;
   flex-direction: column;
@@ -97,6 +91,24 @@
   position: relative;
   overflow: hidden;
 }
+/* CB-BUILD-007 track 1/R12: the alternates' provisional-stage notice --
+   absolutely positioned so it never disturbs the two combatants' own
+   space-around layout above; honest and visible, not alarming (muted
+   off-white, not the loss/danger red). Incumbent (rigStage.js) never
+   renders this element at all -- treatment.provisionalStageLine is absent
+   from incumbent.json by design. */
+.cb-provisional-stage-notice {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  text-align: center;
+  z-index: 2;
+  color: var(--cb-offwhite);
+  opacity: 0.85;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
 .cb-combatant { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .cb-combatant-gif { object-fit: contain; image-rendering: auto; }
 .cb-combatant-gif.flip { transform: scaleX(-1); }
@@ -107,25 +119,6 @@
   background: #16140e;
   border: 2px solid var(--cb-yellow);
   color: var(--cb-yellow);
-}
-/* CB-BUILD-007: the alternate-treatment placeholder stacks its element
-   glyph over a clearly-marked provisional badge instead of standing alone
-   as a bare colored box -- confined to the placeholder path (never applied
-   to the incumbent's <img> art). */
-.cb-combatant-placeholder.cb-provisional-stage {
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px 4px;
-}
-.cb-provisional-badge {
-  font-size: 8px;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
-  text-align: center;
-  padding: 2px 4px;
-  border: 1px dashed currentColor;
-  border-radius: 4px;
-  max-width: 92px;
 }
 .cb-combatant-placeholder.cb-state-charge, .cb-combatant-placeholder.cb-state-chargeLoop {
   animation: cbCharge 500ms ease-in-out infinite alternate;
@@ -145,145 +138,6 @@
 .cb-combatant-state-label { letter-spacing: 0.12em; color: #999; }
 .cb-combatant-name { font-size: 12px; }
 
-/* ---- CB-BUILD-005: the incumbent's arena composite --------------------------
-   Layout constants ported from the asset bundle's reference implementation
-   stylesheet (reference/DuelPlayer/DuelPlayer.css): wizards sit
-   at bottom 21%, width 41%, horizontal offset -1.4%, away side mirrored
-   (scaleX(-1)); FX layers sit at bottom 0, width 115%, offset -6.5%;
-   z-order wizard 3 / fx 2 / moment overlay above. The arena background
-   image (the bundle's fightScene/fightBG.svg for the incumbent) is set
-   inline by stage.js from assets.js#arenaSources -- treatment-supplied art
-   never hardcodes into this treatment-agnostic stylesheet. The stage field
-   itself is the app's dark chrome: NEVER bare white. */
-.cb-arena-stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 880 / 495; /* the arena art's own viewBox */
-  background-color: var(--cb-black, #0A0A08);
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  overflow: hidden;
-  flex: 1 1 auto;
-}
-.cb-arena-grid {
-  /* R79: the 32px grid texture at 5-6% */
-  position: absolute;
-  inset: 0;
-  background-size: 32px;
-  opacity: 0.055;
-  pointer-events: none;
-  z-index: 1;
-}
-.cb-wizard-slot {
-  position: absolute;
-  bottom: 21%;
-  width: 41%;
-  aspect-ratio: 1720 / 1400; /* the shape documents' own frame */
-  z-index: 3;
-}
-.cb-wizard-slot.p1 { left: -1.4%; }
-.cb-wizard-slot.p2 { right: -1.4%; transform: scaleX(-1); }
-.cb-anim-layer {
-  /* One persistent, preloaded player per state -- cross-faded, never
-     re-fetched, never src-swapped (R74: no blank, no flash). The incoming
-     layer fades in while the outgoing layer is still drawn. */
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 140ms linear, visibility 0s linear 140ms;
-  pointer-events: none;
-}
-.cb-anim-layer.visible {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 140ms linear;
-}
-.cb-anim-layer canvas { display: block; width: 100%; height: 100%; }
-.cb-fx-slot {
-  position: absolute;
-  bottom: 0;
-  width: 115%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-}
-.cb-fx-slot.p1 { left: -6.5%; }
-.cb-fx-slot.p2 { right: -6.5%; transform: scaleX(-1); }
-.cb-fx-anim-layer {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 180ms linear;
-}
-.cb-fx-anim-layer.visible { opacity: 1; }
-.cb-fx-anim-layer canvas { display: block; width: 100%; height: 100%; }
-.cb-fx-backdrop {
-  /* the bundle's per-element backdrop art (client-static/img/duel/
-     wizard-bg-*-win|lose.svg) -- part of the FX pass, not a flat fill */
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 220ms ease-out;
-}
-.cb-fx-backdrop.visible { opacity: 0.55; }
-.cb-stage-nameplates {
-  position: absolute;
-  left: 0; right: 0; bottom: 4%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 6%;
-  z-index: 4;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-}
-.cb-stage-nameplate { font-size: 12px; display: flex; align-items: center; gap: 6px; }
-.cb-moment-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 6;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.cb-moment-overlay.active {
-  display: flex;
-  background: rgba(10, 10, 8, 0.55); /* a scrim OVER the composite -- the arena and combatants stay behind, never a blank swap */
-}
-.cb-stage-loader {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: var(--cb-black, #0A0A08);
-}
-.cb-stage-loader-img { width: 88px; }
-.cb-stage-progress {
-  width: 140px; height: 10px;
-  border: 1px solid #333;
-  background: #16140e;
-}
-.cb-stage-progress-bar {
-  width: 0;
-  height: 100%;
-  background: var(--cb-yellow);
-  transition: width 160ms linear;
-}
-
-/* ---- the ALTERNATES' provisional affinity FX pulse (R12/CB-BUILD-007: no
-   bundled FX art for the alternates; the incumbent's FX pass is layered
-   from the bundle's sources in stage.js#playAffinityFx, never this) ------ */
 .cb-affinity-fx {
   position: absolute;
   inset: 0;
@@ -334,12 +188,13 @@
 
 /* ---- R75 coverage-gap moments ------------------------------------------ */
 .cb-moment { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px; }
-/* CB-BUILD-fix-round-3 (R11): the moment caption is an authored SENTENCE a
-   player reads ("{loser} — struck from the ledger."), not a figure/tag, so
-   it wears the PROSE face. The 12px top margin restores the clearance the
-   caption had as a <p> (~12px UA margin) on top of .cb-moment's 10px flex
-   gap — same compensation precedent as .cb-result-delta's explicit margin. */
-.cb-moment-caption { font-family: var(--font-prose); font-size: 12px; color: #ccc; margin: 12px 0 0; }
+/* N-C6/R11 [LAW] re-probe fix: every .cb-moment-caption is a full sentence
+   the player reads mid-reveal (moments.js: "<name> — struck from the
+   ledger.", "<name> — drained to nothing.", "<name> advances — coin
+   flip."), never a bare figure/tag -- no legitimate non-sentence use of
+   this class exists (audited: all four call sites, moments.js), so the
+   class itself moves to the prose face, not a per-site override. */
+.cb-moment-caption { font-family: var(--font-prose); font-size: 12px; color: #ccc; }
 
 .cb-erosion-wipe {
   width: 140px; height: 100px;
@@ -427,3 +282,163 @@
 }
 .cb-trophy-face.back { transform: rotateY(180deg); }
 @keyframes cbTrophyFlip { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }
+
+/* ---- CB-BUILD-005: the incumbent's rig stage (port of the 2019 duel
+   presentation's layer structure — see assets/cw/reference/DuelPlayer's
+   stylesheet: wizards absolutely positioned over the arena scene, one
+   stacked, visibility-toggled layer per state per side, away side
+   mirrored; here the toggle is an opacity cross-fade so a state switch
+   never blanks or flashes). Colors: none of these are treatment values —
+   the combatant art carries its own palette (R79). ---- */
+.cb-rig-stage {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  background: #0a0a08; /* never shown once the arena img paints; base.css page ground */
+}
+.cb-rig-arena {
+  display: block;
+  width: 100%;
+  height: auto; /* the arena art (880x495) pins the stage's aspect */
+}
+.cb-rig-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.cb-rig-scene { visibility: hidden; }
+.cb-rig-stage.ready .cb-rig-scene { visibility: visible; }
+/* reference geometry: wizard columns sit on the arena floor, mirrored away */
+.cb-rig-wizard {
+  position: absolute;
+  bottom: 21%;
+  width: 41%;
+  aspect-ratio: 1720 / 1400; /* the library's frame */
+  z-index: 3;
+}
+.cb-rig-wizard.home { left: -1.4%; }
+.cb-rig-wizard.away { right: -1.4%; transform: scaleX(-1); }
+.cb-rig-anim, .cb-rig-cape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 120ms linear; /* the cross-fade: preloaded canvases, never a src swap */
+  pointer-events: none;
+}
+.cb-rig-anim.visible { opacity: 1; }
+.cb-rig-cape { z-index: 4; }
+.cb-rig-cape.visible { opacity: 1; }
+.cb-rig-anim canvas, .cb-rig-cape canvas { display: block; width: 100%; height: 100%; }
+/* the reference's loader card: progress over the hidden scene, no blank flash */
+.cb-rig-loader {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 115px;
+  padding: 10px;
+  background: rgba(10,10,8,0.85);
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+}
+.cb-rig-loader.done { display: none; }
+/* A-loader (fix round F2, R74/§12/R83): total load failure degrades honestly
+   — the loader hides, the arena and nameplates stay (never a blank field),
+   and a one-line player-language notice sits where the loader was. PROSE
+   face (.cb-prose carries the font); this rule is position/colour only. */
+.cb-rig-degraded-notice {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  max-width: 72%;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #f0eee6;
+  background: rgba(10,10,8,0.85);
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+}
+.cb-rig-progress {
+  position: relative;
+  height: 10px;
+  border: 1px solid #000;
+  background: #1a1a18;
+}
+.cb-rig-progress-bar {
+  width: 0;
+  height: 100%;
+  background: var(--cb-yellow);
+  transition: width 120ms linear;
+}
+.cb-rig-nameplates {
+  position: absolute;
+  left: 0; right: 0; bottom: 4%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4%;
+  z-index: 7;
+}
+.cb-rig-nameplate { max-width: 45%; }
+.cb-rig-nameplate .cb-combatant-name {
+  background: rgba(10,10,8,0.75);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+/* ---- CB-BUILD-014/R74a: the summon ceremony (appended block; nothing
+   above this line changed). The ceremony stacks the bundle's summon
+   sequence layers (preloaded lottie canvases, visibility-toggled with an
+   opacity cross-fade -- the same layer pattern as the rig stage) and ends
+   in the rig-drawn reveal of the actual summoned wizard. ------------------ */
+.cb-summon-ceremony {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2704 / 1400; /* the summon takes' own frame */
+  min-height: 180px;
+  background: #0A0A08;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.cb-summon-stack { position: absolute; inset: 0; }
+.cb-summon-anim {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+.cb-summon-anim.visible { opacity: 1; }
+.cb-summon-anim canvas, .cb-summon-wizard canvas { display: block; width: 100%; height: 100%; }
+/* the element's flag and prep are staged overlays, not full-bleed takes */
+.cb-summon-anim[data-anim='flag'] { inset: auto; top: 5%; right: 5%; width: 16%; height: 30%; }
+.cb-summon-anim[data-anim='prep'] { inset: auto; bottom: 6%; left: 30%; width: 40%; height: 34%; }
+.cb-summon-anim[data-anim='sparkles'] { inset: auto; bottom: 4%; left: 20%; width: 60%; height: 36%; }
+/* the forming beat's part takes centre over the in-progress loop */
+.cb-summon-anim[data-anim='body'],
+.cb-summon-anim[data-anim='hands'],
+.cb-summon-anim[data-anim='hat'] { inset: auto; top: 4%; left: 25%; width: 50%; height: 92%; }
+/* first sight of the wizard: the rig-drawn reveal */
+.cb-summon-wizard {
+  position: absolute;
+  inset: auto;
+  top: 2%; bottom: 2%;
+  left: 50%;
+  width: 44%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 320ms ease;
+  pointer-events: none;
+}
+.cb-summon-wizard.visible { opacity: 1; }
+.cb-summon-ceremony.loading { opacity: 0.85; }
+.cb-summon-phase-label { margin: 8px 0 6px; }
+.cb-summon-footer { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+.cb-summon-reveal-card { border-color: var(--cb-yellow); }

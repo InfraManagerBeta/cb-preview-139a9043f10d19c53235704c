@@ -1,0 +1,26 @@
+Equilibrium mixes (per-round expected-score game, fictitious play, 2e6 iters)
+own affinity vs opp affinity -> own mix [Fire, Water, Air]
+  Fire  vs Fire  -> [0.278, 0.361, 0.361]
+  Fire  vs Water -> [0.278, 0.361, 0.361]
+  Fire  vs Air   -> [0.278, 0.361, 0.361]
+  Water vs Fire  -> [0.361, 0.278, 0.361]
+  Water vs Water -> [0.361, 0.278, 0.361]
+  Water vs Air   -> [0.361, 0.278, 0.361]
+  Air   vs Fire  -> [0.362, 0.361, 0.277]
+  Air   vs Water -> [0.361, 0.361, 0.278]
+  Air   vs Air   -> [0.361, 0.361, 0.278]
+
+Policy race, both affinities Fire (symmetric), 2e6 duels per cell:
+  uniform vs equilibrium : uniform wins 49.83%, eq wins 49.68%, ties 0.49%, mean score 0.28
+  equilibrium vs itself  : A 49.74%, B 49.75%, ties 0.51%, mean score 0.04
+
+  best-exploit (pure Water) vs leaky [0.50,0.25,0.25] Fire-affinity habit: exploiter wins 82.61%, loses 17.29%, ties 0.10%
+  best-exploit (pure Water) vs uniform-random: exploiter wins 60.54%, loses 39.05%, ties 0.41%
+  best-exploit (pure Water) vs equilibrium: exploiter wins 51.14%, loses 48.25%, ties 0.62% (equilibrium is unexploitable up to sampling error)
+PvE exposure, player 100C vs house 150C (T0 hard cap 1.5x entry par, R57), 2e6 duels per cell, 5% rake on wins:
+  worst cell for the house: house affinity Water, session drift toward Water,
+  exploiter plays pure Air with own affinity Air:
+    player win rate 56.35%, loss rate 43.15%, tie 0.50%
+    player EV per duel (net of 5% rake on wins): 10.108C on a 100C stack (10.108% of stack per duel)
+  baseline equilibrium player vs drifted house: EV per duel -1.883C, win rate 49.72%
+  uniform-random player vs drifted house: EV per duel -1.708C, win rate 49.76%

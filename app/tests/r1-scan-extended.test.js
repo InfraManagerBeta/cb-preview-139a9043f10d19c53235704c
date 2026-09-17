@@ -15,11 +15,15 @@ const APP_ROOT = path.resolve(__dirname, '..');
 const FORBIDDEN = [/cheeze wizards/i, /cheese wizards/i, /\bcw\b/i];
 // Legitimate, non-renderable, non-theme-bound path/filename tokens that
 // happen to contain "cw" as a standalone word (§18's own naming): the
-// bundle's directory name and its nine canonical GIF filenames. Src/href
-// attribute values are explicitly permitted by the brief ("GIF file paths
-// as src attributes are fine; alt text must be theme-neutral").
+// bundle's directory name (renamed assets/cw-asset-bundle -> assets/cw per
+// CB-BUILD-000, content byte-identical) and its nine canonical GIF
+// filenames. Src/href attribute values are explicitly permitted by the
+// brief ("GIF file paths as src attributes are fine; alt text must be
+// theme-neutral"). Both the pre-rename and post-rename bundle path
+// spellings are stripped so this stays correct regardless of which the
+// checked-out tree carries.
 const CW_ASSET_FILENAME_RE = /CW_[A-Za-z ]+\.gif/g;
-const CW_ASSET_BUNDLE_PATH_RE = /cw-asset-bundle/gi;
+const CW_ASSET_BUNDLE_PATH_RE = /cw-asset-bundle|assets\/cw\//gi;
 
 function scan(text) {
   const cleaned = text.replace(CW_ASSET_FILENAME_RE, '').replace(CW_ASSET_BUNDLE_PATH_RE, '');

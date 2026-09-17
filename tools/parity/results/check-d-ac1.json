@@ -1,0 +1,188 @@
+{
+  "tolerances": {
+    "pixel": 48,
+    "distinctMinPct": 3,
+    "arenaMinInkPct": 90,
+    "stageMaxBlankPct": 1,
+    "underMinArenaPct": 90,
+    "blankFrameMaxInkPct": 1,
+    "midDuelFetchMax": 0,
+    "fxPixel": 60,
+    "fxMaxUnexplainedPct": 5
+  },
+  "verdicts": [
+    {
+      "criterion": "distinctness",
+      "tolerance": "every pair/state >= 3% pixels differ beyond 48/255",
+      "measured": "min 32.54% across 12 pair/state diffs",
+      "pass": true
+    },
+    {
+      "criterion": "arena-composite",
+      "tolerance": "arena ink >= 90%; bare-field <= 1%; under-combatant arena >= 90%; layer stack parsed from shipped source",
+      "measured": "arena 100%; bare-field 0%; under-combatant 100%; arena-under-scene true, no layer background true",
+      "pass": true
+    },
+    {
+      "criterion": "no-blank",
+      "tolerance": "every transition endpoint frame >= 1% ink; mid-duel fetches <= 0",
+      "measured": "110 frames, min ink 10.30%, blank 0; mid-duel fetches 0",
+      "pass": true
+    },
+    {
+      "criterion": "FX-fidelity",
+      "tolerance": "geometry identical; unexplained <= 5% at 60/255; overlay non-empty",
+      "measured": "geometry true; max unexplained 1.89%; overlay 6.69% of frame",
+      "pass": true
+    }
+  ],
+  "d1": {
+    "pairs": [
+      {
+        "pair": "same element+power (fire t0 vs fire t0)",
+        "sameCombo": false,
+        "state": "idle",
+        "framesCompared": 3,
+        "distinctPct": 71.16
+      },
+      {
+        "pair": "same element+power (fire t0 vs fire t0)",
+        "sameCombo": false,
+        "state": "attack",
+        "framesCompared": 3,
+        "distinctPct": 71
+      },
+      {
+        "pair": "same element+power (fire t0 vs fire t0)",
+        "sameCombo": false,
+        "state": "win",
+        "framesCompared": 3,
+        "distinctPct": 68.87
+      },
+      {
+        "pair": "same element+power+COMBO (palette-only)",
+        "sameCombo": true,
+        "state": "idle",
+        "framesCompared": 3,
+        "distinctPct": 33.6
+      },
+      {
+        "pair": "same element+power+COMBO (palette-only)",
+        "sameCombo": true,
+        "state": "attack",
+        "framesCompared": 3,
+        "distinctPct": 36.43
+      },
+      {
+        "pair": "same element+power+COMBO (palette-only)",
+        "sameCombo": true,
+        "state": "win",
+        "framesCompared": 3,
+        "distinctPct": 32.54
+      },
+      {
+        "pair": "same element+power (water t3 vs water t3)",
+        "sameCombo": false,
+        "state": "idle",
+        "framesCompared": 3,
+        "distinctPct": 79.73
+      },
+      {
+        "pair": "same element+power (water t3 vs water t3)",
+        "sameCombo": false,
+        "state": "attack",
+        "framesCompared": 3,
+        "distinctPct": 79.46
+      },
+      {
+        "pair": "same element+power (water t3 vs water t3)",
+        "sameCombo": false,
+        "state": "win",
+        "framesCompared": 3,
+        "distinctPct": 76.88
+      },
+      {
+        "pair": "cross element (fire t0 vs air t0)",
+        "sameCombo": false,
+        "state": "idle",
+        "framesCompared": 3,
+        "distinctPct": 73.03
+      },
+      {
+        "pair": "cross element (fire t0 vs air t0)",
+        "sameCombo": false,
+        "state": "attack",
+        "framesCompared": 3,
+        "distinctPct": 73.02
+      },
+      {
+        "pair": "cross element (fire t0 vs air t0)",
+        "sameCombo": false,
+        "state": "win",
+        "framesCompared": 3,
+        "distinctPct": 72.86
+      }
+    ],
+    "minDistinctPct": 32.54
+  },
+  "d2": {
+    "geometryFromCss": {
+      "bottomPct": 21,
+      "widthPct": 41,
+      "aspectW": 1720,
+      "aspectH": 1400,
+      "homeLeftPct": -1.4,
+      "awayRightPct": -1.4
+    },
+    "arenaInkPct": 100,
+    "stageInkPct": 99.06,
+    "bareFieldPct": 0,
+    "underCombatantArenaPct": 100,
+    "arenaUnderScene": true,
+    "noLayerBackground": true
+  },
+  "d3": {
+    "cadenceMs": 1170,
+    "steps": 39,
+    "transitions": 55,
+    "framesMeasured": 110,
+    "skippedHeadless": 0,
+    "minInkPct": 10.3,
+    "blankFrames": 0,
+    "fetchesAtReady": 22,
+    "midDuelFetches": 0,
+    "fallbacks": {
+      "p1": 0,
+      "p2": 0
+    }
+  },
+  "d4": {
+    "capes": [
+      {
+        "kind": "win",
+        "origin": "bucket",
+        "geomIdentical": true,
+        "offSlotChanges": 0,
+        "framesCompared": 3,
+        "identicalPct": 9.14,
+        "explainedRecolourPct": 89.21,
+        "unexplainedPct": 1.65,
+        "overlayCoverageMaxPct": 6.69
+      },
+      {
+        "kind": "lose",
+        "origin": "bucket",
+        "geomIdentical": true,
+        "offSlotChanges": 0,
+        "framesCompared": 2,
+        "identicalPct": 12.3,
+        "explainedRecolourPct": 85.81,
+        "unexplainedPct": 1.89,
+        "overlayCoverageMaxPct": 4.43
+      }
+    ],
+    "fxOverPoseCoveragePct": 6.69
+  },
+  "headlessResidual": "no CSS layout/paint/opacity animation executes headlessly: the cross-fade ramp itself and browser compositing are verified structurally (stacked preloaded canvases, opacity transition, no src swap — app/tests/rig-stage.test.js) and manually in a browser; every number above is measured on rendered pixel output.",
+  "overall": "PASS"
+}

@@ -133,8 +133,17 @@ export function recordCommit(window, seatId, moves, now) {
   return window.commits[seatId];
 }
 
-/** A missed clock auto-commits a uniform-random move sequence, flagged
- * "hesitated" — outside the staked-duel definition (R42) for metrics. */
+/** A missed clock auto-commits — R81/CB-BUILD-009r: the OWNER reversed the
+ * round-1 preserve-partial rule on 2026-09-15 (a rule that only holds when
+ * the device is online at the instant of expiry is the worst experience of
+ * all). A missed clock now commits a uniform-random FIVE-move sequence —
+ * the WHOLE hand, including any rounds the player already picked — flagged
+ * "hesitated" and excluded from staked-duel metrics (R42). The duel
+ * proceeds without the player and earns nothing in their favour. This is
+ * the untouched full-random path from before CB-BUILD-009's round-1 patch;
+ * there is no picked-moves parameter to seed partial survival — every
+ * round is re-rolled, every time.
+ */
 export function autoCommitHesitated(window, seatId, now, random = Math.random) {
   if (window.commits[seatId]) return window.commits[seatId];
   if (now < window.deadline) return null; // not missed yet
@@ -142,6 +151,7 @@ export function autoCommitHesitated(window, seatId, now, random = Math.random) {
   window.commits[seatId] = { moves, hesitated: true, ts: now };
   return window.commits[seatId];
 }
+
 
 // ---- Intermission (R81) -----------------------------------------------------
 

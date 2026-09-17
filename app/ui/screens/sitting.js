@@ -1,12 +1,12 @@
 // app/ui/screens/sitting.js — R60/R61/R63/R68: the three SITTING choices.
-// CB-BUILD-012/R67: re-entry's insufficient-CASH funds wall opens Load
-// Funds inline (same pattern as summon.js), instead of a dead-end toast.
 import { mountScreen, el, money, cheddar } from '../components/dom.js';
 import * as economy from '../../engine/economy.js';
-import { topBar, bottomNav, truthBadge } from '../components/chrome.js';
+import { bottomNav, truthBadge, cashPill } from '../components/chrome.js';
 import { loadOverrides, effectiveHypothesisId } from '../../engine/overrides.js';
 import { hypothesisCard } from '../../engine/hypotheses.js';
 import { openLoadFundsSheet } from '../components/money-sheets.js';
+import { renderReserveOffer } from '../components/reserveOffer.js';
+import { soundToggleButton, releaseAudioForRoute } from '../components/battle/sound.js';
 
 /** A19: the cash-out toast amount -- `cashUSD` (computed once, before the
  * cash-out call, from the character's pre-cash-out stake) is always the
@@ -23,6 +23,16 @@ export function mountSitting(ctx) {
   const session = ctx.refreshSession();
   const character = ctx.game.snapshot().characters[session.activeCharacterId];
   if (!character) { ctx.router.navigate('lobby-entry'); return; }
+
+  // Fix round f5/R78a [LAW]: an eliminated player lands HERE from the loss
+  // result card with the bed still sounding (the bed plays through the
+  // bracket, including post-elimination spectating -- the "Watch the
+  // bracket live" door below leads back to the board). So this screen is
+  // part of the bracket audio context too: leaving it for a NON-bracket
+  // route (wallet, lobby-entry, ...) stops the bed; the board carries it.
+  if (ctx.router && typeof ctx.router.onUnmount === 'function') {
+    ctx.router.onUnmount(() => releaseAudioForRoute(ctx.router.current()));
+  }
 
   if (economy.isEmptied(character)) {
     // f4/N2 fix: a topped-out (T6) champion also lands here -- its stake
@@ -44,7 +54,7 @@ export function mountSitting(ctx) {
       ? treatment.copy.emptiedChampionLine
       : treatment.copy.emptiedCardLine;
     mountScreen([
-      el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark)]),
+      el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark), soundToggleButton()]),
       el('div', { class: 'cb-card', style: 'text-align:center;' }, [
         el('div', { class: 'cb-display', style: 'font-size:22px;' }, character.name),
         el('p', { class: 'cb-emptied-line' }, emptiedLine),
@@ -54,6 +64,7 @@ export function mountSitting(ctx) {
           onClick: () => { ctx.game.retireEmptyCharacter(character.id); ctx.toast('Retired to the ledger.'); ctx.router.navigate('lobby-entry'); },
         }, treatment.copy.emptiedCardAction),
       ]),
+      renderReserveOffer(ctx, () => mountSitting(ctx)),
       bottomNav(ctx, null),
     ]);
     return;
@@ -61,18 +72,22 @@ export function mountSitting(ctx) {
 
   const reentry = economy.reentryForTier(tunables, character.tier);
   const cashUSD = economy.cheddarToUsd(tunables, character.stakeCheddar);
+  const account = ctx.game.snapshot().account;
   let reenterSubmitting = false;
 
-  /**
-   * CB-BUILD-012/R67: re-entry's insufficient-CASH funds wall -- same
-   * inline-Load-Funds-and-return pattern as summon.js's attemptSummon:
-   * open Load Funds and retry this exact blocked action (re-entry) once
-   * the deposit lands, instead of a dead-end toast.
-   */
+  // CB-BUILD-012/R67: insufficient CASH at re-entry is a funds wall exactly
+  // like summon's -- open Load Funds INLINE and retry this exact re-entry
+  // on a completed deposit, instead of a toast (was: `game.js`'s
+  // `reenterCharacter` throw at the insufficient-CASH check, surfaced here
+  // as "Not enough CASH — load funds first.").
+  //
+  // C4/R67+R83 fix: states the shortfall in player language too (money-
+  // sheets.js's `shortfall` option), computed from the SAME reentry.usd
+  // figure the Re-enter button already displays -- never a raw error.
   function attemptReenter() {
-    const liveAccount = ctx.game.snapshot().account;
-    if (liveAccount.cashUSD < reentry.usd) {
-      openLoadFundsSheet(ctx, { onDeposited: attemptReenter });
+    const freshAccount = ctx.game.snapshot().account;
+    if (freshAccount.cashUSD < reentry.usd) {
+      openLoadFundsSheet(ctx, { onDeposited: attemptReenter, shortfall: { actionLabel: 'Re-entering', costUSD: reentry.usd } });
       return;
     }
     if (reenterSubmitting) return; // C1/R83: control disables until resolution
@@ -86,30 +101,41 @@ export function mountSitting(ctx) {
   }
 
   mountScreen([
-    // CB-BUILD-fix-round-1 #4 (R67): the CASH balance is itself a CONTROL.
-    // This screen rendered its own dead `<span class="cb-cash-pill">` while
-    // only summon.js used chrome.js's button pill — now it renders the same
-    // shared topBar, whose pill is a real button that opens Load Funds.
-    topBar(ctx),
+    // Fix round f5/R78a: the bed can still be sounding here (the loss path
+    // arrives straight from the result card) -- the visible mute rides in
+    // the topbar.
+    el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark), cashPill(ctx), soundToggleButton()]),
     el('h2', {}, treatment.copy.sittingHeading),
     el('div', { class: 'cb-card' }, [
       el('div', { class: 'cb-display', style: 'font-size:20px;' }, character.name),
       el('div', { class: 'cb-micro' }, `TIER ${character.tier} · ${cheddar(character.stakeCheddar)}`),
-      el('p', { class: 'cb-prose' }, treatment.copy.sittingBody),
+      el('p', { class: 'cb-legal' }, treatment.copy.sittingBody),
     ]),
     truthBadge(ctx),
     el('div', { class: 'cb-card' }, [
       el('div', { class: 'cb-display', style: 'font-size:18px;' }, 'Re-enter'),
-      el('p', { class: 'cb-prose' }, `Pay ${money(reentry.usd)}, receive +${cheddar(reentry.bonusCheddar)}.`),
+      el('p', { class: 'cb-legal' }, `Pay ${money(reentry.usd)}, receive +${cheddar(reentry.bonusCheddar)}.`),
+      // C3/R67+\u00a712/R83: this control is NEVER actually inert when
+      // short on CASH -- its own onClick (attemptReenter) opens Load Funds
+      // inline, exactly the funds wall's live door (R67). Dressing it
+      // aria-disabled + greyed + cursor:not-allowed (the el() aria-disabled
+      // fix made this dressing render on the VERY FIRST paint, not just
+      // after interaction) made a live door look dead: a player reading
+      // the control correctly would never press it. Only a GENUINELY inert
+      // state (reenterSubmitting -- a request already in flight, and
+      // attemptReenter's own reenterSubmitting guard returns before
+      // opening anything) still dresses as disabled; the funds-short case
+      // reads as the actionable route it is, labeled accordingly so the
+      // route is legible, not just undisabled.
       el('button', {
         class: 'cb-btn block',
         'aria-disabled': reenterSubmitting,
-        onClick: attemptReenter,
-      }, `Re-enter (${money(reentry.usd)})`),
+        onClick: () => attemptReenter(),
+      }, account.cashUSD < reentry.usd ? 'Load Funds to re-enter' : `Re-enter (${money(reentry.usd)})`),
     ]),
     el('div', { class: 'cb-card' }, [
       el('div', { class: 'cb-display', style: 'font-size:18px;' }, treatment.copy.cashOutHeading),
-      el('p', { class: 'cb-prose' }, `${treatment.copy.cashOutBody} You'd receive ${money(cashUSD)}.`),
+      el('p', { class: 'cb-legal' }, `${treatment.copy.cashOutBody} You'd receive ${money(cashUSD)}.`),
       el('button', {
         class: 'cb-btn win block',
         onClick: () => {
@@ -121,9 +147,10 @@ export function mountSitting(ctx) {
     ]),
     el('div', { class: 'cb-card' }, [
       el('div', { class: 'cb-display', style: 'font-size:18px;' }, 'Sit')  ,
-      el('p', { class: 'cb-prose' }, 'Free, indefinitely. Come back whenever.'),
+      el('p', { class: 'cb-legal' }, 'Free, indefinitely. Come back whenever.'),
       el('button', { class: 'cb-btn secondary block', onClick: () => ctx.router.navigate('lobby-entry') }, 'Sit for now'),
     ]),
+    renderReserveOffer(ctx, () => mountSitting(ctx)),
     renderSpectateCard(ctx, session),
     bottomNav(ctx, null),
   ]);
@@ -145,7 +172,7 @@ function renderSpectateCard(ctx, session) {
   let submitting = false; // f4/A-a: submitting guard -- attempt keying (recordSpectateView's own idempotency key) stays the source of truth; this only stops a double-tap from firing the call twice before the first press's navigation lands.
   return el('div', { class: 'cb-card' }, [
     el('div', { class: 'cb-display', style: 'font-size:18px;' }, 'Spectate'),
-    el('p', { class: 'cb-prose cb-prose-small' }, card.fairTestLine),
+    el('p', { class: 'cb-legal' }, card.fairTestLine),
     el('button', {
       class: 'cb-btn secondary block',
       'aria-disabled': submitting,

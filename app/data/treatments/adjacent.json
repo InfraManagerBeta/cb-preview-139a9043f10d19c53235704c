@@ -343,10 +343,9 @@
     "truthLine": "This is play money. It's free, and it lives right here in the yard. Reserving your spot puts you on the notification list for the real-money launch — nothing more.",
     "landingSubhead": "Five rounds. One winner. Build a Bot, enter the yard, keep what you take.",
     "screenerHeading": "Before you're cleared",
-    "screenerBody": "A couple of quick questions — age and location — before the gate opens. This is a simulated verdict for the play-money build.",
-    "screenerAgeQuestion": "Are you 18 or older?",
-    "screenerJurisdictionQuestion": "Do you currently reside in a permitted region?",
-    "screenerRejectedMessage": "The yard isn't open to you yet under these answers. Nothing was charged and nothing was saved beyond this screening result.",
+    "screenerBody": "Your location is checked automatically; you just enter your date of birth before the gate opens. This is a simulated verdict for the play-money build.",
+    "screenerRejectedMessage": "You need to be 18 or older to play. Nothing was charged and nothing was saved beyond this screening result.",
+    "screenerNotAvailableMessage": "Scrapyard Kings is not available in your region. Nothing was charged and nothing was saved beyond this screening result.",
     "summonHeading": "Build your Bot",
     "summonBody": "Every Bot rolls out of the yard with a name already stenciled on it. The corkboard names them; you run them.",
     "summonButton": "Build ($10 — 100S)",
@@ -383,10 +382,26 @@
     "moneyTruthBadge": "PLAY MONEY · FREE · STAYS IN GAME",
     "npcTagLabel": "NPC",
     "hesitatedTagLabel": "HESITATED",
+    "stageDegradedNotice": "The bots couldn't roll onto the stage this time — the duel still plays out right here, blow by blow.",
     "narratorBypassA": "Both bots committed to [ELEMENT]. All five rounds. The scrutineer is familiar with this particular theory of cooperation. The scrutineer is also familiar with how it typically resolves.",
     "narratorBypassB": "[EEEEE] versus [EEEEE]. The scrutineer notes this is either a remarkable coincidence or a remarkable miscalculation of engineering. Possibly both.",
-    "_narratorBypassNote": "R73 static bypass, re-voiced per register with the same semantics as the incumbent's. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered.",
-    "provisionalStageLabel": "PROVISIONAL RENDER. BOT ART PENDING SUPPLY.",
-    "_provisionalStageLabelNote": "CB-BUILD-007 (docs/cb-build-patch-log.md): R12 as now written -- Scrapyard Kings has no provided character art yet, so the in-game stage is a clearly-marked provisional stage instead of an unlabeled colored box. Voiced in the scrutineer's shop-manual imperative (docs/concept-cards.md card A1), zero exclamation, no apology. Rendered by app/ui/components/battle/stage.js on the placeholder combatant."
-  }
+    "_narratorBypassNote": "R73 static bypass, re-voiced per register with the same semantics as the incumbent's. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered."
+  },
+  "adCreative": {
+    "fixedMessage": "Outsmart for real money.",
+    "_fixedMessageNote": "R11: identical string in all three treatments, verbatim -- not theme-bound.",
+    "headline": "Build sharper. Win the yard.",
+    "body": "Roll a Bot off the line, read the corkboard, take the scrap. Five rounds. No excuses.",
+    "cta": "Build Your Bot",
+    "visual": {
+      "_note": "Non-character composition only (R12/entry-file boundary: no character art exists for this treatment, and none is originated here) -- a full-bleed ground-color field, the primary-color accent, and the logoMark wordmark set in the display face.",
+      "backgroundColorRole": "ground",
+      "accentColorRole": "primary",
+      "logoMark": "SK",
+      "headlineFace": "display",
+      "bodyFace": "prose"
+    }
+  },
+  "provisionalStageLine": "Provisional rig — final chassis art pending.",
+  "_provisionalStageLineNote": "CB-BUILD-007 track 1/R12: shown ONLY on this treatment's battle stage (the alternates' placeholder stage, app/ui/components/battle/stage.js), behind the click -- a clearly-marked, honest 'provisional presentation, final art pending' line in this treatment's own register. The incumbent's real rig stage never shows this."
 }

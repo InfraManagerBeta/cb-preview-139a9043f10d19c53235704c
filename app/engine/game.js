@@ -14,6 +14,7 @@ import * as pve from './pve.js';
 import * as sync from './sync.js';
 import { generateNpcSeat } from './npc.js';
 import { randomId } from './id.js';
+import { deriveTraits, derivePalette } from './wizardRig.js';
 import * as retention from './retention.js';
 import { loadOverrides, effectiveHypothesisId } from './overrides.js';
 import { toXML as narratorToXML } from './narrator.js';
@@ -199,21 +200,8 @@ export class Game {
     });
   }
 
-  /**
-   * CB-BUILD-003/R22: `snapshot().account.anchorTs` exposes the retention
-   * anchor -- the timestamp this player's first bracket concludes
-   * (elimination or a bracket win), or `null` before that ever happens --
-   * so a screen (reserve.js) can gate on "has a concluded first bracket"
-   * by reading the snapshot, instead of re-deriving anchor logic from the
-   * raw ledger itself. Purely additive: every other snapshot field is
-   * unchanged, and this is the SAME `retention.computeAnchor` already used
-   * by the retention metrics (single source of truth, invariant #10).
-   */
   snapshot() {
-    const events = this.ledger.all();
-    const snap = project(events);
-    snap.account.anchorTs = retention.computeAnchor(events, this.playerId);
-    return snap;
+    return project(this.ledger.all());
   }
 
   conservation() {
@@ -221,6 +209,29 @@ export class Game {
   }
 
   // ---- account lifecycle ---------------------------------------------------
+
+  /**
+   * CB-BUILD-017 fix round f4/Finding 2 (AC1): records the "link" moment --
+   * the player reaching the app -- independent of the screener's outcome or
+   * even whether they ever submit it. Called once, unconditionally, at app
+   * boot (app/ui/app.js), BEFORE the landing/screener flow renders.
+   * Idempotent per player (fixed key, R83), so a reload/resume never writes
+   * a second LINK_OPENED for the same player.
+   *
+   * Deliberately NOT folded into ensureAccount: A15 fixed ensureAccount
+   * (and its $25 signup grant) to fire only once the screener PASSES, and
+   * this must not re-open that fix by making account creation/the grant
+   * unconditional again. recordLinkOpened has no economic side effect at
+   * all -- it exists solely so retention.js's linkToFirstSeal (CB-BUILD-
+   * 017/AC1) can measure from the true link instead of from
+   * ACCOUNT_CREATED, which (per the reviewer's Finding 2) is written only
+   * on screener pass and so silently excludes the whole landing+screener
+   * interval from that metric, biasing it downward against AC1's bar.
+   */
+  recordLinkOpened(now = Date.now()) {
+    this._assertNotKilled('recordLinkOpened');
+    return this.ledger.append({ key: actionKey('link-opened', this.playerId), type: EVENT_TYPES.LINK_OPENED, playerId: this.playerId, ts: now, payload: {} });
+  }
 
   ensureAccount(now = Date.now()) {
     this._assertNotKilled('ensureAccount');
@@ -239,12 +250,27 @@ export class Game {
    * has actually PASSED -- not unconditionally at app boot -- so the
    * rejected screen's "nothing was saved beyond this screening result"
    * claim is literally true.
+   *
+   * N-A2/R41+AC0 [ledger honesty] fix: `age18` carries THREE legal states
+   * from the caller (screener.js), not two -- `true` (attested 18+),
+   * `false` (a real DOB was entered and computed under 18 -- a genuine
+   * "under 18" fact), and `null` ("not attested at all": R70's
+   * jurisdiction pre-check rejects BEFORE the DOB step ever renders, so no
+   * age claim was ever made either way). The old `!age18` check treated
+   * `false` and `null` identically, so a jurisdiction-blocked player (whose
+   * DOB was never collected) landed with `reasons: ['under_18',
+   * 'jurisdiction_restricted']` -- a fabricated age claim replacing the
+   * OLDER fabrication (the pre-A2 `age18: true` attestation) this same
+   * rule already once flagged. Only `age18 === false` -- the genuine,
+   * attested fact -- may write `under_18`; `null` writes neither reason
+   * for age, so a jurisdiction-blocked row now carries exactly
+   * `['jurisdiction_restricted']`.
    */
   submitScreener({ age18, jurisdictionOk }, now = Date.now()) {
     this._assertNotKilled('submitScreener');
     const passed = !!age18 && !!jurisdictionOk;
     const reasons = [];
-    if (!age18) reasons.push('under_18');
+    if (age18 === false) reasons.push('under_18');
     if (!jurisdictionOk) reasons.push('jurisdiction_restricted');
     const attempt = this.ledger.byPlayerAndType(this.playerId, EVENT_TYPES.SCREENER_RESULT).length;
     this.ledger.append({
@@ -289,10 +315,33 @@ export class Game {
     const snap = this.snapshot();
     const doorPriceUSD = this.tunables.priceDoorArms.displayedEntryPriceDefaultUSD;
     if (snap.account.cashUSD < doorPriceUSD) {
-      throw new Error('summonCharacter: insufficient CASH');
+      // A3 (fix round, additive): a stable `.code` alongside the message --
+      // summon.js used to classify this purely by `/insufficient CASH/.test
+      // (e.message)`, so a future message rewording (copy pass, i18n, ...)
+      // could silently degrade the funds wall to summon.js's generic
+      // "That didn't go through" toast with no code change flagging it.
+      // The message itself is UNCHANGED (funds-wall-load-funds.test.js
+      // still matches it directly); `code` is purely additive.
+      const err = new Error('summonCharacter: insufficient CASH');
+      err.code = 'INSUFFICIENT_CASH';
+      throw err;
     }
     const characterId = randomId();
     const finalName = name || this.pickUnusedName(now);
+    // CB-BUILD-006/§18/R74: cosmetic traits + palette, assigned by the act
+    // of summoning, deterministic in the characterId, ADDITIVE to the
+    // payload (nothing existing moves or changes shape). Presentation
+    // identity only — never a math/economy input.
+    // CB-BUILD-022/R74/§18 (supersedes the A-power/N-R74 note this comment
+    // used to carry): these fields are written here ONLY as an audit record
+    // of what the rig showed at summon (tier 0 — honest history, never
+    // rewritten). Nothing reads them back — every render read path
+    // (wizardRig.wizardIdentity / deriveIdentity) re-derives traits+palette
+    // from the characterId (and the character's LIVE tier for the power
+    // family) at read time, every time, regardless of what is recorded here
+    // or whether it's even present. See app/engine/wizardRig.js.
+    const traits = deriveTraits(characterId, element, 0);
+    const palette = derivePalette(characterId);
     const event = this.ledger.append({
       key: actionKey('summon', characterId),
       type: EVENT_TYPES.CHARACTER_SUMMONED,
@@ -304,6 +353,8 @@ export class Game {
         element,
         stakeCheddar: this.tunables.economy.summonCheddar,
         costUSD: doorPriceUSD,
+        traits,
+        palette,
       },
     });
     return event.payload;
@@ -423,7 +474,19 @@ export class Game {
           type: EVENT_TYPES.NPC_SEATED,
           playerId: null,
           ts: now,
-          payload: { characterId, name: seat.name, element: seat.element, tier: lobby.tier, stakeCheddar: npcStartingStake },
+          payload: {
+            characterId,
+            name: seat.name,
+            element: seat.element,
+            tier: lobby.tier,
+            stakeCheddar: npcStartingStake,
+            // CB-BUILD-006: an NPC's character is a summoned wizard too —
+            // same deterministic trait/palette assignment, additive fields.
+            // CB-BUILD-022/R74/§18: audit record only, as above — nothing
+            // reads it back; the read path re-derives from characterId.
+            traits: deriveTraits(characterId, seat.element, lobby.tier),
+            palette: derivePalette(characterId),
+          },
         });
       }
     }

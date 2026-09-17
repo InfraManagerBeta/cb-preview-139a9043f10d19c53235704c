@@ -1,12 +1,20 @@
 // app/ui/screens/reserve.js — R49a: RESERVE action, once per account, with
 // timestamp/day index/tier/character state; copy states the notification-
-// list truth and that play money is free (R8a). CB-BUILD-003/R49a/R22:
-// RESERVE is reachable from a cold start (offered in the played funnel,
-// not gated), but the character-recall open-response prompt is asked only
-// AFTER the player's first bracket concludes (an anchor) -- never before a
-// staked duel exists.
+// list truth and that play money is free (R8a).
+//
+// CB-BUILD-003: R22 says the character-recall open response is asked only
+// AFTER the player's first bracket concludes (post-anchor) -- never before
+// a staked duel exists. The delivered build rendered
+// `renderOpenResponsePrompt()` for any account that hadn't answered yet,
+// with no check for a concluded bracket, so a player could see "What do
+// you remember about your last match?" before playing a single match.
+// Fixed: the recall card is now gated on `retention.computeAnchor(...)`
+// (R43: the timestamp the player's first bracket concludes, elimination or
+// win) returning non-null. Until an anchor exists, RESERVE stays pressable
+// and shows notification-list copy only -- no last-match question.
 import { mountScreen, el } from '../components/dom.js';
 import { bottomNav, truthBadge } from '../components/chrome.js';
+import { computeAnchor } from '../../engine/retention.js';
 
 export function mountReserve(ctx) {
   const { treatment } = ctx;
@@ -16,12 +24,9 @@ export function mountReserve(ctx) {
 
   function render() {
     const account = ctx.game.snapshot().account;
-    // CB-BUILD-003/R22: an anchor is the timestamp the player's first
-    // bracket concludes (elimination or a bracket win) -- see
-    // Game#snapshot / retention.computeAnchor. Before that exists, the
-    // recall card is hidden entirely; the tab still shows the
-    // notification-list copy (reserveBody) and stays pressable.
-    const hasAnchor = account.anchorTs != null;
+    // R22/R43: only after the player's first bracket has actually
+    // concluded (an anchor) does the recall question exist at all.
+    const anchorTs = computeAnchor(ctx.game.ledger.all(), ctx.game.playerId);
     mountScreen([
       el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark)]),
       el('h2', {}, treatment.copy.reserveHeading),
@@ -30,10 +35,7 @@ export function mountReserve(ctx) {
       account.reservation
         ? el('div', { class: 'cb-card', style: 'text-align:center;border-color:var(--cb-green);' }, [
             el('p', {}, treatment.copy.reserveConfirmed),
-            // CB-BUILD-fix-round-2 (re-review B): a timestamp is a FIGURE —
-            // legitimately data-face (CB-BUILD-004's build-forward reserves
-            // --font-data for figures/timestamps), so it is not <p> body copy.
-            el('div', { class: 'cb-micro' }, new Date(account.reservation.ts).toLocaleString()),
+            el('p', { class: 'cb-micro' }, new Date(account.reservation.ts).toLocaleString()),
           ])
         : el('button', {
             class: 'cb-btn block',
@@ -44,9 +46,9 @@ export function mountReserve(ctx) {
           }, treatment.copy.reserveButton),
       // C18/R22: a minimal, ONCE-per-account, optional open-response prompt
       // so the character-recall metric (R22) has an actual data source.
-      // CB-BUILD-003: gated on an anchor -- hidden entirely (no last-match
-      // question) until the player's first bracket has concluded.
-      !account.openResponse && hasAnchor ? renderOpenResponsePrompt() : null,
+      // CB-BUILD-003: gated on an anchor (a concluded first bracket) -- no
+      // last-match question can exist before a staked duel does.
+      (anchorTs != null && !account.openResponse) ? renderOpenResponsePrompt() : null,
       el('div', { style: 'height:56px;' }),
       bottomNav(ctx, 'reserve'),
     ]);
@@ -55,7 +57,7 @@ export function mountReserve(ctx) {
   function renderOpenResponsePrompt() {
     return el('div', { class: 'cb-card' }, [
       el('div', { class: 'cb-micro' }, 'ONE QUESTION (OPTIONAL, ASKED ONCE)'),
-      el('p', { class: 'cb-prose' }, 'What do you remember about your last match?'),
+      el('p', { class: 'cb-legal' }, 'What do you remember about your last match?'),
       el('textarea', { id: 'cb-open-response-input', rows: 3, style: 'width:100%;box-sizing:border-box;' }),
       el('button', {
         class: 'cb-btn secondary block',

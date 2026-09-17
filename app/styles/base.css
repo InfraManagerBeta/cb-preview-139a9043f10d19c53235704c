@@ -83,10 +83,7 @@ h1, h2, h3, .cb-display {
   font-size: 22px;
   letter-spacing: 2px;
 }
-/* .cb-cash-pill is the CASH BALANCE control (a real <button> everywhere —
-   R67; chrome.js's topBar). .cb-price-pill is the landing screen's
-   NON-interactive door-price badge (same skin, no control semantics). */
-.cb-cash-pill, .cb-price-pill {
+.cb-cash-pill {
   font-family: var(--font-data);
   font-size: 12px;
   background: #16140e;
@@ -95,17 +92,17 @@ h1, h2, h3, .cb-display {
   padding: 6px 10px;
   border-radius: 999px;
 }
-/* CB-BUILD-fix-round-1 #6 (R83/AC1): the pill is a CONTROL — it gets the
-   44px effective tap target every other control clears (it was ~28px tall
-   and escaped the scan because "pill" wasn't in its token list). */
-.cb-cash-pill {
-  min-height: var(--tap-min);
-  min-width: var(--tap-min);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* CB-BUILD-012/R67: the CASH pill is now a real <button> (it opens Load
+   Funds) -- reset browser button chrome so it keeps the exact same pill
+   look it always had, plus a visible pressable cursor and a minimum tap
+   target (R83: 44x44 with 8pt spacing; the pill's own padding/line-height
+   already clears this in every screen it appears, min-height is a floor). */
+.cb-cash-pill-btn {
+  appearance: none;
   cursor: pointer;
+  min-height: var(--tap-min);
 }
+
 
 .cb-card {
   background: #111111;
@@ -142,16 +139,28 @@ h1, h2, h3, .cb-display {
   transform: translate(2px, 2px);
   box-shadow: 0 0 0 var(--cb-black);
 }
+/* CB-BUILD-008/§12/R83: a gated control (aria-disabled or the native
+   :disabled) must render a clearly disabled state -- "a change of fill and
+   weight, not opacity alone" -- so it never presents as actionable while
+   inert. Opacity-only faded a saturated-yellow primary button just enough
+   to still read as pressable (the gate logic itself -- aria-disabled + the
+   no-op guard -- was already correct and is untouched here). Fixed: a
+   muted/desaturated fill+text distinct from the active yellow/black pair,
+   a thinner (lighter-WEIGHT) border than the active button's, and no
+   drop-shadow (the active button's signature 3D "pressable" cue is gone
+   entirely, not just faded) -- three independent cues, none of them
+   opacity. `cursor: not-allowed` stays. */
 .cb-btn:disabled, .cb-btn[aria-disabled="true"] {
-  /* R83: disabled state is clearly distinct from active state in fill and weight,
-     not opacity alone. Replace vivid yellow with muted/desaturated fill, drop the
-     drop-shadow so it reads as inert/locked. cursor: not-allowed stays. */
-  background: #5a5a50;
-  color: #888;
+  background: #4a4a42;
+  color: #8a8a80;
+  border-color: #3a3a34;
+  border-width: 2px;
+  opacity: 1;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
+
 .cb-btn.secondary {
   background: transparent;
   color: var(--cb-offwhite);
@@ -161,56 +170,28 @@ h1, h2, h3, .cb-display {
 .cb-btn.danger { background: var(--cb-red); color: var(--cb-offwhite); }
 .cb-btn.win { background: var(--cb-green); color: var(--cb-black); }
 .cb-btn.block { width: 100%; }
-/* The money sheets' Continue (deposit) button — previously an inline style
-   on the element itself, which no stylesheet rule (not even the disabled
-   one) could override. Now a class variant like every other .cb-btn skin,
-   so the disabled cascade below wins for it too. */
-.cb-btn.deposit { background: #2563eb; color: #fff; border-color: #2563eb; }
 
-/* CB-BUILD-fix-round-1 #1 (§12/R83): the disabled treatment must WIN over
-   EVERY variant skin. The plain `.cb-btn:disabled` rule above ties on
-   specificity (0,2,0) with `.cb-btn.secondary` etc., and the variant rules
-   load later in this same sheet, so a disabled secondary/danger/win button
-   was pixel-identical to its enabled self. These variant-qualified
-   selectors are (0,3,0) — they beat every variant rule regardless of
-   source order, keeping the muted-fill + dropped-shadow (fill AND weight)
-   distinction of the base disabled rule. */
-.cb-btn.secondary:disabled, .cb-btn.secondary[aria-disabled="true"],
-.cb-btn.danger:disabled, .cb-btn.danger[aria-disabled="true"],
-.cb-btn.win:disabled, .cb-btn.win[aria-disabled="true"],
-.cb-btn.block:disabled, .cb-btn.block[aria-disabled="true"],
-.cb-btn.deposit:disabled, .cb-btn.deposit[aria-disabled="true"] {
-  background: #5a5a50;
-  color: #888;
-  border-color: #444;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Body copy: prose face (Barlow) per R11. Use .cb-prose for all text players read. */
-.cb-prose {
+/* CB-BUILD-004/R11: prose content -- every sentence a player reads -- is
+   set in the prose face (Barlow); the data face is reserved for figures,
+   counters, tags, timestamps, and code, never body copy. `.cb-legal` is
+   used across every screen for exactly that body prose (legal notices,
+   headings' supporting copy, disclaimers, notification-list text), so it
+   moves to the prose face here; `.cb-prose` is introduced as the same rule
+   under an explicit name so new prose copy never has to reach for the
+   legal-sounding class name (R11: "introduce a prose class rather than
+   hand-editing every string" -- one CSS change covers every existing
+   `cb-legal` call site with no per-screen edits). `.cb-micro` keeps the
+   data face: every current use is a genuine figure/tag/timestamp/label
+   (CASH balance, tier/stake tags, round counters, the compact truth line),
+   never a sentence of body copy. */
+.cb-legal, .cb-prose {
   font-family: var(--font-prose);
-  font-size: 14px;
-  letter-spacing: 0;
-  color: var(--cb-offwhite);
-  line-height: 1.6;
-  margin: 0 0 12px;
-}
-
-/* CB-BUILD-fix-round-1 #5 (R11): fine-print SENTENCES (legal lines,
-   verification instructions, hypothesis fair-test lines) are still prose a
-   player reads — the FACE is the law, the point size is not. This modifier
-   keeps the small/quiet footprint the old .cb-legal styling gave them while
-   the face stays Barlow via .cb-prose. */
-.cb-prose.cb-prose-small {
-  font-size: 11px;
+  font-size: 13px;
   color: #a8a29a;
   line-height: 1.5;
 }
 
-/* Data/technical content: monospace face (DM Mono) for figures, tags, timestamps, code. */
-.cb-legal, .cb-micro {
+.cb-micro {
   font-family: var(--font-data);
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -293,6 +274,72 @@ h1, h2, h3, .cb-display {
 .cb-element-btn.affinity::after { content: "★"; font-size: 12px; margin-left: 4px; }
 .cb-element-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* CB-BUILD-011/R11/R79/R83: the move-choice screen's craft pass.
+   ---------------------------------------------------------------------
+   R79 design bar: room, clear typographic hierarchy, the interaction
+   contract's touch-target/spacing rule (>=44px targets, >=8pt spacing,
+   "whole card as target wherever a card is the choice"). None of this
+   changes the pinned commit-clock (CB-BUILD-009, above/untouched), the
+   move-tap-in-place wiring (CB-BUILD-010, duel.js, untouched), or any
+   economy/gate constant -- craft only. */
+
+/* "The opponent tendency card readable": more generous padding than the
+   base .cb-card so its now-two-tier content (a plain-language lean
+   sentence, prose face, above the raw F/W/A figures, data face) has room
+   to breathe instead of sitting flush against the card edge. */
+.cb-tendency-card {
+  padding: 20px 18px;
+}
+
+/* "The existing scouting panel ... given proper room rather than cramped
+   mono": a real gap between every row (was zero-margin <div>s stacked
+   flush) plus wider padding; the panel's two descriptive sentences moved
+   to the prose face at the call site (duel.js), this is the room around
+   them. */
+.cb-scouting-panel {
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* A clear section break between the opponent info block and the five move
+   pickers below it -- a data-face LABEL (a tag, not a second hero moment;
+   R79 reserves the display face's one-per-screen hero moment for the
+   h2 title above), giving the screen real visual hierarchy instead of one
+   flat stack of cards. */
+.cb-section-label {
+  margin: 4px 2px 0;
+  letter-spacing: 0.14em;
+  color: #8a8478;
+}
+
+/* "Five round pickers roomy and card-like": more padding around each
+   round's own card (was the bare .cb-card default) and a bit more
+   separation from the ROUND N tag above the three moves. */
+.cb-round-picker {
+  padding: 16px 16px 18px;
+}
+.cb-round-picker > .cb-micro {
+  margin-bottom: 10px;
+}
+
+/* Each move choice reads and behaves like its own selectable card: roomier
+   than the old 56px-min flat button (interaction-contract floor is 44px;
+   this sits well above it), rounder corners, and a taller, bolder selected
+   state so "the whole card is the target" is visually obvious, not just
+   technically true. */
+.cb-round-picker .cb-element-btn {
+  min-height: 64px;
+  border-radius: 10px;
+  font-size: 17px;
+  padding: 10px 8px;
+}
+.cb-round-picker .cb-element-btn.selected {
+  border-width: 3px;
+  box-shadow: 4px 4px 0 currentColor;
+}
+
 .cb-round-list { display: flex; flex-direction: column; gap: 6px; }
 .cb-round-row {
   display: flex;
@@ -324,9 +371,18 @@ h1, h2, h3, .cb-display {
 .cb-result-card.drained { border-color: var(--cb-red); }
 .cb-result-header { font-size: 34px; }
 .cb-result-line { font-family: var(--font-data); font-size: 13px; margin: 4px 0; }
-/* fix-round-2: the delta moved off <p> (it is a figure, not body copy) —
-   keep its breathing room explicitly now that no UA paragraph margin applies. */
-.cb-result-delta { font-size: 22px; font-family: var(--font-data); margin: 16px 0; }
+/* N-C6/R11 [LAW] re-probe fix: the result card's tie-line row
+   (rails.js:renderResultCard) renders the ACTIVE treatment's verbatim
+   `copy.tieLine` -- a full sentence ("All square — coin flip. You
+   advance. No cheddar transferred.") -- not a figure/tag; the other two
+   .cb-result-line rows on this same card (the per-combatant before/after
+   figures, the "Score: W-L" line) are genuine data rows and stay on the
+   data face untouched. A compound selector (two classes, specificity
+   0-2-0) beats the single-class rule above regardless of source order,
+   so rails.js adds 'cb-prose' alongside 'cb-result-line' on that ONE row
+   instead of a global reclass. */
+.cb-result-line.cb-prose { font-family: var(--font-prose); }
+.cb-result-delta { font-size: 22px; font-family: var(--font-data); }
 
 .cb-timer {
   font-family: var(--font-data);
@@ -334,55 +390,46 @@ h1, h2, h3, .cb-display {
   color: var(--cb-yellow);
 }
 
-/* CB-BUILD-009/R81: the move-choice screen's commit clock -- a prominent,
-   persistent countdown, never a small data span. Display face (Bebas Neue,
-   the same hero-moment face as the logo), large enough to read at a
-   glance, shifting to the danger color (loss/battle red) as it nears
-   zero. `.pulse` is the optional low-time warning animation. */
+/* CB-BUILD-009/R81: the commit-window clock -- "a prominent, persistent
+   countdown, pinned in view for the whole selection, large enough to read
+   at a glance, shifting to the danger color as it nears zero -- never a
+   small figure a player can miss." Sticky-pinned under the top bar so it
+   stays visible through the whole round-selection scroll. */
 .cb-commit-clock {
-  font-family: var(--font-display);
-  font-size: 40px;
-  letter-spacing: 1px;
-  color: var(--cb-yellow);
-  line-height: 1;
-}
-.cb-commit-clock.danger { color: var(--cb-red); }
-.cb-commit-clock.pulse { animation: cb-commit-clock-pulse 1s ease-in-out infinite; }
-@keyframes cb-commit-clock-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* CB-BUILD-009/R81: pins the clock (and the logo alongside it) in view for
-   the whole selection -- scrolling through five round cards never scrolls
-   the clock out of sight. Scoped to the commit screen alone via this
-   modifier class (`.cb-topbar` itself, used by every other screen, is
-   untouched). */
-.cb-commit-topbar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+  display: block;
+  text-align: center;
+  font-size: 34px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  color: var(--cb-yellow);
   background: var(--cb-black);
-  padding-top: 8px;
-  margin-bottom: 0;
+  padding: 6px 0 10px;
+  border-bottom: 2px solid var(--cb-yellow);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.cb-commit-clock.danger {
+  color: var(--cb-red);
+  border-color: var(--cb-red);
 }
 
-/* CB-BUILD-009: the one-line auto-commit explainer sits directly under the
-   pinned clock, uncramped from the round cards below it. */
-.cb-commit-explainer { margin-top: 8px; }
-
-/* CB-BUILD-011/R11-R79: the move-choice screen brought to the design bar --
-   an uncramped layout with distinct breathing room between the opponent
-   panel (tendency card + whatever scouting/brief card is active -- room
-   for a future scouting panel, not the panel itself) and the five round
-   cards below it. */
-.cb-commit-opponent-panel { display: flex; flex-direction: column; gap: 12px; }
-.cb-commit-rounds { display: flex; flex-direction: column; gap: 14px; }
-/* CB-BUILD-fix-round-1 #2: named `cb-commit-round-card` (was `cb-round-card`)
-   so the commit screen's five cards can never collide with battle.css's
-   reveal-side `.cb-round-card` mono flex row again. */
-.cb-commit-round-card { padding-bottom: 18px; }
-
+/* CB-BUILD-008 optional enhancement (folded, manager-announced on PR #8):
+   pressing a still-gated Seal Commitment briefly highlights the round
+   card(s) still missing a move -- told what is left, not met with a dead
+   control. Purely additive visual feedback; the disabled LOOK (CB-BUILD-
+   008's core fix, above) and the gate logic itself are both untouched. */
+.cb-round-picker.cb-round-missing,
+.cb-card.cb-round-missing {
+  border-color: var(--cb-red);
+  animation: cbRoundMissingPulse 900ms ease-out;
+}
+@keyframes cbRoundMissingPulse {
+  0% { box-shadow: 0 0 0 0 rgba(212,30,48,0.55); }
+  40% { box-shadow: 0 0 0 6px rgba(212,30,48,0.18); }
+  100% { box-shadow: 0 0 0 0 rgba(212,30,48,0); }
+}
 
 .cb-bracket-tree { display: flex; flex-direction: column; gap: 10px; }
 .cb-bracket-round-label { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; }
@@ -514,11 +561,6 @@ h1, h2, h3, .cb-display {
   color: #999;
 }
 
-/* CB-BUILD-fix-round-4 (R11): the toast is a RUNTIME text surface —
-   showToast() writes whatever a caller passes (ledger notices, summon
-   errors, reminders: authored participant sentences). R11 constrains what
-   the DATA face may carry, never what the prose face may — figure toasts
-   like "+150C" are fine in prose — so the surface wears the prose face. */
 .cb-toast {
   position: fixed;
   bottom: 80px;
@@ -527,6 +569,17 @@ h1, h2, h3, .cb-display {
   margin: 0 auto;
   background: var(--cb-yellow);
   color: var(--cb-black);
+  /* N-C6/R11 [LAW] re-probe fix: every toast message
+     (dom.js:showToast/ctx.toast) is a full SENTENCE the player reads --
+     "That didn't go through. Please try again.", "Retired to the
+     ledger.", "Reminder set...", the deposit/cash-out/reentry
+     confirmations, the corrupt-ledger notice -- i.e. body copy, never a
+     bare figure/tag/timestamp, so the DATA face was always the wrong
+     default here. The one genuine bare-figure toast (pve.js's PvE-duel
+     delta, e.g. "+50C"/"-30C" with no sentence around it) opts back onto
+     the data face explicitly via the .cb-toast-figure modifier below
+     (showToast's `figure` option) instead of the class default assuming
+     it. */
   font-family: var(--font-prose);
   font-size: 12px;
   padding: 10px 14px;
@@ -534,7 +587,16 @@ h1, h2, h3, .cb-display {
   z-index: 200;
 }
 
+/* N-C6/R11: the one explicitly-handled genuine bare-figure toast (pve.js's
+   PvE-duel delta) -- a compound selector (.cb-toast.cb-toast-figure, two
+   classes) so it wins on specificity over .cb-toast's own font-family rule
+   regardless of declaration order, without touching every other toast. */
+.cb-toast.cb-toast-figure {
+  font-family: var(--font-data);
+}
+
 .cb-busy { opacity: 0.6; pointer-events: none; }
+
 
 .cb-checkbox-row {
   display: flex;
@@ -543,41 +605,6 @@ h1, h2, h3, .cb-display {
   min-height: var(--tap-min);
 }
 .cb-checkbox-row input { width: 22px; height: 22px; }
-
-/* CB-BUILD-fix-round-1 #7 (R79, R83/AC1): the screener's DOB field.
-   `.cb-field-row` was referenced by screener.js but defined in NO
-   stylesheet — the funnel's FIRST input rendered browser-default (outside
-   the design frame) and under the 44px bar. Label in the quiet data face,
-   the input styled inside the frame with an explicit >=44px target. */
-.cb-field-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-family: var(--font-data);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #a8a29a;
-}
-.cb-field-row input {
-  min-height: var(--tap-min);
-  background: #16140e;
-  border: 2px solid #444;
-  border-radius: 6px;
-  color: var(--cb-offwhite);
-  font-family: var(--font-data);
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  padding: 8px 12px;
-  color-scheme: dark; /* the native date picker chrome follows the dark frame */
-}
-.cb-field-row input:focus { border-color: var(--cb-yellow); outline: none; }
-/* The detected location verdict line (CB-BUILD-001/R70) — styled
-   intentionally as a quiet status row under the DOB field. */
-.cb-location-verdict {
-  margin-top: 10px;
-  color: var(--cb-teal);
-}
 
 @media (min-width: 700px) {
   #app { padding-top: 32px; }

@@ -1,0 +1,1204 @@
+{
+  "schema": "cheddar-battles/decision-graph@1",
+  "generated": "2026-09-10 (t2) · refreshed f3 (fix-round decisions, review-found conflicts C21, citation-count reconciliation A13) · refreshed f4 (A-j: the R58-vs-R19 door-price conflict declared) — AC2: the graph updates as phases run",
+  "scope": "Ticket t2 (evidence & documentation pack) of task 85baf1fc; covers every load-bearing decision this documentation build makes and the PRD constraints those decisions hang from. AC2: authority = constraint | ours | provider; evidence.tier = tested | configuration-tested | assumed; status = proposed | accepted | superseded. 'ours' = the owner (Octopus Rodeo / Dapper Labs); 'provider' = the build side.",
+  "conflicts": [
+    {
+      "id": "CONFLICT-R58-R19-DOOR-PRICE",
+      "class": "law conflict (R87) — declared as a completed result at f4 (A-j); the same delivered configuration was previously recorded ONLY as decision node D-PRICE-ARM-CHARGE (f2/C15), not as the R87 conflict it actually resolves",
+      "laws": [
+        "R58",
+        "R19"
+      ],
+      "condition": "any door-price arm other than the incumbent $10 default (O2's under/$5, over/$25, or free/$0 arms)",
+      "statement": "R58 states the accounts law literally: 'Summon $10 → 100C (immediate cashout value $5; the gap is the price of competing for the prize).' R19's door-price law makes the entry price a per-arm variable: 'A player arriving through a door arm plays the treatment and the price their door showed.' Read literally, R58 fixes the summon price at exactly $10; R19 requires it to be whatever the active price-door arm displays. Both cannot hold at once under the $5, $25, or $0 arms.",
+      "evidence": "docs/PRD.md R58 ('Summon $10 → 100C') vs R19 ('A player arriving through a door arm plays the treatment and the price their door showed'); app/engine/game.js:summonCharacter (reads tunables.priceDoorArms.displayedEntryPriceDefaultUSD, the active O2 arm, not a hardcoded $10); app/engine/overrides.js:effectiveTunables's O2 patch; app/tests/price-arm-summon-charge.test.js (f2/C15).",
+      "law_preserving_configuration": "DELIVERED: the door-price law wins on price; R58's stake/peg arithmetic wins on everything else. Each price-door arm charges exactly what it displays ($5/$10/$25/$0, per O2) -- R19's door-price semantics honored literally. R58's other two clauses stay exactly as written regardless of arm: the summon always mints the same 100C stake (never scaled by price), and the 20C=$1 peg is fixed -- it holds EXACTLY only at the $10 default arm (where the R58-stated 'immediate cashout value $5' gap is measured); at any other arm the charged price and the minted stake's dollar-equivalent diverge further, an honest, unavoidable consequence of R58's fixed peg once R19 makes the charged price itself variable. Same delivered configuration as decision node D-PRICE-ARM-CHARGE (f2/C15) -- recorded here additionally as the R87 conflict it resolves, at the same completed-result shape as the other seven conflicts in this file.",
+      "status": "accepted (delivered configuration; declared f4)"
+    },
+    {
+      "id": "CONFLICT-INV1-R57-RAKE",
+      "class": "law conflict (R87) — found undeclared by the verification review (C21); declared as a completed result at f3",
+      "laws": [
+        "§15.1 (invariant 1)",
+
+        "R57"
+      ],
+      "condition": "any PvE duel the player wins (the 5% winner-side rake applies)",
+      "statement": "§15.1 requires 'the winner's gain equals the loser's loss' for every resolved duel; R57 takes a 5% rake out of the winner's side in PvE. Both cannot hold on the same (net) numbers: if the winner is credited net of rake, gain != loss by exactly the rake.",
+      "evidence": "docs/PRD.md §15.1 vs R57; app/engine/pve.js:resolvePvEDuel (playerDelta = transfer - rakeTaken on wins; opponentDelta = -transfer).",
+      "law_preserving_configuration": "DELIVERED: gross-vs-net semantics. Invariant #1 holds at the duel-math layer on the GROSS transfer — resolveDuel returns a single signed transfer, so gain==loss by construction there, and app/tests/invariants.test.js #1 asserts exactly that (transfer <= loser's pre-duel stake; gain==loss 'by construction (single signed transfer)'). The PvE layer then credits the winner NET of rake and ledgers rakeTaken explicitly, so conservation (invariant #2) still balances: projection.js counts currentStakeTotal + rakeTakenCheddar + cashedOutTotal + pveOutflowTotal, tested across randomized brackets+PvE. The rake is an explicit, ledgered house take between the gross transfer and the net credit — never a silent violation of #1.",
+      "status": "accepted (delivered configuration; declared f3)"
+    },
+    {
+      "id": "CONFLICT-R60-R61",
+      "class": "law conflict (R87) — found undeclared by the verification review (C21); declared as a completed result at f3",
+      "laws": [
+        "R60",
+        "R61"
+      ],
+      "condition": "a character whose stake has reached 0C",
+      "statement": "R60: 'Cashout is the sole path to retirement.' R61: the emptied (0C) character's single action is RETIRE TO THE LEDGER — a retirement that is not a cash-out (there is nothing to convert). Both cannot hold for a 0C character.",
+      "evidence": "docs/PRD.md R60 vs R61; app/engine/economy.js's emptied-character check; the f1 commit 2cb154e.",
+      "law_preserving_configuration": "DELIVERED: cash-out's exclusivity is scoped to STAKE-HOLDING characters. f1 fixed the player-visible copy in all three treatments; the incumbent's cashOutBody now reads verbatim: 'Convert this Wizard's stake to CASH at 20:1. The Wizard retires. This is the only way to retire a Wizard that still holds a stake — an emptied (0C) Wizard retires to the ledger instead.' (adjacent/far carry the same sentence over their own role nouns). R61's card line 'Holds nothing. The ledger will take the name.' ships verbatim.",
+      "status": "accepted (delivered configuration; copy fixed f1, declared f3)"
+    },
+    {
+      "id": "CONFLICT-R12R13-LITERAL-STRINGS",
+      "class": "law conflict (R87) — found undeclared by the verification review (C21); declared as a completed result at f3",
+      "laws": [
+        "R12",
+        "R13",
+        "R56",
+        "R61",
+        "R67",
+        "R77"
+      ],
+      "condition": "any non-incumbent treatment rendering the PRD's prescribed literal UI strings",
+      "statement": "R12 makes all in-frame copy theme-bound and R13 requires an alternate to differ in EVERY theme-bound element — but R56/R61/R67/R77 prescribe exact literal strings ('DUEL WON'; RETIRE TO THE LEDGER / 'Holds nothing. The ledger will take the name.'; 'PLAY CASH ONLY · How much would you like to deposit?'; 'CLAIMED'/'DRAINED'). An alternate cannot both differ in every copy element and reproduce the prescribed literals.",
+      "evidence": "docs/PRD.md R12/R13 vs R56/R61/R67/R77; app/data/treatments/mapping.json's fixedAcrossEveryTreatment block.",
+      "law_preserving_configuration": "DELIVERED (was implemented at t3 but undocumented — a silent choice until this declaration): mapping.json's fixed-vocabulary columns scope R12/R13 to genuinely theme-bound elements and hold three named string families identical across treatments: (1) mechanicalVocabulary — generic engine/state words that are not one of the four role nouns ('duel', 'bracket', 'round', 'tier', the SITTING heading, the ledger concept incl. R61's lines, NPC/HESITATED tags), the same way R71 fixes 'Round' inside the Voice rules; (2) law-literalUIText — strings the PRD prescribes by exact wording (R77 'CLAIMED'/'DRAINED', R56 'DUEL WON', R67's Load Funds heading); (3) genericChrome — copy carrying no theme-bound token in the incumbent's original (cashOut/wallet/withdraw/reserve headings, money truth badge, screener questions, etc.), kept identical rather than manufacturing difference. R13's 'differs in every theme-bound element' is read over the R12 set minus these fixed families; app/tests/treatments-schema.test.js and the R1/R73 scans pin the result.",
+      "status": "accepted (delivered configuration; documented f3)"
+    },
+    {
+      "id": "CONFLICT-R57-INTERNAL",
+      "class": "law conflict (R87, internal to one rule) — surfaced by f1 (A5), declared as a completed result at f3",
+      "laws": [
+        "R57 (three of its own clauses)"
+      ],
+      "condition": "a SUB-FLOOR player entering PvE (stake below the tier floor — reachable after a drain, before a rebuild)",
+      "statement": "R57's PvE opponent range states (a) upper bound = 2x the player's own stake, (b) lower bound = the tier floor, and (c) 'below the tier floor the player rebuilds through PvE' — implying beatable opponents near the player's small stake. For a sub-floor player, (a) sits BELOW (b): the three clauses cannot all hold.",
+      "evidence": "docs/PRD.md R57; app/engine/pve.js:generatePvEOpponent's source comment (f1/A5); app/README.md's f1 notes.",
+      "law_preserving_configuration": "DELIVERED: the floor wins — R57 states the floor clause without a sub-floor carve-out, so the literal lower bound prevails and the range collapses to the single point [floor, floor] (e.g. a 20C player at T0 faces exactly-50C opponents). Left as shipped; documented, not resolved, at this authority. EXPLOIT-EXPOSURE INTERACTION (the dossier's PvE-exposure finding F-8 already measures this geometry): the collapse pins a sub-floor exploiter against opponents LARGER than 2x their own stake — the same larger-house-opponent shape as F-8's worst measured cell (player 100C vs house 150C), so the collapse changes which cell a sub-floor farmer occupies, not the sign of the measured leak.",
+      "status": "accepted (delivered configuration; declared f3 — revisitable under P-DRIFT-CONSTRUCTION's owner ruling)"
+    },
+    {
+      "id": "CONFLICT-R71-R12",
+      "class": "law conflict (R87)",
+      "laws": [
+        "R71",
+        "R12",
+        "R13"
+      ],
+      "condition": "any non-incumbent treatment (the adjacent and far arms, R17)",
+      "statement": "R71 fixes the Narrator discipline lines 'verbatim in every treatment', but two of those verbatim lines contain incumbent theme-bound vocabulary: 'Cheddar transferred' (inside the Voice rules block) and 'Never address the wizard directly'. R12 makes world nouns and role nouns theme-bound; R13 requires a treatment to differ from the incumbent in every theme-bound element. Under any alternate treatment the three laws cannot all hold: verbatim discipline lines import the incumbent's nouns into a treatment that must not contain them (and 'CHEDDAR' inside another skin would also confuse R8a-adjacent money copy).",
+      "evidence": "docs/PRD.md R71 ('Discipline lines, verbatim in every treatment: ... the Voice rules from \"Round is acceptable\" through \"The ledger is permanent\"'); the shipped prompt's lines 'Never use ornate vocabulary where plain vocabulary works. \"Cheddar transferred\" not \"coffers depleted\".' and 'Never address the wizard directly.'; R12 ('the four role nouns...the Narrator's persona, register, and world vocabulary'); R13 ('differs from the incumbent in every theme-bound element').",
+      "law_preserving_configuration": "Hold every discipline rule semantically verbatim; substitute only the role nouns through the R13 mapping recorded in this graph (SK: 'SCRAP transferred', 'Never address the bot directly'; UC: 'PURSE moved', 'Never address the fighter directly'). This preserves R71's intent (the discipline is fixed) and R12/R13's letter (no incumbent nouns leak into alternates). Delivered as the closest law-preserving configuration per R87; owner sign-off requested via node P-R71-NOUN-MAP.",
+      "status": "resolved (implemented at t3/f-rounds: app/data/treatments/mapping.json carries the substitution table; app/tests/narrator-prompt-compose.test.js pins it; owner sign-off still pending via P-R71-NOUN-MAP)"
+    },
+    {
+      "id": "CONFLICT-R57-EVIDENCE",
+      "class": "evidence conflict (not a law conflict; recorded here because R87 asks for conflicts as completed results and this one is load-bearing)",
+      "laws": [
+        "R57"
+      ],
+      "condition": "PvE, a player who identifies the session drift element and best-responds with matching affinity",
+      "statement": "R57 carries [TESTED: 3% drift and 5% rake hold house exposure bounded against a perfect exploiter in simulation]. Our independent model-side simulation of the literal reading (house = per-round equilibrium mix of the R53 expected-score game + 3% drift toward one session element; exploiter plays the counter element with matching affinity) finds the exploiter nets +10.1C per duel on a 100C stack vs a 150C house opponent, net of the 5% rake — house exposure grows linearly in duels played, i.e. not bounded under this reading. The PRD's TESTED tag and our result cannot both describe the same construction; the likeliest resolution is that the tested house policy is not the construction we inferred (see P-DRIFT-CONSTRUCTION).",
+      "evidence": "docs/risk-sims/pve-exposure.js output (committed at docs/risk-sims/pve-exposure.out.txt): worst cell house affinity Water, drift Water, exploiter pure Air/affinity Air: player win rate 56.35%, EV +10.108C/duel net of rake; baseline equilibrium player EV -1.883C/duel. Full analysis: docs/risk-dossier.md finding F-8.",
+      "law_preserving_configuration": "Implement R57 exactly as written (LAW binds; drift and rake are R85 data and console-tunable between runs); ship the risk finding in the register with the reproduction script; pre-registrations for any PvE-bearing run state which construction of 'equilibrium mix + drift' the house actually runs.",
+      "status": "proposed"
+    },
+    {
+      "id": "NOTE-T6-PAYOUT",
+      "class": "data discrepancy (not a law conflict; recorded for completeness)",
+      "laws": [
+        "R62",
+        "R58"
+      ],
+      "condition": "T6 prize payout",
+      "statement": "R62 lists the T6 prize as $1,000,000 (20,000,000C) 'paid as $999,999.92 CASH plus battle stake at 20:1'. At the fixed peg (R58: 20C = $1), 20,000,000C converts to exactly $1,000,000.00; the stated $999,999.92 leaves $0.08 unaccounted for by any constant in the document. f3 update: the code now implements R62 AS WRITTEN — economy.js:bracketWinOutcome pays $999,999.92 CASH plus the champion's battle stake at 20:1 (tunables.tierLadder.tiers[6].payout; f1/C2 regression-tested), so ledger conservation balances to the cent at the implemented figure; the $0.08 arithmetic question remains open (P-T6-PAYOUT).",
+      "evidence": "docs/PRD.md R62 vs R58 arithmetic; docs/tunables-workbook.md note W-13.",
+      "law_preserving_configuration": "Reproduce both numbers verbatim in the workbook (done), enforce the ledger-conservation invariant (R86.2) at whichever figure the owner rules, and carry node P-T6-PAYOUT as the open question.",
+      "status": "proposed"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "C-R1-BRAND",
+      "title": "Forbidden strings: 'Cheeze Wizards'/'Cheese Wizards'/'CW'/logo in any participant-facing surface = build failure",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "owner rule",
+        "source": "PRD R1, §18, invariant 5; enforced by R86.9 automated scan"
+      },
+      "status": "accepted",
+      "rationale": "Load-bearing for every treatment name, working title, and creative in this pack; all t2 content scanned clean."
+    },
+    {
+      "id": "C-R6-ENVELOPE",
+      "title": "One run: $5,000 acquisition spend, 14-day ceiling, gate cell >= 70% of spend (~50 completers), cost-per-reservation cap $100 default",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "owner envelope decision, re-cut 2026-09-09 (§19)",
+        "source": "PRD R6, §19"
+      },
+      "status": "accepted",
+      "rationale": "Sizes every N-dependent claim in the rubric and the workbook's gate rows."
+    },
+    {
+      "id": "C-R8A-UPFRONT",
+      "title": "Always up front: play money declared free on every money surface; reservation = notification list",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "validated test ran this way",
+        "source": "PRD R8a [CONSTRAINT: participants knew]"
+      },
+      "status": "accepted",
+      "rationale": "Binds all in-frame copy and ad-creative concepts in the concept cards; F3's recorded risk is measured against this rule."
+    },
+    {
+      "id": "C-R11-FIXED-FRAME",
+      "title": "Fixed across treatments: mechanics §7-§8, sync §11, contract §12, instrumentation §13, fight-card structure, Bebas Neue/DM Mono/Barlow roles, semantic color roles, Narrator discipline, message 'outsmart for real money', targeting/budget/pacing",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "message and faces tested in the three waves",
+        "source": "PRD R11 [TESTED: three ad waves, §6]"
+      },
+      "status": "accepted",
+      "rationale": "Everything the concept cards do NOT vary; the reason cards only carry the R12 set."
+    },
+    {
+      "id": "C-R12-THEME-BOUND",
+      "title": "Theme-bound set each treatment supplies in full: world/fiction, character art+animation, name pool, palette values for fixed roles, hero face (Google Fonts), four role nouns, Narrator persona/register/examples, iconography, in-frame copy, ad creative, working title",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "owner rule (incumbent's yellow was part of the tested cheese theme)",
+        "source": "PRD R12"
+      },
+      "status": "accepted",
+      "rationale": "The completeness checklist every concept card was written against."
+    },
+    {
+      "id": "C-R22-DOOR",
+      "title": "Theme and price read at the door: intent clicks per 1,000 impressions primary, band rule, incumbent as tie-holder",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "validated fake-door read (5.2% intent, holding at 10x spend)",
+        "source": "PRD R22, R30"
+      },
+      "status": "accepted",
+      "rationale": "Why the rubric's audience-overlap weight is highest: the picks are door arms first."
+    },
+    {
+      "id": "C-R28-INTERVAL",
+      "title": "Confirmatory gate: ~50 completers, 95% interval ~ +/-13 points at a 35% rate, stated in pre-registration and reported at reached N",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "arithmetic reproduced: 1.96*sqrt(0.35*0.65/50) = 13.2 points (workbook W-45)",
+        "source": "PRD R28; docs/tunables-workbook.md"
+      },
+      "status": "accepted",
+      "rationale": "The interval the workbook reproduces; consistency check passed."
+    },
+    {
+      "id": "C-R30-CALIBRATION",
+      "title": "Calibration: one audience (sports bettors/DFS/prediction markets), message 'outsmart for real money', 5.2% intent, ~$6.63-7/intent click, ~50% bracket completion, 57% same-session replay; bounded slice caveat",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "three ad waves, spring-June 2026",
+        "source": "PRD R30"
+      },
+      "status": "accepted",
+      "rationale": "The dossier's ground truth; the incumbent card's only first-party overlap evidence; theme-confounded per R12 note."
+    },
+    {
+      "id": "C-R51-GATE",
+      "title": "Legs gate: reservation >= 35% (owner setpoint, fixed before data) + two of {replay-after-loss >= 50%, >= 2 brackets/48h, D1 >= 40%, completion >= 50%} + cost/reservation under cap",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "setpoint met in Stage 0 (100% at N=7); persistent-game extensions ASSUMED",
+        "source": "PRD R51"
+      },
+      "status": "accepted",
+      "rationale": "Every retention-manifest metric mapping and both picks' hypotheses ultimately read against this gate."
+    },
+    {
+      "id": "C-R53-MATH",
+      "title": "Duel math: elements 0/1/2, weights [78,79,81,86,100], affinity 1.3, powerTransfer with 7x clamp and sqrt ratio",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "verified against the original on-chain implementation (PRD) + independent model-side property checks (this ticket)",
+        "source": "PRD R53; docs/risk-sims/properties.js (1e6 duels: 0 violations of invariants 1/4/5 model-side)"
+      },
+      "status": "accepted",
+      "rationale": "The fixed core every treatment skins; the risk dossier's analysis object."
+    },
+    {
+      "id": "C-R55-FLOOR",
+      "title": "Floor = 2x tier re-entry bonus (T0 50C ... T6 50,000C); full drain under floor; ~57% T0 zero-out intended",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "model-side simulation reproduces the intended rate: 58.2% of decided duels zero out (equal 100C stacks, floor 50C, uniform play); the 2x formula itself remains ASSUMED (hypothesis under test per PRD)",
+        "source": "PRD R55; docs/risk-sims/properties.js output"
+      },
+      "status": "accepted",
+      "rationale": "Confirms the documentation's numbers cohere with the intended drama rate; formula stays a hypothesis."
+    },
+    {
+      "id": "C-R57-PVE",
+      "title": "PvE policy: house plays equilibrium mix + 3% session drift; rake 5% on wins; ranges floor..2x stake, cap 1.5x entry par; no floor rule; zeroed opponents replaced",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "PRD tags drift+rake boundedness TESTED; our model-side re-test disputes it under the literal construction (CONFLICT-R57-EVIDENCE)",
+        "source": "PRD R57; docs/risk-sims/pve-exposure.js"
+      },
+      "status": "accepted",
+      "rationale": "LAW binds as written; the evidence dispute is recorded, not resolved, at this ticket's authority."
+    },
+    {
+      "id": "C-R58-PEG",
+      "title": "20 CHEDDAR = $1 fixed; summon $10 -> 100C (cashout value $5)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "owner economic rule (T0-T2 economics tested as play economics in the slice)",
+        "source": "PRD R58, R62"
+      },
+      "status": "accepted",
+      "rationale": "The peg all role-noun stake units inherit unchanged (R11); the 50% summon gap is the laundering haircut in risk finding F-4."
+    },
+    {
+      "id": "C-R62-LADDER",
+      "title": "Tier ladder T0 $10/$20 ... T6 $1,000,000",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "configuration-tested",
+        "kind": "T0-T2 present in the tested slice as play economics; T3-T6 ASSUMED",
+        "source": "PRD R62"
+      },
+      "status": "accepted",
+      "rationale": "Workbook rows W-14..W-20; the T6 payout discrepancy is NOTE-T6-PAYOUT."
+    },
+    {
+      "id": "C-R63-REENTRY",
+      "title": "Re-entry fees/bonuses per tier; full play-through rake 6.3%",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "stated constants (T3-T6 ASSUMED); the 6.3% aggregate is stated, not derivable from the fee table without a behavior model",
+        "source": "PRD R63; workbook W-21..W-28 and note W-29"
+      },
+      "status": "accepted",
+      "rationale": "Reproduced verbatim; derivation question carried as P-63-RAKE-DERIVATION."
+    },
+    {
+      "id": "C-R65-SUBSTITUTION-COMPLETE",
+      "title": "Test build = shipped product with exactly the substitution points R67-R69 (enumeration complete) + R70 gates as shipped",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "owner scope rule ('everything as it will be', §19)",
+        "source": "PRD R65-R70"
+      },
+      "status": "accepted",
+      "rationale": "The scope-substitution frame; the four child nodes are the points themselves."
+    },
+    {
+      "id": "C-R67-DEPOSIT-MOCK",
+      "title": "Load Funds: shipped sheet, bank connection replaced by play-cash mock; heading 'PLAY CASH ONLY - How much would you like to deposit?'; full deposit logging",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "substitution point 1 of 3; layout described in place of a screenshot",
+        "source": "PRD R67"
+      },
+      "status": "accepted",
+      "rationale": "Load-bearing for economy metrics (bust-to-top-up, O8) and invariant 11."
+    },
+    {
+      "id": "C-R68-CASHOUT-REAL",
+      "title": "Cash Out is real and is the point: full shipped flow, stake -> CASH at 20:1, press-on-or-bank-it is measured",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "substitution point 2 of 3; owner ruling 2026-09-09 (§19: earlier payout stub corrected)",
+        "source": "PRD R68"
+      },
+      "status": "accepted",
+      "rationale": "The one money decision measured as shipped; laundering analysis (F-4) runs through it."
+    },
+    {
+      "id": "C-R69-WITHDRAW",
+      "title": "Withdraw: shipped wallet-to-bank affordance opens the play-cash-only sheet",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "substitution point 3 of 3",
+        "source": "PRD R69"
+      },
+      "status": "accepted",
+      "rationale": "Completes the R65 enumeration."
+    },
+    {
+      "id": "C-R70-IDENTITY",
+      "title": "Identity gates run as the shipped product: in-product screener, age/jurisdiction, same screens",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "shipped-flow rule; false-accept/false-reject estimated on pilot data (AC0)",
+        "source": "PRD R70, AC0 verification row"
+      },
+      "status": "accepted",
+      "rationale": "The sybil surface analyzed in risk finding F-1."
+    },
+    {
+      "id": "C-R71-NARRATOR",
+      "title": "Narrator: persona/register/examples theme-bound; format/voice/content discipline verbatim in every treatment; one call per duel, temp O10, 200 tokens, XML pre-computed data",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "tested",
+        "kind": "incumbent register praised in slice; XML+pre-computation fixed fabrication/miscounting; alternate registers ASSUMED",
+        "source": "PRD R71, R72"
+      },
+      "status": "accepted",
+      "rationale": "Parent of CONFLICT-R71-R12; both picks' persona lines were written to its discipline."
+    },
+    {
+      "id": "O1-THEME",
+      "title": "O1 default incumbent; alternates = the R16 picks (Scrapyard Kings adjacent, Undercard far), switchable",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "default per PRD; alternates per this ticket's rubric",
+        "source": "PRD §5 O1; docs/selection-rubric.md"
+      },
+      "status": "accepted",
+      "rationale": "The O-item this whole pack feeds."
+    },
+    {
+      "id": "O2-PRICE",
+      "title": "O2 displayed entry price default $10; door arms one under, one over, free-play",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default; $10 tie-holder tested only as part of the slice package",
+        "source": "PRD §5 O2, R22"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-30; interacts with theme only through R25 (recorded, unmeasured)."
+    },
+    {
+      "id": "O3-LEGS",
+      "title": "O3 legs hypothesis: default manifest order R26; all six built and switchable; each runs in a later envelope",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default",
+        "source": "PRD §5 O3, R26"
+      },
+      "status": "accepted",
+      "rationale": "The switch every retention-manifest brief maps to."
+    },
+    {
+      "id": "O4-ACTIVATION",
+      "title": "O4 run activation: console action per run (default) vs auto-start",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default",
+        "source": "PRD §5 O4"
+      },
+      "status": "accepted",
+      "rationale": "Ours to flip; no t2 dependency."
+    },
+    {
+      "id": "O5-COMMIT",
+      "title": "O5 commit window 60s (45s/90s built); hesitate rate <= 10%",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default with metric",
+        "source": "PRD §5 O5, §13"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-33; guard metric for manifest cards 1-2."
+    },
+    {
+      "id": "O6-LOBBY",
+      "title": "O6 lobby human wait 60s (30s/120s built)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default",
+        "source": "PRD §5 O6"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-34; collusion and sync-timing surfaces (F-2, F-5) read it."
+    },
+    {
+      "id": "O7-FILL",
+      "title": "O7 house-opponent fill: fill to 8 (default) vs fill to 8 with >= 2 humans",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default",
+        "source": "PRD §5 O7"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-35; collusion feasibility (F-2) depends on it."
+    },
+    {
+      "id": "O8-PRESETS",
+      "title": "O8 Load Funds presets: entry fee, 10x (default); alternatives entry/5x and entry/10x/50x",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default with bust-to-top-up metric",
+        "source": "PRD §5 O8, R67"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-36."
+    },
+    {
+      "id": "O9-CADENCE",
+      "title": "O9 reveal cadence 1170ms/round (900/1500 built); duel under 45s",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default",
+        "source": "PRD §5 O9, R75"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-37."
+    },
+    {
+      "id": "O10-TEMP",
+      "title": "O10 Narrator temperature 0.7 (0.5/0.9 built), 200-token cap",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "PRD default with specificity-pass metric",
+        "source": "PRD §5 O10, R72"
+      },
+      "status": "accepted",
+      "rationale": "Workbook W-38..39."
+    },
+    {
+      "id": "D-RUBRIC-WEIGHTS",
+      "title": "Rubric weights 0.35/0.25/0.20/0.20 (overlap/code/differentiation/testability), fixed before scoring",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "methodological choice justified against R4 priority order and R27 door sizing",
+        "source": "docs/selection-rubric.md §1"
+      },
+      "status": "accepted",
+      "rationale": "R16 demands weights before scores; sensitivity to the choice is recorded in rubric §5."
+    },
+    {
+      "id": "D-CANDIDATE-SLATE",
+      "title": "Seven-candidate slate (A1-A3, F1-F3, incumbent) across six sourced territories",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "dossier-derived; 55 distinct t2 sources (54 verified live) + 8 f3 additions serving the R14 source-type gap (A14)",
+        "source": "docs/theme-research-dossier.md §3-4; docs/concept-cards.md"
+      },
+      "status": "accepted",
+      "rationale": "Slate breadth per R15 (>= 3 per position, recorded axes disjoint)."
+    },
+    {
+      "id": "D-THEME-ADJ",
+      "title": "Top adjacent pick: SCRAPYARD KINGS (junkyard battle machines), weighted 4.00",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "R16 rubric over R14 dossier evidence; ASSUMED until the door race reads it (R16, R18)",
+        "source": "docs/selection-rubric.md §2-3; card A1 in docs/concept-cards.md"
+      },
+      "status": "accepted",
+      "rationale": "Highest adjacent on sourced overlap + code strength; t3 builds this skin; owner brand acceptance (A3/invariant 5) still gates publishing."
+    },
+    {
+      "id": "D-THEME-FAR",
+      "title": "Top far pick: UNDERCARD (regional prizefight circuit), weighted 4.60",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "R16 rubric over R14 dossier evidence; ASSUMED until the door race reads it",
+        "source": "docs/selection-rubric.md §2-3; card F1 in docs/concept-cards.md"
+      },
+      "status": "accepted",
+      "rationale": "Strongest slate score; its codes are the artifact's own structure; R17 plain-spoken record-keeper native to the fiction."
+    },
+    {
+      "id": "D-SK-SKIN",
+      "title": "Scrapyard Kings R12 skin data (nouns Bot/SCRAP/Golden Gear/Crusher; palette; Black Ops One hero; scrutineer persona; name pool; iconography; copy voice; ad concept)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "design synthesis against the R12 checklist and R71 discipline",
+        "source": "docs/concept-cards.md card A1"
+      },
+      "status": "accepted",
+      "rationale": "Complete skin so t3 builds without guessing; R13 mapping: Wizard->Bot, CHEDDAR->SCRAP, Big Cheese->Golden Gear, Blue Mold->Crusher."
+    },
+    {
+      "id": "D-UC-SKIN",
+      "title": "Undercard R12 skin data (nouns Fighter/PURSE/Belt/Cut; palette; Alfa Slab One hero; commission-scorekeeper persona; name pool; iconography; copy voice; ad concept)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "design synthesis against the R12 checklist and R71/R17 register rule",
+        "source": "docs/concept-cards.md card F1"
+      },
+      "status": "accepted",
+      "rationale": "R13 mapping: Wizard->Fighter, CHEDDAR->PURSE, Big Cheese->Belt, Blue Mold->Cut."
+    },
+    {
+      "id": "D-AIR-COLOR",
+      "title": "Incumbent air element value = #B0B0B0",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "configuration-tested",
+        "kind": "read from the bundle's shipped CSS (--cb-air), per R79's pointer",
+        "source": "assets/cw-asset-bundle/cb-css/globals.css line 1427"
+      },
+      "status": "accepted",
+      "rationale": "Resolves R79's 'as set in the bundle's CSS' to a concrete value for the workbook and the incumbent card."
+    },
+    {
+      "id": "D-CITATION-POLICY",
+      "title": "Citation policy: every URL status-checked this session; [verified live] vs [stable public source]; 404s discarded; no fabricated article/statistic URLs",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "HTTP status check of all candidate URLs; t2 session (2026-09-10): 57 checked, 55 kept (54 verified live, 1 rate-limited mark), 2 discarded — COUNTS CORRECTED at f3 (A13: the t2 node said 59/57, a miscount; the dossier held the correct 55-kept figure and both now agree). f3 session: 8 more checked, 8 kept (6 live, 2 rate-limited mark) — dossier §7",
+        "source": "docs/theme-research-dossier.md §6"
+      },
+      "status": "accepted",
+      "rationale": "Meets R14's live-resolvable check bar honestly; counts recounted directly from the documents at f3 (theme-research-dossier §6-§7)."
+    },
+    {
+      "id": "D-SIM-METHOD",
+      "title": "Risk-sim methodology: exact R53 implementation, seeded deterministic PRNG, fictitious play for equilibria, Monte Carlo for rates; committed with outputs",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "model-side simulation (synthetic tier per R29 - qualifies machine questions only)",
+        "source": "docs/risk-sims/*.js and *.out.txt"
+      },
+      "status": "accepted",
+      "rationale": "Everything quoted in the risk dossier reproduces via `node <script>`; results are model-side, not product tests."
+    },
+    {
+      "id": "H-R26-1",
+      "title": "Manifest card 1: scouting reports (opponent move-history panel)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "audience research-pleasure data (dossier A-3) supports; untested in product",
+        "source": "PRD R26(1); docs/retention-manifest.md card 1"
+      },
+      "status": "accepted",
+      "history": [
+        {
+          "at": "f2",
+          "status": "accepted",
+          "rationale": "BUILT at f2 (engine/hypotheses.js + the O3 console switch), verified against code at f3; runs only in a later envelope (O3). The t2 claim of built-at-delivery predated the build (review finding C13). Card 1 shipped with a documented deviation: the scouting panel derived from the slimmed ledger's summary fields, not per-round element history — see D-LEDGER-SLIM-VS-SCOUTING."
+        },
+        {
+          "at": "f7",
+          "status": "accepted",
+          "rationale": "Card 1 now satisfies R26(1) as written: the scouting panel reads the per-round record (playedByRound/facedByRound, oriented via combatants) that f6 already persists on every DUEL_RESOLVED event. A LEGACY (pre-f6) event has no per-round record and falls back to summary-only, honestly marked — one remaining caveat, not a deviation. See D-LEDGER-SLIM-VS-SCOUTING."
+        }
+      ],
+      "rationale": "f7: card 1 satisfies R26(1) as written — the panel renders per-round elements from the slim per-round ledger record for every current-schema event; a legacy pre-f6 row has no per-round record and falls back to summary-only, honestly marked. See D-LEDGER-SLIM-VS-SCOUTING."
+    },
+    {
+      "id": "H-R26-2",
+      "title": "Manifest card 2: pre-match Narrator brief (two sentences from the ledger)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "character layer tested (R30) but pre-match placement untested",
+        "source": "PRD R26(2); docs/retention-manifest.md card 2"
+      },
+      "status": "accepted",
+      "rationale": "Same delivery/run split as card 1. [f3: card verified BUILT at f2 behind the O3 switch — the t2 built-at-delivery claim predated the build (C13).]"
+    },
+    {
+      "id": "H-R26-3",
+      "title": "Manifest card 3: spectate after elimination (live board until the final)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "sweat-as-content culture (dossier §3.5) supports; untested",
+        "source": "PRD R26(3); docs/retention-manifest.md card 3"
+      },
+      "status": "accepted",
+      "rationale": "Same split. [f3: card verified BUILT at f2 behind the O3 switch — the t2 built-at-delivery claim predated the build (C13).]"
+    },
+    {
+      "id": "H-R26-4",
+      "title": "Manifest card 4: marquee scheduled brackets (countdown + reminder opt-in)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "appointment codes (dossier §3.1/3.3, A-5) support; untested",
+        "source": "PRD R26(4); docs/retention-manifest.md card 4"
+      },
+      "status": "accepted",
+      "rationale": "Same split. [f3: card verified BUILT at f2 behind the O3 switch — the t2 built-at-delivery claim predated the build (C13).]"
+    },
+    {
+      "id": "H-R26-5",
+      "title": "Manifest card 5: PvE depth (readable bot roster, separate records)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "rebuild-wall mechanics support; carries risk-finding F-8 precondition",
+        "source": "PRD R26(5); docs/retention-manifest.md card 5"
+      },
+      "status": "accepted",
+      "rationale": "Fair test requires the F-8 mitigation decision first (see edge). [f3: card verified BUILT at f2 behind the O3 switch — the t2 built-at-delivery claim predated the build (C13).]"
+    },
+    {
+      "id": "H-R26-6",
+      "title": "Manifest card 6: theme change (door-race winner applied to retention configuration)",
+      "authority": "constraint",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "presentation-attachment codes (dossier §3.2/3.4) support; untested",
+        "source": "PRD R26(6); docs/retention-manifest.md card 6"
+      },
+      "status": "accepted",
+      "rationale": "Consumes O1's named winner; brand acceptance precedes any run. [f3: card verified BUILT at f2 behind the O3 switch — the t2 built-at-delivery claim predated the build (C13).]"
+    },
+    {
+      "id": "P-R71-NOUN-MAP",
+      "title": "Proposed: owner sign-off on the role-noun substitution inside R71's verbatim discipline lines (resolution of CONFLICT-R71-R12)",
+      "authority": "ours",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "law-conflict resolution proposal",
+        "source": "CONFLICT-R71-R12"
+      },
+      "status": "proposed",
+      "rationale": "A3 console decision; until ruled, alternates ship with the law-preserving mapping."
+    },
+    {
+      "id": "P-DRIFT-CONSTRUCTION",
+      "title": "Proposed: pin the exact construction of 'equilibrium mix with 3% drift' (which game's equilibrium; how drift renormalizes; per-session element selection)",
+      "authority": "ours",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "specification ambiguity surfaced by simulation; two natural readings diverge in exposure by an order of magnitude",
+        "source": "docs/risk-dossier.md finding F-8; docs/risk-sims/pve-exposure.js"
+      },
+      "status": "proposed",
+      "rationale": "Needed before any PvE-bearing pre-registration states house strength (R51 house-play disclosure)."
+    },
+    {
+      "id": "P-T6-PAYOUT",
+      "title": "Proposed: rule on the T6 payout 8-cent discrepancy ($999,999.92 vs 20,000,000C at 20:1 = $1,000,000.00)",
+      "authority": "ours",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "arithmetic check during workbook reproduction",
+        "source": "NOTE-T6-PAYOUT; workbook W-13 note"
+      },
+      "status": "proposed",
+      "rationale": "Trivial in dollars, load-bearing for invariant R86.2 (ledger conservation must balance to the cent)."
+    },
+    {
+      "id": "P-CC-OVERLAP",
+      "title": "Proposed: evidence upgrade for cryptid-audience betting overlap (A2 overlap downgraded 3→2 at f3 after the R15 non-encyclopedia audit; an upgrade to 4 would put A2 at 3.75, a 0.25 gap below the adjacent pick — the pick would not flip)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "rubric sensitivity analysis, recomputed f3 (the t2 \"within 0.10\" figure was arithmetic error); f3 sourcing audit found no non-encyclopedia support of the named R14 types for the cryptid over-index",
+        "source": "docs/selection-rubric.md §5"
+      },
+      "status": "proposed",
+      "rationale": "Worth one search-hour in a later envelope; not worth re-opening the pick now (R4: time first). The audit strengthened rather than closed it: the claim is now honestly scored to its evidence."
+    },
+    {
+      "id": "P-EQ-ASYMMETRY",
+      "title": "Proposed: exact solve of the win-game value across affinity matchups (approximate solve shows Fire-vs-Water value ~ +1.6 to +2.5 win-points/100 for one side)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "model-side fictitious-play solve, 4e6 iterations, exploitability bracket reported",
+        "source": "docs/risk-sims/win-game-equilibrium.js output; docs/risk-dossier.md finding F-11"
+      },
+      "status": "proposed",
+      "rationale": "If confirmed by exact LP, affinity matchup slightly biases duel fairness; product decision on seeding/disclosure follows (R54's 'win rate independent of power' is unaffected - this is affinity, not stake)."
+    },
+    {
+      "id": "P-63-RAKE-DERIVATION",
+      "title": "Proposed: derivation or measurement note for the 6.3% full play-through rake (stated aggregate, not derivable from the fee table without a behavior model)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "assumed",
+        "kind": "workbook reproduction note",
+        "source": "docs/tunables-workbook.md note W-29"
+      },
+      "status": "proposed",
+      "rationale": "Workbook marks it held-as-policy; the run report should state the realized play-through rake beside it."
+    },
+    {
+      "id": "D-KILL-VOID",
+      "title": "Kill/void rule (f1, C16/AC0): on kill, an unfinished bracket is VOIDED — verbatim: 'no auto-commit, no resolution, no stake transfer happens after the kill; every character keeps exactly the stake it held at that instant; a single BRACKET_VOIDED event records the rule'",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + regression-tested (app/tests/kill-switch.test.js: every Game method freezes on kill; mid-duel void rule)",
+        "source": "app/engine/game.js (isKilled guard on every ledger-touching method, KillSwitchFrozenError, voidBracketOnKill — the one method deliberately not frozen); rule text quoted from app/README.md's f1 notes"
+      },
+      "status": "accepted",
+      "rationale": "AC0's shutdown semantics made concrete; two independent kill paths exist (console action; ?kill=1 URL parameter with no console interaction)."
+    },
+    {
+      "id": "D-COIN-FLIP-VERIFY",
+      "title": "Provably-fair coin flip (f1, C22) = commitment BEFORE the flip + a participant verification surface",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (duel.test.js coin-flip primitives; sync-narration/game tests for event order)",
+        "source": "app/engine/duel.js (sha256Hex/generateFlipSeed/deterministicFlipFromSeed); COIN_FLIP_COMMITTED appended before the seed decides anything; seed+commitment revealed on DUEL_RESOLVED; app/ui/screens/duel.js renders a verification fold with an independent Web-Crypto SHA-256 recompute button"
+      },
+      "status": "accepted",
+      "rationale": "'Provably fair' now means commit-reveal with participant-side verification, not a bare Math.random() (the C22 crucial finding). Legacy random flip kept only for back-compat call sites without a seed."
+    },
+    {
+      "id": "D-SCREENER-REATTEMPT",
+      "title": "Screener re-attempt policy (f1, C3): attempts keyed per ATTEMPT; a failed screener can be retried; the latest attempt's result governs",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (game tests)",
+        "source": "app/engine/game.js: SCREENER_RESULT keyed actionKey('screener', playerId, attemptIndex); projection replays chronologically, last write wins"
+      },
+      "status": "accepted",
+      "rationale": "At review a failed screener was permanently sticky by idempotency-key collision (C3); the fix preserves R83 idempotency per attempt while letting a mistaken answer be corrected."
+    },
+    {
+      "id": "D-ACCOUNT-ON-PASS",
+      "title": "Account + $25 signup grant written only on screener PASS (f1, A15)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested",
+        "source": "app/engine/game.js (boot-time ensureAccount() call removed from app.js; ensureAccount runs on pass); R66/R70"
+      },
+      "status": "accepted",
+      "rationale": "At review the grant landed at boot, before (and regardless of) the R70 gate — a screened-out visitor held a granted account. Now the gate precedes the grant."
+    },
+    {
+      "id": "D-PRICE-ARM-CHARGE",
+      "title": "Door-price semantics (f2, C15): each price arm CHARGES what it shows ($5/$10/$25/$0 per O2); the summon always mints the same 100C stake; the 20C=$1 peg is unchanged (and holds exactly only at the $10 default arm)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (app/tests/price-arm-summon-charge.test.js)",
+        "source": "app/engine/game.js:summonCharacter reads the active O2 arm; summon copy derives its price from tunables live (the hardcoded '$10' string removed)"
+      },
+      "status": "accepted",
+      "rationale": "R19's door semantics honestly implemented: the arm varies the door price, not the stake or the peg; at review the displayed arm price was display-only while $10 was always charged. f4/A-j: this same delivered configuration is ALSO declared as the R87 conflict it resolves -- see conflicts[0], id CONFLICT-R58-R19-DOOR-PRICE (R58 vs R19)."
+    },
+    {
+      "id": "D-ALPHA-SPENDING",
+      "title": "Sequential rule (f2, C10/C11): Lan-DeMets O'Brien-Fleming-type alpha spending (one-sided, normal-approximation, documented) + Wilson 95% CI reporting (expected at max N in the pre-registration; reached-at-close in the verdict)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (app/tests/gate-alpha-spending-door-yield.test.js: boundary shape, planted pass/fail classification, Wilson CI)",
+        "source": "app/engine/alphaSpending.js (module header documents the limitation: marginal boundary per look, NOT the exact recursive multivariate integral; Pocock constant-boundary fallback also implemented); parameters in tunables.gate.sequentialRule (workbook W-85/W-93)"
+      },
+      "status": "accepted",
+      "rationale": "Replaces the pre-f2 fixed z=1.645-at-every-look rule that claimed to be alpha spending (C10). The approximation is stated on every surface that shows the boundary."
+    },
+    {
+      "id": "D-DOOR-YIELD-LAYER",
+      "title": "Door yield as R22's primary metric (f2, C12): impressions → clicks → intent clicks (= enrollments) modeled per arm; door yield per 1,000 impressions; pre-registered band rule; R22's exact reporting language — impressions/CPM/cost-per-intent-click are an ASSUMED synthetic model",
+      "authority": "provider",
+      "evidence": {
+        "tier": "configuration-tested",
+        "kind": "implemented + tested (band rule, report shape); the impressions model itself is ASSUMED synthetic — no live ad platform",
+        "source": "app/engine/runSimulator.js (classifyDoorYieldWinner/buildDoorYieldReport; armDefinitions' documented doorYieldBiasMultiplier placeholder); tunables.doorYield (workbook W-89…W-92)"
+      },
+      "status": "accepted",
+      "rationale": "Theme and price now have a real, testable door-yield primary and band-rule winner; the synthetic constants are labeled placeholders for real door data, per f2's own notes."
+    },
+    {
+      "id": "D-SESSION-NUMBER",
+      "title": "App-session semantics (f1, C19): a NEW session starts after ≥30 minutes since the app was last touched, or in a browser tab that has not seen the app this tab-lifetime (sessionStorage as the new-tab signal)",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (app/tests/session.test.js — the pure computeSessionNumber core)",
+        "source": "app/ui/session.js; Game#loadFunds now REQUIRES sessionNumber (invariant #11's deposit-context field)"
+      },
+      "status": "accepted",
+      "rationale": "A documented judgment call (the PRD does not define 'session'); invariant #11's session-number field is now real data, not a constant."
+    },
+    {
+      "id": "D-LEDGER-SLIM-VS-SCOUTING",
+      "title": "SUPERSEDED at f7 -- slim per-round ledger records have been persisted since f6 (for the cross-instance reveal-replay fix), and f7 built genuine per-round scouting from them. Original (f1) title, kept for history: slimmed DUEL_RESOLVED payload vs scouting depth (R26 card 1) -- keep the slimming; the scouting panel derives from the retained summary fields, a documented deviation from card 1's 'elements played by round'",
+      "authority": "provider",
+      "evidence": {
+        "tier": "tested",
+        "kind": "implemented + tested (app/tests/manifest-hypotheses.test.js: per-round scouting -- playedByRound/facedByRound -- from real ledger events, oriented via combatants; legacy rounds-free events fall back to summary-only, honestly marked via roundsAvailable)",
+        "source": "app/engine/game.js:slimOutcomeForLedger/hydrateRoundsFromLedger (f6: a SLIM per-round record is persisted, not dropped -- move1/move2/result/p1Affinity/p2Affinity); app/engine/hypotheses.js:opponentDuelHistory (f7: reads that same record for playedByRound/facedByRound); app/ui/screens/duel.js (f7: the scouting panel renders it)"
+      },
+      "status": "superseded",
+      "history": [
+        {
+          "at": "f1",
+          "status": "accepted",
+          "rationale": "Chosen for quota headroom: a true per-round history was not reconstructable from the shipped ledger schema at that time (A6 dropped `rounds` outright), so card 1's fair test ran on the honest summary-field adaptation (W/L, score, an affinity-play-rate proxy, transfer, floor-drain/tie), recorded in docs/retention-manifest.md."
+        },
+        {
+          "at": "f6",
+          "note": "slimOutcomeForLedger/hydrateRoundsFromLedger began persisting a SLIM per-round record (move1/move2/result/p1Affinity/p2Affinity) on every DUEL_RESOLVED event -- for an UNRELATED reason (N1/crucial-1: the cross-instance reveal-replay crash on a rounds-free reconstruct). This silently invalidated the f1 rationale's 'not reconstructable from the shipped ledger schema' premise, but neither hypotheses.js nor the docs were updated to use it -- the stale claim across five sites that f7 corrects."
+        },
+        {
+          "at": "f7",
+          "status": "superseded",
+          "rationale": "The scouting panel now reads the same per-round record the f6 fix already persists (opponentDuelHistory returns playedByRound/facedByRound, oriented via combatants); card 1 satisfies R26(1)'s 'elements played by round' as written, for every current-schema event. Legacy (pre-f6) DUEL_RESOLVED events remain summary-only (no migration, no data to reconstruct from) -- the one honest remaining caveat, not a new deviation. See docs/retention-manifest.md's card 1 entry and docs/decision-graph.md's D-LEDGER-SLIM-VS-SCOUTING row for the reader-facing restatement."
+        }
+      ],
+      "rationale": "SUPERSEDED (f7): per-round scouting is now implemented from the slim per-round ledger record f6 introduced; card 1 satisfies R26(1) as written for every current-schema event. Legacy (pre-f6) events fall back to summary-only, honestly marked -- the one remaining, unavoidable (no-migration) caveat, not a revisitable trade-off anymore."
+    }
+  ],
+  "edges": [
+    {
+      "from": "C-R30-CALIBRATION",
+      "to": "D-CANDIDATE-SLATE",
+      "type": "informs"
+    },
+    {
+      "from": "D-CANDIDATE-SLATE",
+      "to": "D-THEME-ADJ",
+      "type": "informs"
+    },
+    {
+      "from": "D-CANDIDATE-SLATE",
+      "to": "D-THEME-FAR",
+      "type": "informs"
+    },
+    {
+      "from": "D-RUBRIC-WEIGHTS",
+      "to": "D-THEME-ADJ",
+      "type": "constrains"
+    },
+    {
+      "from": "D-RUBRIC-WEIGHTS",
+      "to": "D-THEME-FAR",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R22-DOOR",
+      "to": "D-RUBRIC-WEIGHTS",
+      "type": "informs"
+    },
+    {
+      "from": "C-R6-ENVELOPE",
+      "to": "D-RUBRIC-WEIGHTS",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R12-THEME-BOUND",
+      "to": "D-SK-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R12-THEME-BOUND",
+      "to": "D-UC-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R11-FIXED-FRAME",
+      "to": "D-SK-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R11-FIXED-FRAME",
+      "to": "D-UC-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R1-BRAND",
+      "to": "D-SK-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R1-BRAND",
+      "to": "D-UC-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "D-THEME-ADJ",
+      "to": "D-SK-SKIN",
+      "type": "implements"
+    },
+    {
+      "from": "D-THEME-FAR",
+      "to": "D-UC-SKIN",
+      "type": "implements"
+    },
+    {
+      "from": "D-THEME-ADJ",
+      "to": "O1-THEME",
+      "type": "implements"
+    },
+    {
+      "from": "D-THEME-FAR",
+      "to": "O1-THEME",
+      "type": "implements"
+    },
+    {
+      "from": "C-R71-NARRATOR",
+      "to": "D-SK-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R71-NARRATOR",
+      "to": "D-UC-SKIN",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R71-NARRATOR",
+      "to": "P-R71-NOUN-MAP",
+      "type": "conflicts-with"
+    },
+    {
+      "from": "C-R12-THEME-BOUND",
+      "to": "P-R71-NOUN-MAP",
+      "type": "conflicts-with"
+    },
+    {
+      "from": "C-R53-MATH",
+      "to": "C-R55-FLOOR",
+      "type": "informs"
+    },
+    {
+      "from": "C-R53-MATH",
+      "to": "C-R57-PVE",
+      "type": "informs"
+    },
+    {
+      "from": "C-R57-PVE",
+      "to": "P-DRIFT-CONSTRUCTION",
+      "type": "conflicts-with"
+    },
+    {
+      "from": "D-SIM-METHOD",
+      "to": "C-R55-FLOOR",
+      "type": "reads"
+    },
+    {
+      "from": "D-SIM-METHOD",
+      "to": "C-R57-PVE",
+      "type": "reads"
+    },
+    {
+      "from": "D-SIM-METHOD",
+      "to": "P-EQ-ASYMMETRY",
+      "type": "reads"
+    },
+    {
+      "from": "C-R58-PEG",
+      "to": "C-R62-LADDER",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R62-LADDER",
+      "to": "P-T6-PAYOUT",
+      "type": "conflicts-with"
+    },
+    {
+      "from": "C-R63-REENTRY",
+      "to": "P-63-RAKE-DERIVATION",
+      "type": "informs"
+    },
+    {
+      "from": "C-R63-REENTRY",
+      "to": "C-R55-FLOOR",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R65-SUBSTITUTION-COMPLETE",
+      "to": "C-R67-DEPOSIT-MOCK",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R65-SUBSTITUTION-COMPLETE",
+      "to": "C-R68-CASHOUT-REAL",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R65-SUBSTITUTION-COMPLETE",
+      "to": "C-R69-WITHDRAW",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R65-SUBSTITUTION-COMPLETE",
+      "to": "C-R70-IDENTITY",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R51-GATE",
+      "to": "H-R26-1",
+      "type": "reads"
+    },
+    {
+      "from": "C-R51-GATE",
+      "to": "H-R26-2",
+      "type": "reads"
+    },
+    {
+      "from": "C-R51-GATE",
+      "to": "H-R26-3",
+      "type": "reads"
+    },
+    {
+      "from": "C-R51-GATE",
+      "to": "H-R26-4",
+      "type": "reads"
+    },
+    {
+      "from": "C-R51-GATE",
+      "to": "H-R26-5",
+      "type": "reads"
+    },
+    {
+      "from": "C-R51-GATE",
+      "to": "H-R26-6",
+      "type": "reads"
+    },
+    {
+      "from": "O3-LEGS",
+      "to": "H-R26-1",
+      "type": "constrains"
+    },
+    {
+      "from": "O3-LEGS",
+      "to": "H-R26-2",
+      "type": "constrains"
+    },
+    {
+      "from": "O3-LEGS",
+      "to": "H-R26-3",
+      "type": "constrains"
+    },
+    {
+      "from": "O3-LEGS",
+      "to": "H-R26-4",
+      "type": "constrains"
+    },
+    {
+      "from": "O3-LEGS",
+      "to": "H-R26-5",
+      "type": "constrains"
+    },
+    {
+      "from": "O3-LEGS",
+      "to": "H-R26-6",
+      "type": "constrains"
+    },
+    {
+      "from": "C-R57-PVE",
+      "to": "H-R26-5",
+      "type": "constrains"
+    },
+    {
+      "from": "P-DRIFT-CONSTRUCTION",
+      "to": "H-R26-5",
+      "type": "constrains"
+    },
+    {
+      "from": "O1-THEME",
+      "to": "H-R26-6",
+      "type": "informs"
+    },
+    {
+      "from": "C-R8A-UPFRONT",
+      "to": "D-CANDIDATE-SLATE",
+      "type": "constrains"
+    },
+    {
+      "from": "D-CITATION-POLICY",
+      "to": "D-CANDIDATE-SLATE",
+      "type": "constrains"
+    },
+    {
+      "from": "D-AIR-COLOR",
+      "to": "C-R11-FIXED-FRAME",
+      "type": "informs"
+    },
+    {
+      "from": "C-R28-INTERVAL",
+      "to": "C-R51-GATE",
+      "type": "informs"
+    },
+    {
+      "from": "C-R70-IDENTITY",
+      "to": "D-SIM-METHOD",
+      "type": "informs"
+    },
+    {
+      "from": "D-THEME-ADJ",
+      "to": "P-CC-OVERLAP",
+      "type": "informs"
+    },
+    {
+      "from": "D-KILL-VOID",
+      "to": "C-R65-SUBSTITUTION-COMPLETE",
+      "type": "informs"
+    },
+    {
+      "from": "D-SCREENER-REATTEMPT",
+      "to": "C-R70-IDENTITY",
+      "type": "implements"
+    },
+    {
+      "from": "D-ACCOUNT-ON-PASS",
+      "to": "C-R70-IDENTITY",
+      "type": "implements"
+    },
+    {
+      "from": "D-PRICE-ARM-CHARGE",
+      "to": "O2-PRICE",
+      "type": "implements"
+    },
+    {
+      "from": "D-ALPHA-SPENDING",
+      "to": "C-R51-GATE",
+      "type": "implements"
+    },
+    {
+      "from": "D-ALPHA-SPENDING",
+      "to": "C-R28-INTERVAL",
+      "type": "implements"
+    },
+    {
+      "from": "D-DOOR-YIELD-LAYER",
+      "to": "C-R22-DOOR",
+      "type": "implements"
+    },
+    {
+      "from": "D-SESSION-NUMBER",
+      "to": "C-R51-GATE",
+      "type": "informs"
+    },
+    {
+      "from": "D-LEDGER-SLIM-VS-SCOUTING",
+      "to": "H-R26-1",
+      "type": "constrains"
+    }
+  ]
+}

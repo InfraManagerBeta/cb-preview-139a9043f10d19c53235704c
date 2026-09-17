@@ -250,15 +250,18 @@ test('invariant #9 (build failure R1): forbidden strings are absent from every p
   const forbidden = [/cheeze wizards/i, /cheese wizards/i, /\bcw\b/i];
   // t3/§18: the bundle's nine canonical GIF filenames are literally named
   // "CW_<State>.gif" (e.g. CW_Battle Idle.gif), and the bundle's own
-  // directory is named "cw-asset-bundle" (assets/cw-asset-bundle/...,
-  // unpacked at that path by the repo, R18) -- the brief is explicit that
-  // "GIF file paths as `src` attributes are fine; alt text must be
-  // theme-neutral" (R1 only governs participant-facing RENDERED text/labels,
-  // not an interchange-format asset's own filename/path). Strip just those
-  // two literal, non-renderable path tokens before scanning so the rest of
-  // the scan stays exactly as strict as before.
+  // directory is named "cw" (assets/cw/..., renamed from the delivered
+  // build's "cw-asset-bundle" per CB-BUILD-000 -- content byte-identical,
+  // path retargeted; R18) -- the brief is explicit that "GIF file paths as
+  // `src` attributes are fine; alt text must be theme-neutral" (R1 only
+  // governs participant-facing RENDERED text/labels, not an
+  // interchange-format asset's own filename/path). Strip just those
+  // non-renderable path tokens before scanning so the rest of the scan
+  // stays exactly as strict as before. Both the pre-rename and post-rename
+  // bundle path spellings are stripped so this stays correct regardless of
+  // which the checked-out tree carries.
   const CW_ASSET_FILENAME_RE = /CW_[A-Za-z ]+\.gif/g;
-  const CW_ASSET_BUNDLE_PATH_RE = /cw-asset-bundle/gi;
+  const CW_ASSET_BUNDLE_PATH_RE = /cw-asset-bundle|assets\/cw\//gi;
   const participantFiles = [];
   async function collect(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {

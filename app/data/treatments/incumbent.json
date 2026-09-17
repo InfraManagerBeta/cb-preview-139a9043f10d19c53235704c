@@ -110,10 +110,9 @@
     "truthLine": "This is play money. It's free, and it lives right here in the game. Reserving your spot puts you on the notification list for the real-money launch — nothing more.",
     "landingSubhead": "Five rounds. One winner. Summon a Wizard, enter the bracket, keep what you take.",
     "screenerHeading": "Before you play",
-    "screenerBody": "A couple of quick questions — age and location — before we let you into the arena. This is a simulated verdict for the play-money build.",
-    "screenerAgeQuestion": "Are you 18 or older?",
-    "screenerJurisdictionQuestion": "Do you currently reside in a permitted region?",
-    "screenerRejectedMessage": "The arena isn't open to you yet under these answers. Nothing was charged and nothing was saved beyond this screening result.",
+    "screenerBody": "Your location is checked automatically; you just enter your date of birth before we let you into the arena. This is a simulated verdict for the play-money build.",
+    "screenerRejectedMessage": "You need to be 18 or older to play. Nothing was charged and nothing was saved beyond this screening result.",
+    "screenerNotAvailableMessage": "Cheddar Battles is not available in your region. Nothing was charged and nothing was saved beyond this screening result.",
     "summonHeading": "Summon your Wizard",
     "summonBody": "Every Wizard comes summoned with a name already on it. The pool names them; you play them.",
     "summonButton": "Summon ($10 — 100C)",
@@ -150,10 +149,24 @@
     "moneyTruthBadge": "PLAY MONEY · FREE · STAYS IN GAME",
     "npcTagLabel": "NPC",
     "hesitatedTagLabel": "HESITATED",
+    "stageDegradedNotice": "The wizards couldn't take the stage this time — the duel still plays out right here, blow by blow.",
     "narratorBypassA": "Both wizards committed to [ELEMENT]. All five rounds. The Narrator is familiar with this particular theory of cooperation. The Narrator is also familiar with how it typically resolves.",
     "narratorBypassB": "[EEEEE] versus [EEEEE]. The Narrator notes this is either a remarkable coincidence or a remarkable miscalculation of human nature. Possibly both.",
-    "_narratorBypassNote": "R73 static bypass, verbatim. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered.",
-    "provisionalStageLabel": "",
-    "_provisionalStageLabelNote": "CB-BUILD-007 (docs/cb-build-patch-log.md): the incumbent ships bundled character art (assets/cw-asset-bundle/renders/gifs/) and never renders the provisional-stage badge (app/ui/components/battle/stage.js checks treatment.id !== 'incumbent' before showing it). Present here only so every treatment carries the same copy key set (see app/tests/treatments-schema.test.js); left empty because it is unused."
+    "_narratorBypassNote": "R73 static bypass, verbatim. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered."
+  },
+  "adCreative": {
+    "_r12r18": "CB-BUILD-007 track 1/R12/R18/R22: each treatment's ad + landing creative, as product data — the door test (R18) reads THIS, not in-game character art. fixedMessage is R11-LAW (identical string in all three treatments, verbatim); headline/body/cta are theme-bound, in the treatment's own register and working title; visual is a composition spec built from non-character assets alone (colors/logoMark/type roles already declared above) — no character art, per the entry file's boundary (alternates have no character art to originate).",
+    "fixedMessage": "Outsmart for real money.",
+    "headline": "Outsmart. Outlast. Out-cheese everyone.",
+    "body": "Summon a Wizard, read the bracket, take the pot. Five rounds decide it — and the ledger remembers everything.",
+    "cta": "Summon Now",
+    "visual": {
+      "_note": "Non-character composition only (R12/entry-file boundary): a full-bleed ground-color field, the primary-color accent, and the logoMark wordmark set in the display face. No character art — the incumbent's real rig art plays behind the click, not on the door.",
+      "backgroundColorRole": "ground",
+      "accentColorRole": "primary",
+      "logoMark": "CB",
+      "headlineFace": "display",
+      "bodyFace": "prose"
+    }
   }
 }

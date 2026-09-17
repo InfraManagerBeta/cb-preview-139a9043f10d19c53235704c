@@ -1,0 +1,155 @@
+{
+  "tolerances": {
+    "libraryDeviationsMax": 0,
+    "gifFpsTarget": 30,
+    "gifFpsTolerance": 0.5,
+    "ceilingMs": 45000
+  },
+  "verdicts": [
+    {
+      "criterion": "C-library-constants",
+      "tolerance": "deviations from {30fps, 1720x1400, v5.5.2, reference clip lengths} <= 0 (exact)",
+      "measured": "0 deviations over 50 live-sampled files",
+      "pass": true
+    },
+    {
+      "criterion": "C-render-rate",
+      "tolerance": "every bundle GIF effective fps within 30 ± 0.5",
+      "measured": "worst |fps-30| = 0.1",
+      "pass": true
+    },
+    {
+      "criterion": "C-duel-ceiling",
+      "tolerance": "worst-case duel < 45000ms (R75) at EVERY switchable O9 arm (900/1170/1500ms)",
+      "measured": "900ms -> 24310ms; 1170ms -> 31482ms; 1500ms -> 40350ms",
+      "pass": true
+    }
+  ],
+  "overall": "PASS",
+  "librarySample": {
+    "combos": [
+      "FIRE-10-head03-cape04-hat10-wand04",
+      "FIRE-7-head02-cape04-hat02-wand01",
+      "NEUTRAL-5-head01-cape01-hat09-wand04",
+      "WATER-3-head04-cape02-hat01-wand03",
+      "WIND-11-head03-cape03-hat10-wand05"
+    ],
+    "deviations": []
+  },
+  "gifTiming": {
+    "CW_Attack.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    },
+    "CW_Battle Idle.gif": {
+      "frames": 34,
+      "meanDelayCs": 3.32,
+      "effectiveFps": 30.1
+    },
+    "CW_Charge.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    },
+    "CW_Hit Success.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    },
+    "CW_Hit.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    },
+    "CW_Idle.gif": {
+      "frames": 31,
+      "meanDelayCs": 3.32,
+      "effectiveFps": 30.1
+    },
+    "CW_Lose.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    },
+    "CW_Power.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    },
+    "CW_Win.gif": {
+      "frames": 60,
+      "meanDelayCs": 3.35,
+      "effectiveFps": 29.9
+    }
+  },
+  "timeline": {
+    "cadenceMs": 1170,
+    "stepStats": {
+      "battleIdle->idle": {
+        "stepMs": 702,
+        "clipNativeMs": 1133,
+        "deltaMs": -431,
+        "policy": "loops"
+      },
+      "charge->charge": {
+        "stepMs": 995,
+        "clipNativeMs": 1400,
+        "deltaMs": -405,
+        "policy": "window ends first (cut by cross-fade)"
+      },
+      "chargeLoop->chargeloop": {
+        "stepMs": 585,
+        "clipNativeMs": 600,
+        "deltaMs": -15,
+        "policy": "loops"
+      },
+      "attack->attack": {
+        "stepMs": 936,
+        "clipNativeMs": 1067,
+        "deltaMs": -131,
+        "policy": "window ends first (cut by cross-fade)"
+      },
+      "hitSuccess->reset": {
+        "stepMs": 995,
+        "clipNativeMs": 2000,
+        "deltaMs": -1005,
+        "policy": "window ends first (cut by cross-fade)"
+      },
+      "reset->reset": {
+        "stepMs": 410,
+        "clipNativeMs": 2000,
+        "deltaMs": -1590,
+        "policy": "window ends first (cut by cross-fade)"
+      },
+      "win->win": {
+        "stepMs": 995,
+        "clipNativeMs": 3733,
+        "deltaMs": -2738,
+        "policy": "window ends first (cut by cross-fade)"
+      }
+    },
+    "worstCaseTotalMs": 31482,
+    "ceilingMs": 45000,
+    "ceilingByO9Arm": {
+      "900": {
+        "worstCaseTotalMs": 24310,
+        "ceilingMs": 45000,
+        "under": true,
+        "isDefault": false
+      },
+      "1170": {
+        "worstCaseTotalMs": 31482,
+        "ceilingMs": 45000,
+        "under": true,
+        "isDefault": true
+      },
+      "1500": {
+        "worstCaseTotalMs": 40350,
+        "ceilingMs": 45000,
+        "under": true,
+        "isDefault": false
+      }
+    }
+  }
+}

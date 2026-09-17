@@ -1,0 +1,85 @@
+{
+  "method": "dilated black-outline-ink IoU (palette-independent) vs CW_Battle Idle frame 0",
+  "top": [
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat01-wand05",
+      "iou": 0.19597917269308648
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat01-wand01",
+      "iou": 0.19481820784425996
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat01-wand06",
+      "iou": 0.19382504288164665
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat15-wand05",
+      "iou": 0.19030948046492088
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat15-wand01",
+      "iou": 0.18923418423973362
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat13-wand01",
+      "iou": 0.18921582429959172
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat15-wand06",
+      "iou": 0.1873617256637168
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat11-wand05",
+      "iou": 0.1871536165979821
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat14-wand05",
+      "iou": 0.18665911344002267
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat11-wand01",
+      "iou": 0.1860236220472441
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat14-wand01",
+      "iou": 0.18553811659192826
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat01-wand04",
+      "iou": 0.18521701761925224
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat13-wand04",
+      "iou": 0.18402728435412818
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat14-wand06",
+      "iou": 0.18268289271226745
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat15-wand04",
+      "iou": 0.18114628364244875
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat11-wand04",
+      "iou": 0.18023748939779474
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat14-wand04",
+      "iou": 0.17993518388051288
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat01-wand03",
+      "iou": 0.17812999854587755
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat03-wand05",
+      "iou": 0.17494154861779673
+    },
+    {
+      "combo": "NEUTRAL-1-head01-cape01-hat03-wand01",
+      "iou": 0.17403767403767403
+    }
+  ]
+}

@@ -34,7 +34,7 @@ function renderMarqueeCard(ctx) {
     .some((e) => e.payload && e.payload.slotStartsAt === slot.startsAt);
   return el('div', { class: 'cb-card' }, [
     el('div', { class: 'cb-display', style: 'font-size:18px;' }, 'Marquee bracket'),
-    el('p', { class: 'cb-prose cb-prose-small' }, card.fairTestLine),
+    el('p', { class: 'cb-legal' }, card.fairTestLine),
     el('div', { class: 'cb-data', style: 'margin-top:6px;color:var(--cb-yellow);' }, `Next marquee bracket in ${formatCountdown(slot.msRemaining)}`),
     el('button', {
       class: 'cb-btn secondary block',
@@ -96,8 +96,12 @@ export function mountLobbyEntry(ctx) {
         // hint it was written to be ("not a hard gate"): warn a player who's
         // below floor AND wouldn't clear it even with a re-entry bonus that
         // PvE (not re-entry) is the path back.
+        //
+        // C6/R11 [LAW]: this is a full sentence -- the PROSE face
+        // (--font-prose, .cb-prose/.cb-legal), never the data face
+        // (--font-data, .cb-micro).
         !meetsFloor && pve.needsPvERebuild(tunables, c)
-          ? el('p', { class: 'cb-prose cb-prose-small', style: 'margin-top:6px;' }, 'Even a re-entry bonus would not clear the floor yet — PvE first.')
+          ? el('p', { class: 'cb-prose', style: 'margin-top:6px;' }, 'Even a re-entry bonus would not clear the floor yet — PvE first.')
           : null,
       ]);
     }),

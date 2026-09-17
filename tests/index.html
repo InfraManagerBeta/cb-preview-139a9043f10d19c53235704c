@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Cheddar Battles Test Suite</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            line-height: 1.6;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .file-list {
+            background: #fafafa;
+            border-left: 3px solid #333;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cheddar Battles Test Suite</h1>
+    
+    <p><strong>Important:</strong> <span class="important">The test suite does NOT run in a browser.</span></p>
+    
+    <h2>How to Run the Tests</h2>
+    <p>Use Node.js directly from the command line:</p>
+    <pre><code>node --test app/tests/*.test.js</code></pre>
+    
+    <p>From the root directory of this preview (where <code>index.html</code> and <code>app/</code> are located).</p>
+    
+    <h2>Test Files Manifest</h2>
+    <p>The following test files are included and will be run with the command above:</p>
+    
+    <div class="file-list">
+<code>app/tests/bracket.test.js</code><br><code>app/tests/commit-clock-autocommit.test.js</code><br><code>app/tests/cross-check-r53.test.js</code><br><code>app/tests/data-schema.test.js</code><br><code>app/tests/decision-graph-schema.test.js</code><br><code>app/tests/deposit-tap-to-edit.test.js</code><br><code>app/tests/disabled-button-cue.test.js</code><br><code>app/tests/duel-commit-screen-redesign.test.js</code><br><code>app/tests/duel-screen-structure.test.js</code><br><code>app/tests/duel-teardown.test.js</code><br><code>app/tests/duel.test.js</code><br><code>app/tests/economy.test.js</code><br><code>app/tests/el-aria-disabled-coercion.test.js</code><br><code>app/tests/funds-wall-error-code.test.js</code><br><code>app/tests/funds-wall-load-funds.test.js</code><br><code>app/tests/funds-wall-shortfall-copy.test.js</code><br><code>app/tests/game.test.js</code><br><code>app/tests/gate-alpha-spending-door-yield.test.js</code><br><code>app/tests/gate.test.js</code><br><code>app/tests/gated-seal-missing-highlight.test.js</code><br><code>app/tests/identity-read-time.test.js</code><br><code>app/tests/invariant-arm-diff.test.js</code><br><code>app/tests/invariants.test.js</code><br><code>app/tests/kill-switch.test.js</code><br><code>app/tests/ledger.test.js</code><br><code>app/tests/link-to-first-seal.test.js</code><br><code>app/tests/lobby-teardown.test.js</code><br><code>app/tests/manifest-hypotheses.test.js</code><br><code>app/tests/money-truth-scan.test.js</code><br><code>app/tests/move-tap-inplace.test.js</code><br><code>app/tests/narrator-prompt-compose.test.js</code><br><code>app/tests/narrator-register.test.js</code><br><code>app/tests/narrator.test.js</code><br><code>app/tests/no-raw-error-text.test.js</code><br><code>app/tests/overrides.test.js</code><br><code>app/tests/parity-harness.test.js</code><br><code>app/tests/parity-preregistration.test.js</code><br><code>app/tests/presentation-timeline.test.js</code><br><code>app/tests/preview-build-manifest.test.js</code><br><code>app/tests/price-arm-summon-charge.test.js</code><br><code>app/tests/prose-face-css.test.js</code><br><code>app/tests/pve.test.js</code><br><code>app/tests/r1-scan-extended.test.js</code><br><code>app/tests/reentry-funds-wall-affordance.test.js</code><br><code>app/tests/reserve-funnel-offer-bracket-board.test.js</code><br><code>app/tests/reserve-funnel-offer.test.js</code><br><code>app/tests/reserve-recall-gate.test.js</code><br><code>app/tests/retention.test.js</code><br><code>app/tests/rig-cosmetic-carry.test.js</code><br><code>app/tests/rig-distinctness.test.js</code><br><code>app/tests/rig-identity.test.js</code><br><code>app/tests/rig-power-tier.test.js</code><br><code>app/tests/rig-recolor.test.js</code><br><code>app/tests/rig-stage-degraded.test.js</code><br><code>app/tests/rig-stage.test.js</code><br><code>app/tests/rig-timing.test.js</code><br><code>app/tests/risk-parser.test.js</code><br><code>app/tests/router-teardown.test.js</code><br><code>app/tests/run-panel-assumed-labeling.test.js</code><br><code>app/tests/screener-dead-copy.test.js</code><br><code>app/tests/screener-identity-gate.test.js</code><br><code>app/tests/screener-jurisdiction-ledger-honesty.test.js</code><br><code>app/tests/screener-jurisdiction-outcome.test.js</code><br><code>app/tests/screener-region-copy.test.js</code><br><code>app/tests/session.test.js</code><br><code>app/tests/sound-arming.test.js</code><br><code>app/tests/sound-bed-carry.test.js</code><br><code>app/tests/sound-round-voices.test.js</code><br><code>app/tests/spec-hygiene.test.js</code><br><code>app/tests/summon-ceremony.test.js</code><br><code>app/tests/summon-name-reveal.test.js</code><br><code>app/tests/sync-fill-density-intermission.test.js</code><br><code>app/tests/sync-narration.test.js</code><br><code>app/tests/target-size-scan.test.js</code><br><code>app/tests/theme-door-creative.test.js</code><br><code>app/tests/treatments-schema.test.js</code><br><code>app/tests/tunables-workbook-consistency.test.js</code><br><code>app/tests/typography-pardons-audit.test.js</code>
+    </div>
+    
+    <h2>Test Fixtures and Helpers</h2>
+    <p>All test fixtures and helper modules are included:</p>
+    <ul>
+        <li><code>app/tests/helpers/</code> — shared test utilities</li>
+        <li><code>app/tests/fixtures/</code> — test data files</li>
+    </ul>
+    
+    <h2>Preview Contents</h2>
+    <p>This preview includes:</p>
+    <ul>
+        <li>The complete <code>app/</code> tree (source code)</li>
+        <li>The complete <code>app/tests/</code> tree (test suite with helpers and fixtures)</li>
+        <li>The complete <code>tools/</code> tree minus <code>node_modules</code> (the preview builder and the parity harness the suite reads)</li>
+        <li><code>index.html</code> (preview entry point)</li>
+        <li><code>assets/</code> (runtime assets used by the app)</li>
+        <li><code>docs/</code> (specification and documentation)</li>
+    </ul>
+    
+    <h2>Verification</h2>
+    <p>To verify the test suite passes in this preview:</p>
+    <pre><code>cd /path/to/this/preview
+node --test app/tests/*.test.js</code></pre>
+    
+    <p>All tests should pass with zero failures.</p>
+    
+</body>
+</html>

@@ -65,6 +65,14 @@ export function project(events) {
           createdAt: e.ts,
           retired: false,
           kind: 'human',
+          // CB-BUILD-006 (additive): the rig identity recorded at summon.
+          // CB-BUILD-022/R74/§18: audit record ONLY — carried on the
+          // snapshot for history/inspection, but read by nothing. Every
+          // render path derives traits/palette afresh from characterId via
+          // wizardRig.wizardIdentity()/deriveIdentity(), unconditionally
+          // (present, absent, or stale/wrong here, it makes no difference).
+          traits: e.payload.traits || null,
+          palette: e.payload.palette || null,
         };
         account.cashUSD -= e.payload.costUSD;
         totals.summonedCheddar += e.payload.stakeCheddar;
@@ -82,6 +90,10 @@ export function project(events) {
             createdAt: e.ts,
             retired: false,
             kind: 'npc',
+            // CB-BUILD-006 (additive): same rig-identity carriage as human
+            // summons. CB-BUILD-022/R74/§18: audit record only, as above.
+            traits: e.payload.traits || null,
+            palette: e.payload.palette || null,
           };
           totals.summonedCheddar += e.payload.stakeCheddar;
         }

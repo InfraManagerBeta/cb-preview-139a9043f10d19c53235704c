@@ -1,0 +1,295 @@
+{
+  "combo": "NEUTRAL-1-head01-cape01-hat01-wand01",
+  "tolerance": 48,
+  "tolerances": {
+    "pixel": 48,
+    "paletteSnapMax": 8,
+    "minMeanMatchPct": 40,
+    "minMeanInkIoU": 0.1,
+    "minAnchorIoU": 0.1
+  },
+  "verdicts": [
+    {
+      "criterion": "A-palette-identity",
+      "tolerance": "every fitted slot snaps to a canonical palette colour within 8/255",
+      "measured": "max snap distance 6 over 9 fitted slots",
+      "pass": true
+    },
+    {
+      "criterion": "A-camera-anchor",
+      "tolerance": "frozen camera anchor ink IoU >= 0.1",
+      "measured": "anchor IoU 0.195",
+      "pass": true
+    },
+    {
+      "criterion": "A-render-similarity",
+      "tolerance": "per non-gap state: mean matched% >= 40 at 48/255 AND mean ink IoU >= 0.1 (cross-vintage floor, not frame-exactness)",
+      "measured": "worst state matched 44.89%, worst ink IoU 0.11",
+      "pass": true
+    }
+  ],
+  "overall": "PASS",
+  "paletteFit": {
+    "palette": {
+      "boot-accent": "#C17D49",
+      "boot-base": "#9B4F40",
+      "cape-base": "#808080",
+      "collar-base": "#FFFFFF",
+      "hands-accent": "#CCCCCC",
+      "hands-base": "#FFFFFF",
+      "hat-base": "#999999",
+      "medallion-base": "#FF88F9",
+      "pants-base": "#FFFFFF"
+    },
+    "fitReport": {
+      "alignmentInkIoU": 0.195,
+      "boot-accent": {
+        "samples": 303,
+        "median": "#C47F49",
+        "fitted": "#C17D49",
+        "snapDistance": 4
+      },
+      "boot-base": {
+        "samples": 990,
+        "median": "#9B5040",
+        "fitted": "#9B4F40",
+        "snapDistance": 1
+      },
+      "cape-base": {
+        "samples": 4837,
+        "median": "#808080",
+        "fitted": "#808080",
+        "snapDistance": 0
+      },
+      "collar-accent": {
+        "samples": 0,
+        "fitted": null,
+        "note": "slot not visible in the anchor frame — left at source colour"
+      },
+      "collar-base": {
+        "samples": 518,
+        "median": "#FEFEFD",
+        "fitted": "#FFFFFF",
+        "snapDistance": 2
+      },
+      "hands-accent": {
+        "samples": 141,
+        "median": "#CCCCCC",
+        "fitted": "#CCCCCC",
+        "snapDistance": 0
+      },
+      "hands-base": {
+        "samples": 558,
+        "median": "#FEFEFD",
+        "fitted": "#FFFFFF",
+        "snapDistance": 2
+      },
+      "hat-accent": {
+        "samples": 0,
+        "fitted": null,
+        "note": "slot not visible in the anchor frame — left at source colour"
+      },
+      "hat-base": {
+        "samples": 340,
+        "median": "#999999",
+        "fitted": "#999999",
+        "snapDistance": 0
+      },
+      "medallion-base": {
+        "samples": 44,
+        "median": "#FB85F6",
+        "fitted": "#FF88F9",
+        "snapDistance": 6
+      },
+      "pants-base": {
+        "samples": 3060,
+        "median": "#FEFEFD",
+        "fitted": "#FFFFFF",
+        "snapDistance": 2
+      },
+      "wand-accent": {
+        "samples": 9,
+        "fitted": null,
+        "note": "slot not visible in the anchor frame — left at source colour"
+      }
+    }
+  },
+  "states": [
+    {
+      "gif": "CW_Idle.gif",
+      "clips": "idle",
+      "referenceGap": false,
+      "gifFrames": 31,
+      "clipFrames": 34,
+      "timeMapping": "stretch+4",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 44.89,
+      "meanMae": 81.28,
+      "meanInkIoU": 0.122,
+      "worstFrame": {
+        "frame": 23,
+        "matchPct": 39.94,
+        "mae": 85.18
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Battle Idle.gif",
+      "clips": "idle",
+      "referenceGap": false,
+      "gifFrames": 34,
+      "clipFrames": 34,
+      "timeMapping": "stretch",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 78.01,
+      "meanMae": 32.1,
+      "meanInkIoU": 0.201,
+      "worstFrame": {
+        "frame": 12,
+        "matchPct": 76.26,
+        "mae": 34.74
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Charge.gif",
+      "clips": "charge+chargeloop",
+      "referenceGap": false,
+      "gifFrames": 60,
+      "clipFrames": 60,
+      "timeMapping": "stretch",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 49.54,
+      "meanMae": 74.68,
+      "meanInkIoU": 0.11,
+      "worstFrame": {
+        "frame": 29,
+        "matchPct": 9.02,
+        "mae": 130.78
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Attack.gif",
+      "clips": "attack",
+      "referenceGap": false,
+      "gifFrames": 60,
+      "clipFrames": 32,
+      "timeMapping": "one-to-one-hold",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 69.08,
+      "meanMae": 47.61,
+      "meanInkIoU": 0.18,
+      "worstFrame": {
+        "frame": 16,
+        "matchPct": 53.75,
+        "mae": 66.06
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Hit.gif",
+      "clips": "hit",
+      "referenceGap": false,
+      "gifFrames": 60,
+      "clipFrames": 60,
+      "timeMapping": "stretch",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 51.79,
+      "meanMae": 70.15,
+      "meanInkIoU": 0.115,
+      "worstFrame": {
+        "frame": 5,
+        "matchPct": 9.25,
+        "mae": 127.37
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Hit Success.gif",
+      "clips": "reset",
+      "referenceGap": false,
+      "gifFrames": 60,
+      "clipFrames": 60,
+      "timeMapping": "stretch",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 65.73,
+      "meanMae": 53.42,
+      "meanInkIoU": 0.155,
+      "worstFrame": {
+        "frame": 48,
+        "matchPct": 30.56,
+        "mae": 104.5
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Win.gif",
+      "clips": "win",
+      "referenceGap": false,
+      "gifFrames": 60,
+      "clipFrames": 112,
+      "timeMapping": "one-to-one-hold",
+      "framesSkippedHeadless": 4,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 62.7,
+      "meanMae": 55.95,
+      "meanInkIoU": 0.179,
+      "worstFrame": {
+        "frame": 55,
+        "matchPct": 31.71,
+        "mae": 98.82
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Lose.gif",
+      "clips": "lose",
+      "referenceGap": false,
+      "gifFrames": 60,
+      "clipFrames": 112,
+      "timeMapping": "one-to-one-hold+26",
+      "framesSkippedHeadless": 0,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 55.61,
+      "meanMae": 63.25,
+      "meanInkIoU": 0.136,
+      "worstFrame": {
+        "frame": 29,
+        "matchPct": 47.65,
+        "mae": 73.92
+      },
+      "tolerance": 48
+    },
+    {
+      "gif": "CW_Power.gif",
+      "clips": "win",
+      "referenceGap": true,
+      "gifFrames": 60,
+      "clipFrames": 112,
+      "timeMapping": "stretch+52",
+      "framesSkippedHeadless": 5,
+      "anchorInkIoU": 0.195,
+      "meanMatchPct": 53.78,
+      "meanMae": 54.22,
+      "meanInkIoU": 0.165,
+      "worstFrame": {
+        "frame": 12,
+        "matchPct": 27.9,
+        "mae": 102.29
+      },
+      "tolerance": 48
+    }
+  ],
+  "notes": [
+    "png-seq (renders/png-seq, 265 files) are Finder screen captures, not duel frames — the GIFs are the pixel parity reference.",
+    "The GIFs are 2019 marketing renders from the AE rig with their own edit lengths (e.g. attack 60f vs the library clip 32f); the time mapping is stated per state.",
+    "The published matched%/IoU are best-of-search over the stated time-mapping/clip candidates (disclosed); the verdict floors are declared BELOW the search variance so the search cannot manufacture a pass."
+  ]
+}

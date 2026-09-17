@@ -1,6 +1,6 @@
 // app/ui/console/runPanel.js — R19a/R21/R51/AC0: run simulation + gates.
 import { el } from '../components/dom.js';
-import { simulateRun, generatePreRegistration, armDefinitions, buildDoorYieldReport, DOOR_YIELD_REPORTING_LANGUAGE } from '../../engine/runSimulator.js';
+import { simulateRun, generatePreRegistration, armDefinitions, buildDoorYieldReport, DOOR_YIELD_REPORTING_LANGUAGE, LINK_TO_FIRST_SEAL_ASSUMED_NOTE } from '../../engine/runSimulator.js';
 import { runSequentialGate, evaluateDailyGate, deriveGateConfig } from '../../engine/gate.js';
 import { wilsonInterval } from '../../engine/alphaSpending.js';
 import { patchOverrides } from '../../engine/overrides.js';
@@ -52,7 +52,12 @@ function renderDailyTable(armId, days) {
     el('h4', {}, armId),
     el('div', { style: 'overflow-x:auto;' }, [
       el('table', { class: 'cb-console-table cb-console-table-compact' }, [
-        el('thead', {}, [el('tr', {}, ['Day', 'Spend', 'Impr.', 'Enroll.', 'QA', 'Completers', 'Reservations', 'Door yield/1k', 'Replay', 'D1', 'CPR', 'Paused'].map((h) => el('th', {}, h)))]),
+        // CB-BUILD-017 fix round f4/Finding 3 (§0/R5): the Link->Seal header
+        // itself now names the ASSUMED half of that column -- the sealed/QA
+        // count is this run's own (synthetic) numerator/denominator, but
+        // the "med Xs" figure beside it is a fixed, ASSUMED placeholder
+        // (see runSimulator.js's header comment), not measured per run/day.
+        el('thead', {}, [el('tr', {}, ['Day', 'Spend', 'Impr.', 'Enroll.', 'QA', 'Completers', 'Reservations', 'Door yield/1k', 'Replay', 'D1', 'Link\u2192Seal (med ASSUMED)', 'CPR', 'Paused'].map((h) => el('th', {}, h)))]),
         el('tbody', {}, days.map((d) => el('tr', {}, [
           el('td', {}, String(d.day)),
           el('td', {}, `$${d.cumSpendUSD.toFixed(0)}`),
@@ -64,13 +69,37 @@ function renderDailyTable(armId, days) {
           el('td', {}, d.doorYieldPer1000Impressions.toFixed(1)),
           el('td', {}, `${(d.replayAfterLossRate * 100).toFixed(0)}%`),
           el('td', {}, `${(d.d1ReturnRate * 100).toFixed(0)}%`),
+          // CB-BUILD-017/AC1: sealed-of-qualified-activations (hesitated
+          // first duels excluded from the numerator) plus the median
+          // link-to-first-seal seconds.
+          //
+          // CB-BUILD-017 fix round f4/Finding 3 (§0/R5 [LAW]): the median
+          // figure used to render with NO on-surface ASSUMED marker --
+          // identical formatting to the real (synthetic-but-measured)
+          // sealed/QA figures beside it. It now carries its own visually
+          // distinct span (italic, amber, an explicit "ASSUMED" word and a
+          // hover title) driven by the data's own
+          // `linkToFirstSealSecondsAssumed` flag rather than an assumption
+          // baked into this render function.
+          el('td', {}, [
+            `${d.cumLinkToFirstSealSealed}/${d.cumQualifiedActivations} (`,
+            d.linkToFirstSealSecondsAssumed
+              ? el('span', { class: 'cb-console-assumed-figure', style: 'color:#e0a020;font-style:italic;', title: LINK_TO_FIRST_SEAL_ASSUMED_NOTE }, `med ${d.linkToFirstSealMedianSec}s ASSUMED`)
+              : `med ${d.linkToFirstSealMedianSec}s`,
+            ')',
+          ]),
           el('td', {}, d.costPerReservationUSD != null ? `$${d.costPerReservationUSD.toFixed(0)}` : '\u2014'),
           el('td', {}, d.paused ? 'PAUSED' : ''),
         ]))),
       ]),
     ]),
+    // CB-BUILD-017 fix round f4/Finding 3 (§0/R5): the panel's own legend,
+    // named explicitly in the finding as one of the two places the marker
+    // must appear (alongside the cell itself).
+    el('p', { class: 'cb-micro', style: 'color:#e0a020;' }, LINK_TO_FIRST_SEAL_ASSUMED_NOTE),
   ]);
 }
+
 
 function renderGateVerdict(result, secondaryRequiredCount, maxN) {
   const cls = result.decision === 'pass' ? 'win' : result.decision === 'miss' ? 'loss' : 'draw';

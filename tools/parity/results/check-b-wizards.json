@@ -1,0 +1,361 @@
+{
+  "tolerance": 60,
+  "tolerances": {
+    "pixel": 60,
+    "geometryIdentical": true,
+    "changesOffSlotClassesMax": 0,
+    "meanUnexplainedMaxPct": 3,
+    "maxUnexplainedMaxPct": 5
+  },
+  "verdicts": [
+    {
+      "criterion": "B-structural",
+      "tolerance": "geometry digest identical AND 0 colour changes off slot classes (exact, no tolerance)",
+      "measured": "geometry identical 18/18, off-slot changes 0",
+      "pass": true
+    },
+    {
+      "criterion": "B-recolour-explained",
+      "tolerance": "unexplained pixels mean <= 3% and worst <= 5% at 60/255",
+      "measured": "mean 1.95%, worst 3.12%",
+      "pass": true
+    }
+  ],
+  "overall": "PASS",
+  "wizards": [
+    {
+      "wizard": {
+        "id": "parity-wizard-001",
+        "element": "fire",
+        "tier": 0
+      },
+      "comboKey": "FIRE-1-head04-cape04-hat06-wand03",
+      "palette": {
+        "boot-accent": "#2B2B2B",
+        "boot-base": "#FF506E",
+        "cape-base": "#FFFFFF",
+        "collar-accent": "#84FF61",
+        "collar-base": "#FF506E",
+        "hands-accent": "#FF4848",
+        "hands-base": "#2B2B2B",
+        "hat-accent": "#FF526F",
+        "hat-base": "#50A7EF",
+        "medallion-base": "#FFFFFF",
+        "pants-base": "#3FE04B",
+        "wand-accent": "#8F5CE0"
+      },
+      "states": {
+        "idle": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 28,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 67.7,
+          "explainedRecolourPct": 30.79,
+          "unexplainedPct": 1.52
+        },
+        "charge": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 72,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 65.25,
+          "explainedRecolourPct": 33.17,
+          "unexplainedPct": 1.58
+        },
+        "win": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 70,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 69.74,
+          "explainedRecolourPct": 28.79,
+          "unexplainedPct": 1.47
+        }
+      }
+    },
+    {
+      "wizard": {
+        "id": "parity-wizard-002",
+        "element": "water",
+        "tier": 0
+      },
+      "comboKey": "WATER-1-head03-cape02-hat02-wand01",
+      "palette": {
+        "boot-accent": "#FF526F",
+        "boot-base": "#2B2B2B",
+        "cape-base": "#A66EFF",
+        "collar-accent": "#FF4848",
+        "collar-base": "#A66EFF",
+        "hands-accent": "#FF85A5",
+        "hands-base": "#FFFFFF",
+        "hat-accent": "#FFFFFF",
+        "hat-base": "#A66EFF",
+        "medallion-base": "#84FF61",
+        "pants-base": "#FF506E",
+        "wand-accent": "#FF526F"
+      },
+      "states": {
+        "idle": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 28,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 33.14,
+          "explainedRecolourPct": 65.18,
+          "unexplainedPct": 1.68
+        },
+        "charge": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 72,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 38.65,
+          "explainedRecolourPct": 59.52,
+          "unexplainedPct": 1.83
+        },
+        "win": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 70,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 36.8,
+          "explainedRecolourPct": 61.76,
+          "unexplainedPct": 1.44
+        }
+      }
+    },
+    {
+      "wizard": {
+        "id": "parity-wizard-003",
+        "element": "air",
+        "tier": 1
+      },
+      "comboKey": "WIND-2-head03-cape03-hat05-wand03",
+      "palette": {
+        "boot-accent": "#FF506E",
+        "boot-base": "#A66EFF",
+        "cape-base": "#2B2B2B",
+        "collar-accent": "#A66EFF",
+        "collar-base": "#FF526F",
+        "hands-accent": "#50A7EF",
+        "hands-base": "#2B2B2B",
+        "hat-accent": "#6EFFF8",
+        "hat-base": "#FF506E",
+        "medallion-base": "#FF4848",
+        "pants-base": "#FF88F9",
+        "wand-accent": "#6EFFF8"
+      },
+      "states": {
+        "idle": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 36,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 27.96,
+          "explainedRecolourPct": 70.29,
+          "unexplainedPct": 1.75
+        },
+        "charge": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 80,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 32.69,
+          "explainedRecolourPct": 64.18,
+          "unexplainedPct": 3.12
+        },
+        "win": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 78,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 33.17,
+          "explainedRecolourPct": 63.84,
+          "unexplainedPct": 3
+        }
+      }
+    },
+    {
+      "wizard": {
+        "id": "parity-wizard-004",
+        "element": "fire",
+        "tier": 3
+      },
+      "comboKey": "FIRE-4-head04-cape04-hat14-wand04",
+      "palette": {
+        "boot-accent": "#84FF61",
+        "boot-base": "#9B4F40",
+        "cape-base": "#66EDFF",
+        "collar-accent": "#84FF61",
+        "collar-base": "#FF88F9",
+        "hands-accent": "#FFFFFF",
+        "hands-base": "#FFFFFF",
+        "hat-accent": "#FF88F9",
+        "hat-base": "#FF85A5",
+        "medallion-base": "#FF88F9",
+        "pants-base": "#FF4848",
+        "wand-accent": "#FF4848"
+      },
+      "states": {
+        "idle": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 32,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 39.61,
+          "explainedRecolourPct": 58.49,
+          "unexplainedPct": 1.9
+        },
+        "charge": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 76,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 46.07,
+          "explainedRecolourPct": 52.07,
+          "unexplainedPct": 1.86
+        },
+        "win": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 74,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 43.46,
+          "explainedRecolourPct": 54.85,
+          "unexplainedPct": 1.7
+        }
+      }
+    },
+    {
+      "wizard": {
+        "id": "parity-wizard-005",
+        "element": "water",
+        "tier": 5
+      },
+      "comboKey": "WATER-5-head03-cape02-hat15-wand01",
+      "palette": {
+        "boot-accent": "#565656",
+        "boot-base": "#5AF99A",
+        "cape-base": "#84FF61",
+        "collar-accent": "#FF4848",
+        "collar-base": "#3DADEA",
+        "hands-accent": "#2B2B2B",
+        "hands-base": "#2B2B2B",
+        "hat-accent": "#FF4848",
+        "hat-base": "#2B2B2B",
+        "medallion-base": "#A66EFF",
+        "pants-base": "#E53535",
+        "wand-accent": "#E53535"
+      },
+      "states": {
+        "idle": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 30,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 31.4,
+          "explainedRecolourPct": 67.53,
+          "unexplainedPct": 1.07
+        },
+        "charge": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 74,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 36.29,
+          "explainedRecolourPct": 61.52,
+          "unexplainedPct": 2.19
+        },
+        "win": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 72,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 35.48,
+          "explainedRecolourPct": 62.78,
+          "unexplainedPct": 1.74
+        }
+      }
+    },
+    {
+      "wizard": {
+        "id": "parity-wizard-006",
+        "element": "air",
+        "tier": 6
+      },
+      "comboKey": "WIND-7-head03-cape03-hat01-wand05",
+      "palette": {
+        "boot-accent": "#FF85A5",
+        "boot-base": "#66EDFF",
+        "cape-base": "#FF506E",
+        "collar-accent": "#A66EFF",
+        "collar-base": "#50A7EF",
+        "hands-accent": "#3FE04B",
+        "hands-base": "#FFFFFF",
+        "hat-accent": "#E53535",
+        "hat-base": "#FF88F9",
+        "medallion-base": "#6EFFF8",
+        "pants-base": "#FFEF57",
+        "wand-accent": "#FF88F9"
+      },
+      "states": {
+        "idle": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 32,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 31.38,
+          "explainedRecolourPct": 66.02,
+          "unexplainedPct": 2.6
+        },
+        "charge": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 77,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 37.33,
+          "explainedRecolourPct": 60.22,
+          "unexplainedPct": 2.44
+        },
+        "win": {
+          "geometryIdentical": true,
+          "slottedFillsRecoloured": 75,
+          "changesOffSlotClasses": 0,
+          "framesCompared": 3,
+          "framesSkippedHeadless": 0,
+          "identicalPct": 36.75,
+          "explainedRecolourPct": 61.05,
+          "unexplainedPct": 2.21
+        }
+      }
+    }
+  ],
+  "summary": {
+    "wizards": 6,
+    "statesPerWizard": 3,
+    "geometryIdenticalAll": true,
+    "changesOffSlotClassesTotal": 0,
+    "meanIdenticalPct": 41.27,
+    "meanExplainedRecolourPct": 56.78,
+    "meanUnexplainedPct": 1.95,
+    "maxUnexplainedPct": 3.12
+  }
+}

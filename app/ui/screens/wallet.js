@@ -42,9 +42,15 @@ export function mountWallet(ctx) {
         ]),
       ]),
       el('div', { class: 'cb-micro', style: 'margin-top:8px;' }, 'CHARACTERS'),
-      ...(characters.length ? characters.map(characterCard) : [el('p', { class: 'cb-prose' }, 'No characters yet.')]),
+      ...(characters.length ? characters.map(characterCard) : [el('p', { class: 'cb-legal' }, 'No characters yet.')]),
       retired.length ? el('div', { class: 'cb-micro' }, 'RETIRED') : null,
-      ...retired.map((c) => el('div', { class: 'cb-card' }, [el('div', {}, c.name), el('div', { class: 'cb-micro' }, 'Retired to the ledger.')])),
+      // C6/R11 [LAW] fix round: "Retired to the ledger." is a full sentence
+      // -- the call-site sweep (prose-face-css.test.js) that strengthens
+      // CB-BUILD-004 for this fix round caught it too (same defect class as
+      // the three named C6 sites, just not individually named). Moved to
+      // the PROSE face; the character's name directly above it keeps its
+      // own (unrelated, label-shaped) styling untouched.
+      ...retired.map((c) => el('div', { class: 'cb-card' }, [el('div', {}, c.name), el('div', { class: 'cb-prose' }, 'Retired to the ledger.')])),
       el('div', { style: 'height:56px;' }),
       bottomNav(ctx, 'wallet'),
     ]);

@@ -1,0 +1,17 @@
+[P1/P5] duels checked: 1000000
+[P1] transfer > loser pre-duel stake: 0 (must be 0)
+[P1] loser stake driven negative: 0 (must be 0)
+[P5] zero score with nonzero transfer: 0 (must be 0)
+[P4] high-stake-side win rate over 995665 decisive duels: 50.045% (expect 50% +/- sampling error; stake never enters duelScore)
+[R55] T0 equal 100C stacks, floor 50C, uniform-random play: zero-out on 58.2% of decided duels (ties 0.4%; PRD R55 states ~57% intended)
+
+[R53] transfer table (winner stake vs loser stake, floor 0 to isolate the formula):
+score/424=0.25 (ratio 0.5) and score/424=1.0 (ratio 1.0)
+p_winner p_loser | tr@r=0.5 (%loser) | tr@r=1.0 (%loser)
+     100     100 |        50 (50.0%) |       100 (100.0%)
+     100     700 |         5 (0.7%) |       700 (100.0%)
+     100    1000 |         5 (0.5%) |       700 (70.0%)
+     100    5000 |         5 (0.1%) |       700 (14.0%)
+     700     100 |        91 (91.0%) |       100 (100.0%)
+    1000     100 |        91 (91.0%) |       100 (100.0%)
+    5000     100 |        91 (91.0%) |       100 (100.0%)

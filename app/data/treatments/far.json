@@ -105,10 +105,9 @@
     "truthLine": "This is play money. It's free, and it lives right here on the card. Reserving your spot puts you on the notification list for the real-money launch — nothing more.",
     "landingSubhead": "Five rounds. One winner. Buy onto the card, read your man, take the purse.",
     "screenerHeading": "Before you're cleared",
-    "screenerBody": "A couple of quick questions — age and location — before the card opens. This is a simulated verdict for the play-money build.",
-    "screenerAgeQuestion": "Are you 18 or older?",
-    "screenerJurisdictionQuestion": "Do you currently reside in a permitted region?",
-    "screenerRejectedMessage": "The card isn't open to you yet under these answers. Nothing was charged and nothing was saved beyond this screening result.",
+    "screenerBody": "Your location is checked automatically; you just enter your date of birth before the card opens. This is a simulated verdict for the play-money build.",
+    "screenerRejectedMessage": "You need to be 18 or older to play. Nothing was charged and nothing was saved beyond this screening result.",
+    "screenerNotAvailableMessage": "Undercard is not available in your region. Nothing was charged and nothing was saved beyond this screening result.",
     "summonHeading": "Sign your Fighter",
     "summonBody": "Every Fighter buys onto the card with a name already on the sheet. The commission names them; you work their corner.",
     "summonButton": "Sign ($10 — 100P)",
@@ -145,10 +144,26 @@
     "moneyTruthBadge": "PLAY MONEY · FREE · STAYS IN GAME",
     "npcTagLabel": "NPC",
     "hesitatedTagLabel": "HESITATED",
+    "stageDegradedNotice": "The fighters couldn't make their walkout this time — the bout still plays out right here, blow by blow.",
     "narratorBypassA": "Both fighters committed to [ELEMENT]. All five rounds. The scorekeeper is familiar with this particular theory of cooperation. The scorekeeper is also familiar with how it typically resolves.",
     "narratorBypassB": "[EEEEE] versus [EEEEE]. The scorekeeper notes this is either a remarkable coincidence or a remarkable miscalculation of preparation. Possibly both.",
-    "_narratorBypassNote": "R73 static bypass, re-voiced per register with the same semantics as the incumbent's. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered.",
-    "provisionalStageLabel": "PROVISIONAL CARD. FIGHTER ART PENDING SUPPLY.",
-    "_provisionalStageLabelNote": "CB-BUILD-007 (docs/cb-build-patch-log.md): R12 as now written -- Undercard has no provided character art yet, so the in-game stage is a clearly-marked provisional stage instead of an unlabeled colored box. Voiced in the scorekeeper's bout-sheet declarative (docs/concept-cards.md card F1), zero exclamation, no apology. Rendered by app/ui/components/battle/stage.js on the placeholder combatant."
-  }
+    "_narratorBypassNote": "R73 static bypass, re-voiced per register with the same semantics as the incumbent's. '[ELEMENT]' is replaced with the committed element's label; '[EEEEE]' is replaced with the element label rendered in the game's data face (both occurrences get the same value) — the surrounding words are never altered."
+  },
+  "adCreative": {
+    "fixedMessage": "Outsmart for real money.",
+    "_fixedMessageNote": "R11: identical string in all three treatments, verbatim -- not theme-bound.",
+    "headline": "Read your man. Take the purse.",
+    "body": "Sign your Fighter, work the card, walk out with the purse. Five rounds settle it.",
+    "cta": "Sign In",
+    "visual": {
+      "_note": "Non-character composition only (R12/entry-file boundary: no character art exists for this treatment, and none is originated here) -- a full-bleed ground-color field, the primary-color accent, and the logoMark wordmark set in the display face.",
+      "backgroundColorRole": "ground",
+      "accentColorRole": "primary",
+      "logoMark": "UC",
+      "headlineFace": "display",
+      "bodyFace": "prose"
+    }
+  },
+  "provisionalStageLine": "Provisional card art — final fighter look pending.",
+  "_provisionalStageLineNote": "CB-BUILD-007 track 1/R12: shown ONLY on this treatment's battle stage (the alternates' placeholder stage, app/ui/components/battle/stage.js), behind the click -- a clearly-marked, honest 'provisional presentation, final art pending' line in this treatment's own register. The incumbent's real rig stage never shows this."
 }

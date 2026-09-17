@@ -8,6 +8,15 @@
 export const SCHEMA_VERSION = 1;
 
 export const EVENT_TYPES = Object.freeze({
+  // CB-BUILD-017 fix round f4/Finding 2 (AC1): the "link" moment -- the
+  // player reaching the app for the first time, BEFORE the screener (the
+  // R8a copy, date-of-birth entry, and jurisdiction check all happen AFTER
+  // this and take real time). Written once per player, independent of
+  // whether they ever pass the screener (unlike ACCOUNT_CREATED, which A15
+  // deliberately restricted to a PASSED screener only -- see
+  // Game#recordLinkOpened / Game#ensureAccount in game.js). Purely
+  // additive: no existing event type, no append() signature, changed.
+  LINK_OPENED: 'LINK_OPENED',
   ACCOUNT_CREATED: 'ACCOUNT_CREATED',
   SIGNUP_GRANT: 'SIGNUP_GRANT',
   SCREENER_RESULT: 'SCREENER_RESULT',

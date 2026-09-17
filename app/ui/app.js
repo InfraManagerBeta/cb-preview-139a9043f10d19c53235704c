@@ -5,9 +5,10 @@ import { Ledger } from '../engine/ledger.js';
 import { loadOverrides, patchOverrides, effectiveTunables, effectiveTreatmentId } from '../engine/overrides.js';
 import { getOrCreatePlayerId, loadSession, patchSession } from './session.js';
 import { createRouter } from './router.js';
-import { showToast } from './components/dom.js';
+import { showToast, el } from './components/dom.js';
 import { renderKillStopBanner } from './components/chrome.js';
 import { applyTreatmentTheme } from './theme.js';
+import { installFirstTapArming } from './components/battle/sound.js';
 
 import { mountLanding } from './screens/landing.js';
 import { mountScreener } from './screens/screener.js';
@@ -59,6 +60,17 @@ async function main() {
   ledger.all();
   if (ledger.notice) showToast(ledger.notice);
 
+  // CB-BUILD-017 fix round f4/Finding 2 (AC1): record the "link" moment --
+  // the player reaching the app -- unconditionally at boot, BEFORE the
+  // landing/screener flow ever renders, and independent of the kill switch
+  // route guard below (still non-fatal if the kill switch is active --
+  // recordLinkOpened throws KillSwitchFrozenError in that case, caught
+  // here so a killed install still boots to its stop banner). This is
+  // deliberately NOT ensureAccount (A15 restricted that -- and its $25
+  // signup grant -- to a PASSED screener only; this call has no economic
+  // side effect and must not reopen that fix).
+  try { game.recordLinkOpened(); } catch { /* kill switch active -- non-fatal, the route guard below shows the stop banner */ }
+
   const ctx = {
     tunables,
     treatment,
@@ -102,6 +114,13 @@ async function main() {
 
   ctx.router = createRouter(routes, async () => { ctx.refreshSession(); });
 
+  // CB-BUILD-016/R78a: phones withhold audio until a gesture — the audio
+  // layer arms on the player's FIRST tap anywhere (pointerdown, one-shot),
+  // so the first thing heard is the summon ceremony (R74a), whose own press
+  // is itself a tap. Sound is on by default; the mute control lives on
+  // every surface that plays sound.
+  installFirstTapArming();
+
   // A15/R41/R70: the account (and its $25 signup grant) is now written only
   // once the screener PASSES (Game#submitScreener, on pass, calls
   // ensureAccount itself) -- NOT unconditionally here at boot. This used to
@@ -131,6 +150,20 @@ async function main() {
 }
 
 main().catch((err) => {
+  // CB-BUILD-013/§12/R83: no raw/developer error text reaches a
+  // participant surface -- this used to dump `err.stack` straight into the
+  // participant-facing #app div on any boot failure. `console.error` (a
+  // developer-only channel, never rendered) still carries the real error
+  // for debugging; the participant sees player-safe copy only.
   console.error(err);
-  document.getElementById('app').innerHTML = `<pre style="color:#D41E30;white-space:pre-wrap;">${String(err && err.stack || err)}</pre>`;
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = '';
+    app.appendChild(el('div', { class: 'cb-screen' }, [
+      el('div', { class: 'cb-card', style: 'text-align:center;padding:32px 20px;border-color:var(--cb-red);' }, [
+        el('h1', { style: 'color:var(--cb-red);' }, 'Something went wrong'),
+        el('p', { class: 'cb-legal' }, 'The game couldn\u2019t load. Please reload the page.'),
+      ]),
+    ]));
+  }
 });

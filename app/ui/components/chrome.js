@@ -2,22 +2,27 @@
 import { el, money, mountScreen } from './dom.js';
 import { openLoadFundsSheet } from './money-sheets.js';
 
-/**
- * CB-BUILD-012/R67: the CASH balance is a CONTROL that opens Load Funds --
- * before this patch `.cb-cash-pill` was a non-interactive `<span>` with no
- * route to the wallet from a screen that renders it. Now a real `<button>`
- * that opens the same Load Funds sheet every other funds-wall path uses.
- */
-export function topBar(ctx) {
+// CB-BUILD-012/R67: "Load Funds is reachable from every point a player can
+// meet a funds wall: the CASH balance is itself a control that opens the
+// sheet." The CASH pill used to be a non-interactive `<span>` everywhere it
+// appeared -- this is the ONE shared, tappable implementation; screens that
+// show a CASH balance render THIS instead of building their own inert span.
+export function cashPill(ctx) {
   const snap = ctx.game.snapshot();
+  return el('button', {
+    class: 'cb-cash-pill cb-data cb-cash-pill-btn',
+    'aria-label': 'CASH balance — tap to add funds',
+    onClick: () => openLoadFundsSheet(ctx),
+  }, `CASH ${money(snap.account.cashUSD)}`);
+}
+
+export function topBar(ctx) {
   return el('div', { class: 'cb-topbar' }, [
     el('span', { class: 'cb-logo' }, ctx.treatment.logoMark),
-    el('button', {
-      class: 'cb-cash-pill cb-data',
-      onClick: () => openLoadFundsSheet(ctx),
-    }, `CASH ${money(snap.account.cashUSD)}`),
+    cashPill(ctx),
   ]);
 }
+
 
 export function truthBadge(ctx) {
   return el('div', { class: 'cb-truth-badge' }, ['\u24D8', ctx.treatment.copy.moneyTruthBadge]);
@@ -51,8 +56,8 @@ export function renderKillStopBanner(ctx) {
     el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, ctx.treatment.logoMark)]),
     el('div', { class: 'cb-card', style: 'text-align:center;padding:32px 20px;border-color:var(--cb-red);' }, [
       el('h1', { style: 'color:var(--cb-red);' }, 'Run Stopped'),
-      el('p', { class: 'cb-prose' }, 'The operator has halted this run. Play is paused; your ledger and balances are preserved exactly as they stood at the stop.'),
-      el('p', { class: 'cb-prose cb-prose-small' }, 'This is the kill switch (A4/console) in its stopped state — demonstrable both from the operator console and by the ?kill=1 URL parameter, independently of the console UI.'),
+      el('p', { class: 'cb-legal' }, 'The operator has halted this run. Play is paused; your ledger and balances are preserved exactly as they stood at the stop.'),
+      el('p', { class: 'cb-legal' }, 'This is the kill switch (A4/console) in its stopped state — demonstrable both from the operator console and by the ?kill=1 URL parameter, independently of the console UI.'),
     ]),
   ]);
 }

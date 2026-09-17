@@ -9,7 +9,29 @@ function closeOverlay(overlay) {
   overlay.remove();
 }
 
-export function openLoadFundsSheet(ctx, { onDeposited } = {}) {
+// C4/R67+R83: "<blocked action> ... states the shortfall in player language
+// AND opens Load Funds inline" (R67); "explained in player language ... the
+// resolving action offered in the same place" (§12/R83). Both funds walls
+// (summon.js, sitting.js's re-entry) used to open this sheet with ZERO
+// explanation -- the resolving action (this sheet) was offered, but the
+// shortfall itself was never stated anywhere. `shortfall` is optional
+// (openWithdrawSheet-style callers/tests that don't pass one see no change)
+// so a caller that DOES know what blocked the player (an action label plus
+// its USD cost) can have this one shared sheet state it, in the player's
+// own language, with real numbers -- rather than each wall growing its own
+// copy line. Deliberately NOT routed through ctx.toast/raw error text (see
+// no-raw-error-text.test.js: the rule wants explanation AND no raw error
+// text, both -- this is prose copy computed from the SAME numbers the
+// screen already displays, never `e.message`).
+function shortfallLine(shortfall, account) {
+  if (!shortfall) return null;
+  const { actionLabel, costUSD } = shortfall;
+  const haveUSD = account.cashUSD;
+  const needUSD = Math.max(0, costUSD - haveUSD);
+  return el('p', { class: 'cb-legal', style: 'color:var(--cb-red);' }, `${actionLabel} costs ${money(costUSD)} \u2014 you have ${money(haveUSD)}. Add at least ${money(needUSD)} to continue.`);
+}
+
+export function openLoadFundsSheet(ctx, { onDeposited, shortfall } = {}) {
   const { treatment, tunables } = ctx;
   // f4/A-f fix: O8's own note says "multiples of the ENTRY FEE" -- that's
   // the ACTIVE price-door arm's displayed price (O2: $5/$10/$25/$0, per
@@ -86,6 +108,7 @@ export function openLoadFundsSheet(ctx, { onDeposited } = {}) {
         el('button', { class: 'cb-sheet-back', onClick: () => closeOverlay(overlay) }, treatment.copy.loadFundsBack),
       ]),
       el('h2', { style: 'font-size:18px;' }, treatment.copy.loadFundsHeading),
+      shortfallLine(shortfall, account),
       el('div', { class: 'cb-amount-card' }, [
         el('button', { class: 'cb-stepper', onClick: () => { amount = Math.max(1, Math.round(amount) - 1); selectedPreset = null; render(); } }, '−'),
         amountFigure,
@@ -98,14 +121,9 @@ export function openLoadFundsSheet(ctx, { onDeposited } = {}) {
         }, `$${p}`)
       )),
       el('button', {
-        // CB-BUILD-fix-round-1 #1: the deposit skin is a class variant now,
-        // not an inline style — an inline `background` beat EVERY stylesheet
-        // rule, including the disabled treatment, so a disabled Continue
-        // looked fully actionable. The `.cb-btn.deposit` rule (base.css)
-        // carries the same colors; the variant-qualified disabled rule wins
-        // over it by specificity.
-        class: 'cb-btn block deposit',
+        class: 'cb-btn block',
         'aria-disabled': submitting,
+        style: 'background:#2563eb;color:#fff;border-color:#2563eb;',
         onClick: () => {
           if (submitting) return; // R83: control disables until resolution
           submitting = true;
@@ -116,7 +134,7 @@ export function openLoadFundsSheet(ctx, { onDeposited } = {}) {
           if (onDeposited) onDeposited();
         },
       }, treatment.copy.loadFundsContinue),
-      el('p', { class: 'cb-prose cb-prose-small' }, treatment.copy.loadFundsLegal),
+      el('p', { class: 'cb-legal' }, treatment.copy.loadFundsLegal),
     ]));
   }
 
@@ -139,9 +157,9 @@ export function openWithdrawSheet(ctx) {
         el('button', { class: 'cb-sheet-back', onClick: () => closeOverlay(overlay) }, treatment.copy.loadFundsBack),
       ]),
       el('h2', { style: 'font-size:18px;' }, treatment.copy.withdrawHeading),
-      el('p', { class: 'cb-prose' }, treatment.copy.withdrawBody),
+      el('p', { class: 'cb-legal' }, treatment.copy.withdrawBody),
       el('div', { class: 'cb-amount-card' }, [el('div', { class: 'cb-amount-figure' }, money(account.cashUSD))]),
-      el('p', { class: 'cb-prose cb-prose-small' }, treatment.copy.loadFundsLegal),
+      el('p', { class: 'cb-legal' }, treatment.copy.loadFundsLegal),
     ]),
   ]);
   document.body.appendChild(overlay);

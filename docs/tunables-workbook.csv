@@ -1,0 +1,94 @@
+id,rule_ids,section,parameter,shipped_value,alternatives_built,units,enforcement,notes
+W-1,R53,duel math,round weights,"[78, 79, 81, 86, 100]",none,score units per round,enforced-by-system,"Fixed across treatments (R11); sum 424 (W-2)"
+W-2,R53,duel math,weight sum (ratio denominator),424,none,score units,enforced-by-system,"Denominator of powerTransfer ratio = sqrt(min(score/424,1))"
+W-3,R53,duel math,affinity multiplier,1.3,none,multiplier,enforced-by-system,"Applied per matching character, floor() after multiply; win or lose"
+W-4,R53,duel math,power clamp,7x,none,ratio,enforced-by-system,"cp2>7*cp1 -> cp2=7*cp1 (and mirror); bounds single-duel extraction"
+W-5,R55,floors,floor formula,2 x tier re-entry bonus,none,formula,held-as-policy,"ASSUMED hypothesis under test (R55); floor VALUES below are enforced"
+W-6,R55,floors,T0 floor,50,none,C,enforced-by-system,"= 2 x 25C (W-21); min bracket stake = floor (W-74)"
+W-7,R55,floors,T1 floor,50,none,C,enforced-by-system,"= 2 x 25C"
+W-8,R55,floors,T2 floor,500,none,C,enforced-by-system,"= 2 x 250C"
+W-9,R55,floors,T3 floor,500,none,C,enforced-by-system,"= 2 x 250C"
+W-10,R55,floors,T4 floor,5000,none,C,enforced-by-system,"= 2 x 2,500C"
+W-11,R55,floors,T5 floor,5000,none,C,enforced-by-system,"= 2 x 2,500C"
+W-12,R55,floors,T6 floor,50000,none,C,enforced-by-system,"= 2 x 25,000C"
+W-13,R62 R58,tier ladder,T6 prize payout method,"$999,999.92 CASH plus battle stake at 20:1",none,USD,enforced-by-system,"f3: now IMPLEMENTED as written (economy.js:bracketWinOutcome + tunables tierLadder.tiers[6].payout pays $999,999.92 CASH plus the champion stake at 20:1, no minted Cheddar). NOTE stands: 20,000,000C at 20:1 = $1,000,000.00 exactly; the stated $999,999.92 leaves $0.08 unexplained - open node P-T6-PAYOUT; both figures reproduced verbatim"
+W-14,R62,tier ladder,T0 entry / prize,$10 / $20 (400C),none,USD / C,enforced-by-system,"TESTED as play economics in the slice (T0-T2)"
+W-15,R62,tier ladder,T1 entry / prize,$25 / $25? see note,none,USD / C,enforced-by-system,"PRD lists 'T1 $25 (500C)': the single figure is the prize (500C = $25); entries beyond T0 are re-entry fees (W-22..) plus free first advance (R60)"
+W-16,R62,tier ladder,T2 prize,$100 (2000C),none,USD / C,enforced-by-system,"TESTED (slice)"
+W-17,R62,tier ladder,T3 prize,$500 (10000C),none,USD / C,enforced-by-system,ASSUMED (R62)
+W-18,R62,tier ladder,T4 prize,"$10,000 (200,000C)",none,USD / C,enforced-by-system,ASSUMED
+W-19,R62,tier ladder,T5 prize,"$100,000 (2,000,000C)",none,USD / C,enforced-by-system,ASSUMED
+W-20,R62,tier ladder,T6 prize,"$1,000,000 (20,000,000C)",none,USD / C,enforced-by-system,"ASSUMED; payout method W-13"
+W-21,R63,re-entry,T0 fee / bonus,$5.00 / +25C,none,USD / C,enforced-by-system,
+W-22,R63,re-entry,T1 fee / bonus,$15.00 / +25C,none,USD / C,enforced-by-system,
+W-23,R63,re-entry,T2 fee / bonus,$77.50 / +250C,none,USD / C,enforced-by-system,
+W-24,R63,re-entry,T3 fee / bonus,$400 / +250C,none,USD / C,enforced-by-system,ASSUMED (T3-T6)
+W-25,R63,re-entry,T4 fee / bonus,"$2,500 / +2,500C",none,USD / C,enforced-by-system,ASSUMED
+W-26,R63,re-entry,T5 fee / bonus,"$12,500 / +2,500C",none,USD / C,enforced-by-system,ASSUMED
+W-27,R63,re-entry,T6 fee / bonus,"$62,500 / +25,000C",none,USD / C,enforced-by-system,ASSUMED
+W-28,R60 R63,re-entry,re-entry mechanism,"lose -> SITTING -> re-enter (pay fee, receive bonus) / cash out / sit free",none,rule,enforced-by-system,"Cash-out is the sole retirement path for a STAKE-HOLDING character; an emptied (0C) character retires to the ledger instead (R60 vs R61, CONFLICT-R60-R61 in the decision graph; f1 fixed the player-visible copy)"
+W-29,R63,rakes,full play-through rake,6.3%,none,percent,held-as-policy,"Stated aggregate; not independently derivable from the fee table without a behavior model (node P-63-RAKE-DERIVATION); run report should state the realized rate beside it"
+W-30,O2 R19,door arms,displayed entry price default,$10,"one under, one over, free-play control (door arms)",USD,enforced-by-system,"$10 is tie-holder (R22); gate cell is incumbent at $10 (R19)"
+W-31,O1 R16,door arms,theme default,incumbent (Cheddar Battles),"adjacent = Scrapyard Kings, far = Undercard (docs/selection-rubric.md)",treatment,enforced-by-system,"Alternates switchable from console; brand acceptance gates publishing (A3)"
+W-32,O3 R26,retention,legs hypothesis default,manifest order R26 (cards 1-6),"all six built, switchable",hypothesis,enforced-by-system,"f3: all-six-built VERIFIED against code (f2: engine/hypotheses.js + the console O3 radio switch; was a paper claim at t2 - C13). Each runs only in a later envelope (R6); briefs in docs/retention-manifest.md"
+W-33,O5,timers,commit window,60,"45, 90",seconds,enforced-by-system,"Metric: hesitate rate <= 10% (W-68)"
+W-34,O6,timers,lobby human wait,30,"60, 120",seconds,enforced-by-system,"Metric: lobby wait at equal human share (CB-BUILD-017/O6: default lowered 60->30, 60 moved to alternatives)"
+W-35,O7 R80,sync,house-opponent fill,fill to 8,fill to 8 with >= 2 humans required,rule,enforced-by-system,"Collusion feasibility reads this (risk F-2)"
+W-36,O8 R67,economy,Load Funds presets,"entry fee, 10x","entry fee, 5x; entry fee, 10x, 50x",presets,enforced-by-system,"Metric: bust-to-top-up median < 60s"
+W-37,O9 R75,timers,reveal cadence,1170,"900, 1500",ms per round,enforced-by-system,"Whole duel under 45s (W-66); skippable after first full playthrough per session (W-76)"
+W-38,O10 R72,narrator,temperature,0.7,"0.5, 0.9",temperature,enforced-by-system,"Metric: specificity-check pass rate"
+W-39,R72,narrator,max tokens,200,none,tokens,enforced-by-system,"One call per duel at resolution"
+W-40,O4,operations,run activation,console action per run,auto-start on delivery acceptance,rule,enforced-by-system,"Ours to flip (A3)"
+W-41,R80,sync,NPC join delay,2-10,none,seconds,enforced-by-system,"Natural join pacing; NPCs always tagged (R86.8)"
+W-42,R81,sync,NPC commit delay,10-45,none,seconds,enforced-by-system,
+W-43,R80,sync,lobby countdown to board,30,none,seconds,enforced-by-system,
+W-44,R81,sync,intermission,20-30,none,seconds,enforced-by-system,"f3: now actually WIRED into the duel flow between a won (non-bracket-completing) duel and the next (f2/A4: sync.js createIntermission/intermissionOver called from ui/screens/duel.js; was dead code at review)"
+W-45,R28,gate,expected 95% interval at max N,"+/-13 points at a 35% rate, N ~= 50",none,percentage points,held-as-policy,"Reproduced: 1.96*sqrt(0.35*0.65/50) = 13.2 pts (normal approx). f3: the SYSTEM now computes and states the expected Wilson score 95% interval at max N from the setpoint (runSimulator.js pre-registration, C11) and the interval REACHED at close (console verdict card); the +/-13-pt figure stays the PRD arithmetic this row reproduces"
+W-46,R51,gate,reservation rate threshold,>= 35%,none,percent of first-bracket completers,enforced-by-system,"Owner setpoint fixed before data; computed daily under the sequential rule; verdict confirmed/overruled in console (R23). f3/C9: read from tunables.gate via engine/gate.js:deriveGateConfig - ONE source for gate logic, pre-registration text, and console display"
+W-47,R51,gate,replay-after-loss threshold,>= 50%,none,percent,enforced-by-system,"One of the two-of-four block (ASSUMED extensions)"
+W-48,R51,gate,brackets within 48h of anchor,>= 2,none,brackets per active player,enforced-by-system,"PvE dilution reported beside it (R51)"
+W-49,R51,gate,D1 return threshold,>= 40%,none,percent,enforced-by-system,two-of-four block
+W-50,R51,gate,first-bracket completion threshold,>= 50%,none,percent of qualified activations,enforced-by-system,two-of-four block
+W-51,R6 R51,caps,cost per reservation cap,$100 default,console-set per run,USD,enforced-by-system,"Set before a run, frozen in pre-registration; changes only between runs (A2)"
+W-52,R6,caps,acquisition spend envelope,"$5,000",none,USD,enforced-by-system,"Ceiling; sequential rule stops spend the day the answer is in"
+W-53,R6,caps,run ceiling,14,none,days from first enrollment,enforced-by-system,"Reaching either ceiling closes as inconclusive at reached N"
+W-54,R6 R19,caps,gate cell spend share,>= 70%,none,percent of spend,enforced-by-system,"~50 completers at ~$70/completer (W-79)"
+W-55,R19,door arms,door split default,2 theme + 3 price arms at equal caps,console-adjustable split,arms,enforced-by-system,
+W-56,A2 R21,caps,per-arm spend caps,console-set,per run and per arm,USD,enforced-by-system,"Frozen at pre-registration"
+W-57,R58,economy,peg,20 CHEDDAR = $1,none,C per USD,enforced-by-system,"Fixed; role nouns rename the unit per treatment, constants identical (R12)"
+W-58,R58,economy,summon,$10 -> 100C,none,USD -> C,enforced-by-system,"Immediate cashout value $5; the gap is the price of competing (R58)"
+W-59,R66,economy,signup grant,$25 play CASH,none,USD (play),enforced-by-system,"Sybil surface reads this (risk F-1)"
+W-60,R60 R68,economy,cashout ratio,20:1 (C -> $),none,C per USD,enforced-by-system,"Real flow, play value; sole retirement path FOR A STAKE-HOLDING character (see W-28 note / CONFLICT-R60-R61)"
+W-61,R57,PvE,session drift,3% toward one element per session,none,probability mass,enforced-by-system,"Risk finding F-8: exploitable as constructed; tunable between runs (nodes P-DRIFT-CONSTRUCTION)"
+W-62,R57,PvE,opponent stake range,floor = tier minimum; upper = 2x player stake,none,C,enforced-by-system,
+W-63,R57,PvE,opponent stake hard cap,1.5x entry par of highest eligible tier,none,C,enforced-by-system,
+W-64,R57,PvE,PvE rake,5% on wins only,none,percent,enforced-by-system,"Insufficient vs perfect exploiter per F-8; see W-61 note"
+W-65,R57,PvE,zeroed opponent rule,"replaced (new opponent, new tendency)",none,rule,enforced-by-system,"Floor rule absent in PvE"
+W-66,R75,presentation,whole duel duration,< 45,none,seconds,held-as-policy,"Design bar; cadence values (W-37) are what the system enforces"
+W-67,R81,sync,complete bracket target,6-9,none,minutes,held-as-policy,"Design target"
+W-68,§13 O5,pacing,hesitate rate bar,<= 10%,none,percent,held-as-policy,"'Pacing is wrong above 10%' - read against O5 alternatives"
+W-69,R47 R51,diagnostics,D7 return threshold,30%,none,percent,held-as-policy,"Applies to the R47 definition; ungated diagnostic in this run (owner expects near zero in play money)"
+W-70,R76,presentation,tug-of-war bar hold before round 1,1,none,seconds,enforced-by-system,
+W-71,R73,narrator,banned-token handling,strip or regenerate once then static fallback,none,rule,enforced-by-system,"Scan list: luck/lucky/fortunate/unfortunately, exclamations, direct address, gaming language, house/product mentions"
+W-72,R73,narrator,specificity-check regenerations,up to 2,none,count,enforced-by-system,
+W-73,R73,narrator,narration timeout,8 -> static fallback,none,seconds,enforced-by-system,"Also on any error"
+W-74,R55,brackets,minimum bracket stake,= tier floor,none,C,enforced-by-system,"No maximum specified - risk F-9 proposes a cap as new data"
+W-75,R60,brackets,tier entry gate,live W > L at tier N-1; T0 ungated; first advance per tier free,none,rule,enforced-by-system,
+W-76,R75,presentation,reveal skippability,after first full playthrough of a session,none,rule,enforced-by-system,
+W-77,R50 R19,observation,cohort observation window,through each player's day 28,none,days,enforced-by-system,"Ungated diagnostics keep accruing after close"
+W-78,A-list R10,operations,owner labor budget,2 hours per week while live,none,hours,held-as-policy,"Design target the machine is built to meet"
+W-79,R6,planning,cost per first-bracket completer,~$70,none,USD,held-as-policy,"Planning figure from the waves (~$5,500 across Waves 1, 2, 2B)"
+W-80,R55,derived,T0 equal-stack zero-out rate,~57% intended (58.2% in our model-side sim),none,percent of decided duels,held-as-policy,"Derived consequence of W-1..W-6; docs/risk-sims/properties.js"
+W-81,R43,measurement,contamination handling,estimated and reported; denominator left whole,none,rule,enforced-by-system,"Hesitation-contamination lever reported per risk F-3"
+W-82,R79,design frame,grid texture,32px at 5-6% opacity,none,px / percent,enforced-by-system,"Fixed frame (R11)"
+W-83,R83,interaction,touch targets,>= 44x44pt with >= 8pt spacing,none,pt,enforced-by-system,"WCAG AA target (AC1)"
+W-84,R83,interaction,press acknowledgment,within 1 frame; busy shown within 100ms; navigation begins visibly within 100ms,none,ms,enforced-by-system,"p95 <= 100ms (AC1)"
+W-85,R21 R28,statistics,sequential stopping rule,"Lan-DeMets O'Brien-Fleming-type alpha spending (one-sided), information fraction = completers/maxN; efficacy boundary from the spending function; futility = fixed z (non-spending)",none,rule,enforced-by-system,"f3/C10: now a REAL implementation (engine/alphaSpending.js) read from tunables.gate.sequentialRule (see W-93); DOCUMENTED LIMITATION: normal-approximation marginal boundary, not the exact recursive multivariate Lan-DeMets integral (stated in the module header and on every console surface); Pocock constant-boundary fallback also implemented"
+W-86,R12 R79,theme data,palette values + hero face per treatment,incumbent: R79 values + Pirata One; SK and UC: docs/concept-cards.md cards A1/F1,per treatment,hex / font,enforced-by-system,"Air incumbent value #B0B0B0 from bundle CSS (--cb-air)"
+W-87,R22,door arms,advance band rule,lead must exceed pre-registered band else incumbent named,band set per pre-registration,percentage points,enforced-by-system,"$10 tie-holder for price; brand rejection advances next-ranked"
+W-88,R57 R80 C20,sync,procedural NPC fallback drift,= tunables.pve.driftPerSessionPct (3%),none,probability mass,enforced-by-system,"f2/C20: was an independent hardcoded 10% disagreeing with R57's 3%; now the one shared drift value (npc.js reads tunables)"
+W-89,R22 C12,door arms,door-yield lead band (leadBandPct),0.15,set per pre-registration,fraction of runner-up yield,enforced-by-system,"f2/C12: the band rule is real (runSimulator.js classifyDoorYieldWinner); a winner is named only when its door-yield lead exceeds the band, else incumbent/$10 holds (W-87)"
+W-90,R22 C12,door arms,impressions model: click rate,4.5% of impressions,none,percent,enforced-by-system,"ASSUMED synthetic impressions model (f2 note): read by runSimulator.js's door layer; no live ad platform - a labeled placeholder for real door data. f4/N5: CPM (impressions = spend/CPM*1000) is now DERIVED from this rate + W-91 + W-92 (see W-92's note) so the shipped $6.63-7.00 cost-per-intent-click and 5.2% intent rate hold together IN EXPECTATION, instead of a fourth, independently-hand-picked CPM literal silently disagreeing with the other three. f5/crucial-3 correction: 'hold together exactly' (this row's prior wording) overstated it -- see W-92's note for the measured per-seed spread; what's enforced is the parameter/derivation, not a per-seed reported range."
+W-91,R22 C12,door arms,impressions model: baseline intent-click share,5.2% of clicks,none,fraction,enforced-by-system,"f4/N5 fix: this row was labeled enforced-by-system at f3 but had ZERO code readers -- the simulator instead derived intent clicks from spend/cost-per-intent-click, implying a silent ~2.6% intent rate. Now genuinely read: dayIntentClicks = dayClicks * intentClickPctOfClicksBaseline * arm.doorYieldBiasMultiplier (runSimulator.js:simulateArm) -- the per-arm bias multiplier scales this RATE (moved off the cost side), so the gate-cell (bias 1.00) arm's own TRUE (underlying-parameter) intent rate is exactly this 5.2%, anchored to R30 -- any one seed's REALIZED/reported rate is a noisy binomial sample around that true parameter (see W-92's f5 correction), not identically 5.2% every run."
+W-92,R22 R30 C12,door arms,impressions model: cost per intent click,"$6.63-7.00",none,USD,enforced-by-system,"f4/N5 fix: no longer read as a fixed per-arm constant (spend/costPerIntentClick used to BE how intent clicks were computed, which is what left W-91 unread). Now the DERIVED, reported quantity (cumSpend/cumIntentClicks per arm, runSimulator.js:simulateArm) -- and its midpoint is used the other direction, ONE TIME, to derive CPM (runSimulator.js:deriveCpmFromDoorYieldTunables: CPM = costPerIntentClickMidpoint * 1000 * clickRate(W-90) * intentRate(W-91)). f5/crucial-3 correction: the gate-cell (bias 1.00) arm's derived cost-per-intent-click reproduces this $6.63-7.00 range IN EXPECTATION ($6.815 mean, exact by construction) -- NOT exactly on every run, as this row previously claimed. f4/A-c's per-day binomial sampling noise means any one seed's REPORTED figure varies: measured over 400 seeds, mean $6.805, min $5.952, max $7.592, shipped default seed (20260910) itself reporting $6.446/5.409% intent rate (outside this range), ~57% of the 400 seeds swept landing outside [6.63, 7.00]. The system enforces the W-91 5.2% baseline PARAMETER and this CPM derivation, not any particular per-seed reported range. Per-arm door-yield differences still come from the documented synthetic bias multiplier (runSimulator.js:armDefinitions), applied to the intent rate (W-91) rather than to this cost figure."
+W-93,R21 R28 C10,statistics,alpha-spending parameters,"totalAlphaOneSided 0.05; spendingFunction obrienFleming-lanDeMets-normalApprox; minLookN 15; maxN 50; futilityZ -0.5; plannedLookNs 15..50 by 5",gateOverrides console patch,parameters,enforced-by-system,"tunables.gate.sequentialRule - the one source (C9) for gate.js, the pre-registration, and the console; see W-85 for the documented normal-approximation limitation"

@@ -37,6 +37,47 @@ export const TOTAL_SPEND_USD = 5000;
 export const MAX_DAYS = 14;
 export const GATE_CELL_SPEND_SHARE = 0.70; // R6: gate cell holds >=70% of spend
 
+// CB-BUILD-017/AC1: "link -> first duel", measured to the player's first
+// submitted seal -- the pilot bar is median under two minutes, 90th
+// percentile under four, with a first duel that times out (hesitated)
+// excluded from the numerator. No live pilot telemetry exists for this
+// artifact yet -- these two figures are ASSUMED synthetic placeholders
+// (comfortably inside the stated bar), reported fixed per run rather than
+// re-derived per day, documented here instead of invented mid-report.
+//
+// CB-BUILD-017 fix round f4/Finding 3 (§0/R5 [LAW]): these two figures used
+// to render on the console's daily report (ui/console/runPanel.js) with NO
+// on-surface ASSUMED marker -- identical formatting to the real, measured
+// columns beside them, constant across all 14 days and all five arms
+// (including the planted-fail arm), with the only label sitting in this
+// source comment, which no console reader ever sees. §0/R5 requires every
+// fact be TAGGED where a reader sees it; ASSUMED means "our best guess,
+// LABELED," not "our best guess, footnoted in the code."
+//
+// Fix, per the finding's stated preference order: (a) "wire the REAL
+// measurement through where a real ledger exists" does NOT apply here --
+// this whole module is a synthetic, day-level statistical cohort generator
+// (R29: "synthetic evidence ... qualifies the machine"), not a replay of
+// any real per-player ledger; there is no live Game/Ledger instance
+// anywhere in this file or reachable from ui/console/runPanel.js for these
+// two figures to be derived from (retention.js's real, ledger-derived
+// linkToFirstSeal() is exercised end-to-end in
+// app/tests/link-to-first-seal.test.js, but against a REAL per-player
+// ledger that this synthetic day-level cohort model has no equivalent of
+// -- it has no individual simulated players or events, only aggregate
+// day-level counts). So (b) applies: the figures stay the same ASSUMED
+// synthetic constants, but are now carried on the data (see
+// `linkToFirstSealSecondsAssumed` below) so the console can mark them
+// ASSUMED on the cell itself, and the same label is recorded in
+// docs/disclosure.md.
+const LINK_TO_FIRST_SEAL_MEDIAN_SEC = 95;
+const LINK_TO_FIRST_SEAL_P90_SEC = 205;
+// Single-sourced legend/disclosure wording -- ui/console/runPanel.js reads
+// this constant rather than hand-typing its own copy of the same claim, so
+// the console legend and docs/disclosure.md's row can both be checked
+// against the one string a test can pin.
+export const LINK_TO_FIRST_SEAL_ASSUMED_NOTE = 'ASSUMED: no live pilot telemetry exists yet for the link\u2192seal median/90th-percentile seconds -- these are synthetic placeholders, not measured.';
+
 const _shippedTunables = await loadTunables();
 const _incumbentTreatment = await loadTreatment('incumbent');
 
@@ -146,10 +187,10 @@ function trueRatesForArm(arm, plant) {
   if (arm.role !== 'gate') {
     // Door arms are directional/ungated (R22) -- fixed plausible synthetic
     // rates, independent of `plant` (which only targets the gate cell).
-    return { completionRate: 0.50, reservationRate: 0.30, replayRate: 0.45, d1Rate: 0.35, bracketsPerPlayer48h: 1.6 };
+    return { completionRate: 0.50, reservationRate: 0.30, replayRate: 0.45, d1Rate: 0.35, bracketsPerPlayer48h: 1.6, linkToFirstSealHesitatedRate: 0.08 };
   }
   if (plant === 'fail') {
-    return { completionRate: 0.42, reservationRate: 0.18, replayRate: 0.30, d1Rate: 0.25, bracketsPerPlayer48h: 1.1 };
+    return { completionRate: 0.42, reservationRate: 0.18, replayRate: 0.30, d1Rate: 0.25, bracketsPerPlayer48h: 1.1, linkToFirstSealHesitatedRate: 0.15 };
   }
   // default / 'pass': comfortably above every R51 threshold. f4/N3: bumped
   // reservationRate 0.55 -> 0.65 -- the OLD 0.55 was only reliably reaching
@@ -178,7 +219,7 @@ function trueRatesForArm(arm, plant) {
   // sweep rate. The wide-sweep rate above is DOCUMENTATION of the planted
   // margin's real-world miss rate, not a correctness claim the pinned
   // tests depend on, and not a promise that every arbitrary seed passes.
-  return { completionRate: 0.55, reservationRate: 0.65, replayRate: 0.60, d1Rate: 0.55, bracketsPerPlayer48h: 2.3 };
+  return { completionRate: 0.55, reservationRate: 0.65, replayRate: 0.60, d1Rate: 0.55, bracketsPerPlayer48h: 2.3, linkToFirstSealHesitatedRate: 0.05 };
 }
 
 function bernoulliSum(n, p, rng) {
@@ -211,6 +252,7 @@ function simulateArm(arm, { seed, plant, maxDays, totalSpendUSD, capUSD, doorYie
   const days = [];
   let cumSpend = 0, cumEnrollments = 0, cumQualifiedActivations = 0, cumCompleters = 0, cumReservations = 0;
   let cumReplays = 0, cumD1 = 0, cumBrackets48h = 0, cumImpressions = 0, cumClicks = 0, cumIntentClicks = 0;
+  let cumLinkToFirstSealHesitated = 0, cumLinkToFirstSealSealed = 0;
   let paused = false;
 
   for (let day = 1; day <= maxDays; day++) {
@@ -282,6 +324,21 @@ function simulateArm(arm, { seed, plant, maxDays, totalSpendUSD, capUSD, doorYie
     cumD1 += dayD1;
     cumBrackets48h += dayCompleters * rates.bracketsPerPlayer48h;
 
+    // CB-BUILD-017/AC1: "link -> first duel", the player's first submitted
+    // seal -- every qualified activation (dayQA) reaches a first duel; a
+    // fixed share of those (rates.linkToFirstSealHesitatedRate, an ASSUMED
+    // synthetic constant, see trueRatesForArm) time out on it (hesitated,
+    // R81) and earn no credit toward the bar -- excluded from the
+    // numerator (cumLinkToFirstSealSealed only counts the real seals).
+    // Deliberately NOT a bernoulliSum/rng draw: this is a proportion of the
+    // SAME day's qualified-activation count, computed with no additional
+    // randomness draws, so it cannot perturb the existing pinned-seed
+    // gate/door-yield sequences that read this rng stream downstream.
+    const dayLinkToFirstSealHesitated = Math.round(dayQA * rates.linkToFirstSealHesitatedRate);
+    const dayLinkToFirstSealSealed = dayQA - dayLinkToFirstSealHesitated;
+    cumLinkToFirstSealHesitated += dayLinkToFirstSealHesitated;
+    cumLinkToFirstSealSealed += dayLinkToFirstSealSealed;
+
     const costPerReservationUSD = cumReservations > 0 ? cumSpend / cumReservations : null;
     if (capUSD != null && costPerReservationUSD != null && costPerReservationUSD > capUSD && cumReservations >= 3) {
       paused = true; // cap breach blocked: spend halts for this arm from the next day
@@ -331,6 +388,23 @@ function simulateArm(arm, { seed, plant, maxDays, totalSpendUSD, capUSD, doorYie
       costPerIntentClickUSD,
       doorYieldPer1000Impressions: cumImpressions > 0 ? (cumIntentClicks / cumImpressions) * 1000 : 0,
       reservationsPer1000Impressions: cumImpressions > 0 ? (cumReservations / cumImpressions) * 1000 : 0,
+      // CB-BUILD-017/AC1: link -> first duel, measured to the first
+      // submitted seal. cumLinkToFirstSealSealed is the NUMERATOR-eligible
+      // count (hesitated first duels excluded, per AC1: "a first duel that
+      // times out ... earns no credit toward this bar"); the median/p90
+      // seconds are fixed ASSUMED synthetic placeholders (see this file's
+      // header constants), not re-derived per day.
+      linkToFirstSealHesitated: dayLinkToFirstSealHesitated,
+      cumLinkToFirstSealHesitated,
+      linkToFirstSealSealed: dayLinkToFirstSealSealed,
+      cumLinkToFirstSealSealed,
+      linkToFirstSealMedianSec: LINK_TO_FIRST_SEAL_MEDIAN_SEC,
+      linkToFirstSealP90Sec: LINK_TO_FIRST_SEAL_P90_SEC,
+      // CB-BUILD-017 fix round f4/Finding 3 (§0/R5): explicit, data-carried
+      // ASSUMED flag for the two figures above -- ui/console/runPanel.js
+      // reads this (rather than assuming it) so the marker travels with
+      // the data and can't silently drop off a future refactor.
+      linkToFirstSealSecondsAssumed: true,
     });
   }
   return days;

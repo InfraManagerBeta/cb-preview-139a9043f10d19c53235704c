@@ -1,0 +1,22 @@
+WIN-game equilibrium, affinities Fire vs Fire (4e6 fictitious-play iters over 243x243):
+  exploitability of solved mix: best pure response earns 0.32 net win-pts per 100 duels (0 = exact equilibrium)
+  guaranteed value of solved mix: >= -0.32 net win-pts per 100 duels for the opponent's best response
+  per-round marginals of the solved mix [Fire, Water, Air]:
+    round 1 (weight 78): [0.253, 0.375, 0.372]
+    round 2 (weight 79): [0.271, 0.367, 0.363]
+    round 3 (weight 81): [0.275, 0.369, 0.356]
+    round 4 (weight 86): [0.269, 0.369, 0.362]
+    round 5 (weight 100): [0.269, 0.387, 0.344]
+  uniform-random vs solved mix: net -1.32 win-pts per 100 duels
+
+WIN-game equilibrium, affinities Fire vs Water (4e6 fictitious-play iters over 243x243):
+  exploitability of solved mix: best pure response earns 2.45 net win-pts per 100 duels (0 = exact equilibrium)
+  guaranteed value of solved mix: >= 1.59 net win-pts per 100 duels for the opponent's best response
+  per-round marginals of the solved mix [Fire, Water, Air]:
+    round 1 (weight 78): [0.267, 0.378, 0.355]
+    round 2 (weight 79): [0.273, 0.366, 0.361]
+    round 3 (weight 81): [0.276, 0.365, 0.359]
+    round 4 (weight 86): [0.283, 0.355, 0.362]
+    round 5 (weight 100): [0.278, 0.340, 0.382]
+  uniform-random vs solved mix: net 1.29 win-pts per 100 duels
+

@@ -13,29 +13,55 @@ import { projectedAfterRound } from '../../engine/duelProjection.js';
 import { loadOverrides, effectiveHypothesisId } from '../../engine/overrides.js';
 import { opponentDuelHistory, summarizeOpponentHistory, hypothesisCard } from '../../engine/hypotheses.js';
 import { renderTugBar } from '../components/battle/tugbar.js';
-import { renderCombatant, renderAffinityFx, createBattleStage, destroyActiveBattleStage } from '../components/battle/stage.js';
-import { arenaSources } from '../components/battle/assets.js';
-import { createShapeLoader } from '../components/battle/shapes.js';
+import { renderCombatant, renderAffinityFx, renderProvisionalStageNotice } from '../components/battle/stage.js';
+import { createRigLoadout } from '../components/battle/rigAssets.js';
+import { createRigStage } from '../components/battle/rigStage.js';
 import { renderRail, renderRoundCards, renderResultCard } from '../components/battle/rails.js';
 import { renderFloorDrain, renderCoinFlip, renderPrizeAward } from '../components/battle/moments.js';
-import { isSoundEnabled, setSoundEnabled, playIntro, playLoop, stopLoop, playRoundBeat, stopAll } from '../components/battle/sound.js';
-// CB-BUILD-005: the reference implementation's own sound schedule (intro →
-// loop at +1.8s → round voices; per-round beats at the attack, offsets per
-// reference/DuelPlayer/soundManager.js) and the audio-bed preload.
-import { preloadDuelAudio, scheduleDuelStart, scheduleRoundStart } from '../components/battle/sound.js';
+import { isSoundEnabled, setSoundEnabled, playIntro, playLoop, playRoundBeat, scheduleDuelReadyVoice, stopAllExceptBed, releaseAudioForRoute, carryBed, soundToggleButton } from '../components/battle/sound.js';
 import { truthBadge, compactMoneyTruth, renderKillStopBanner } from '../components/chrome.js';
 import { KillSwitchFrozenError } from '../../engine/game.js';
 
-// CB-BUILD-005/006: one shared shape-library loader for the whole session --
-// its cache persists across duels, so a rematch preloads from memory and
-// never re-fetches a wizard it already carries.
-const shapeLoader = createShapeLoader();
+// CB-BUILD-009/R81: "shifting to the danger color as it nears zero" -- a
+// presentation-only threshold (not an economy/duel constant, gate
+// threshold, or invariant), chosen at the patch log's own "~10s" figure.
+const COMMIT_CLOCK_DANGER_MS = 10_000;
+
+// CB-BUILD-011/R11/R79: "the opponent tendency card readable" -- the raw
+// F/W/A percentage triple (tendencyLabel, engine/npc.js) is exactly the
+// kind of figure the DATA face is for and stays rendered as one below; this
+// adds one plain-language PROSE sentence naming the opponent's single
+// strongest lean, so a player can read the card at a glance instead of
+// parsing three abbreviated percentages cold. Presentation-only (derives
+// the same opponentSeat.tendency object already computed by the engine --
+// no new data, no match-history depth, nothing engine-side touched).
+function dominantTendencyPhrase(tendency) {
+  if (!tendency) return null;
+  const [topElement, topShare] = Object.entries(tendency).sort((a, b) => b[1] - a[1])[0];
+  const label = topElement.charAt(0).toUpperCase() + topElement.slice(1).toLowerCase();
+  return `Leans ${label} \u2014 about ${Math.round(topShare * 100)}% of rounds.`;
+}
 
 /**
  * C13/O3/R26 cards 1 & 2 ("Scouting reports" / "Pre-match Narrator brief"):
  * each renders ONLY when its own hypothesis is the ACTIVE one (O3) --
  * both derive from the SAME real ledger history (engine/hypotheses.js), so
  * the panel and the brief never disagree with each other.
+ *
+ * CB-BUILD-011/R11/R79: "the existing scouting panel (O3 card 1, when
+ * active) given proper room rather than cramped mono." The panel wrapper
+ * gets its own roomier class (cb-scouting-panel, styles/base.css --
+ * generous padding, a real line-gap between rows instead of touching
+ * zero-margin <div>s). The two SENTENCES a player actually reads here
+ * (the W-L summary, the affinity-play-rate line) move off the data face
+ * onto the prose face per R11 ("prose content, every sentence a player
+ * reads, is set in the prose face ... the data face carries figures,
+ * counters, tags, and code only, never body copy") -- these are full
+ * sentences that happen to carry a figure, not bare figures/tags
+ * themselves. The compact per-round tag rows (a result letter plus a
+ * F/W/A move sequence -- exactly a "tag", not a sentence) and the section
+ * label stay on the data face, unchanged; no new match-history depth is
+ * added -- same opponentDuelHistory() rows, same 5-row cap.
  */
 function renderScoutingAndBrief(ctx, opponentSeat, treatment) {
   const activeId = effectiveHypothesisId(loadOverrides());
@@ -44,14 +70,11 @@ function renderScoutingAndBrief(ctx, opponentSeat, treatment) {
   const history = opponentDuelHistory(ledgerEvents, opponentSeat.characterId, 10);
   const summary = summarizeOpponentHistory(history);
   const card = hypothesisCard(activeId);
-  // CB-BUILD-fix-round-2 (re-review B): the fair-test line is a participant
-  // sentence (R11) — the SAME string already wears the prose face on
-  // sitting/lobby-entry/pve; this site now matches them exactly.
-  const rows = [el('p', { class: 'cb-prose cb-prose-small' }, card.fairTestLine)];
+  const rows = [el('p', { class: 'cb-micro', style: 'color:var(--cb-teal);' }, card.fairTestLine)];
 
   if (activeId === 'scouting_reports') {
-    rows.push(el('div', { class: 'cb-micro' }, `${opponentSeat.name}: ${summary.wins}-${summary.losses}${summary.ties ? ` (${summary.ties} tie${summary.ties === 1 ? '' : 's'})` : ''} over the last ${summary.count} staked duel${summary.count === 1 ? '' : 's'}.`));
-    rows.push(el('div', { class: 'cb-micro' }, `Affinity-play rate: ${Math.round(summary.avgAffinityPlayRate * 100)}%.`));
+    rows.push(el('p', { class: 'cb-prose' }, `${opponentSeat.name}: ${summary.wins}-${summary.losses}${summary.ties ? ` (${summary.ties} tie${summary.ties === 1 ? '' : 's'})` : ''} over the last ${summary.count} staked duel${summary.count === 1 ? '' : 's'}.`));
+    rows.push(el('p', { class: 'cb-prose' }, `Affinity-play rate: ${Math.round(summary.avgAffinityPlayRate * 100)}%.`));
     // f7/N2: LAW R26(1) ("elements played by round") -- per past duel,
     // compact. `playedByRound`/`facedByRound` come from hypotheses.js's
     // opponentDuelHistory, which itself falls back to `null` (summary-only,
@@ -77,7 +100,7 @@ function renderScoutingAndBrief(ctx, opponentSeat, treatment) {
     rows.push(el('p', { class: 'cb-narration', style: 'color:var(--cb-narrator-accent, var(--cb-teal));' }, brief.text));
   }
 
-  return el('div', { class: 'cb-card' }, rows);
+  return el('div', { class: 'cb-card cb-scouting-panel' }, rows);
 }
 
 /**
@@ -93,15 +116,12 @@ function renderScoutingAndBrief(ctx, opponentSeat, treatment) {
 function renderCoinFlipVerification(outcome) {
   if (!outcome.trueTie || !outcome.coinFlip) return null;
   const { seed, commitment } = outcome.coinFlip;
-  // CB-BUILD-fix-round-4 (R11): the verdict line receives full sentences at
-  // runtime ("✓ Verified — …" / "✗ Mismatch — …"), so it wears the prose
-  // face like its four sibling lines in this card.
-  const resultLine = el('div', { class: 'cb-prose cb-prose-small', style: 'margin-top:6px;' }, '');
+  const resultLine = el('div', { class: 'cb-micro', style: 'margin-top:6px;' }, '');
   return el('details', { class: 'cb-card' }, [
     el('summary', {}, 'Verify this coin flip'),
-    el('p', { class: 'cb-prose cb-prose-small' }, `Commitment (recorded BEFORE the flip): ${commitment}`),
-    el('p', { class: 'cb-prose cb-prose-small' }, `Revealed seed (AFTER the flip): ${seed}`),
-    el('p', { class: 'cb-prose cb-prose-small' }, 'Recompute: SHA-256(seed) must equal the commitment above; the flip itself is a fixed function of the seed alone (the first hex digit of SHA-256(seed): even => this side, odd => the other side).'),
+    el('p', { class: 'cb-legal' }, `Commitment (recorded BEFORE the flip): ${commitment}`),
+    el('p', { class: 'cb-legal' }, `Revealed seed (AFTER the flip): ${seed}`),
+    el('p', { class: 'cb-legal' }, 'Recompute: SHA-256(seed) must equal the commitment above; the flip itself is a fixed function of the seed alone (the first hex digit of SHA-256(seed): even => this side, odd => the other side).'),
     // f4/A-l: one honest sentence naming the actual gap to "provably
     // fair" -- this recomputation proves the flip wasn't changed AFTER
     // the commitment was recorded; it does NOT prove the seed itself was
@@ -110,7 +130,7 @@ function renderCoinFlipVerification(outcome) {
     // plainly rather than left implied by the "provably fair" framing
     // elsewhere (this module's own header comment, in quotes, for
     // exactly this reason).
-    el('p', { class: 'cb-prose cb-prose-small' }, 'Honest limit: this is verifiable AFTER THE FACT — it proves the flip was not changed once committed. It does not prove the seed was chosen fairly: the seed itself is house-generated, not supplied by you.'),
+    el('p', { class: 'cb-legal' }, 'Honest limit: this is verifiable AFTER THE FACT — it proves the flip was not changed once committed. It does not prove the seed was chosen fairly: the seed itself is house-generated, not supplied by you.'),
     el('button', {
       class: 'cb-btn secondary block',
       onClick: async () => {
@@ -130,74 +150,6 @@ function renderCoinFlipVerification(outcome) {
     }, 'Re-verify (Web Crypto)'),
     resultLine,
   ]);
-}
-
-// CB-BUILD-009 (R81): the commit clock shifts to the danger color once
-// under this many milliseconds remain (~10s, per the master rule's "as it
-// nears zero (~under 10s)"). A pure, exported predicate so the exact
-// threshold is unit-testable without a DOM.
-export const COMMIT_CLOCK_DANGER_MS = 10000;
-
-export function isClockDanger(remainingMs, thresholdMs = COMMIT_CLOCK_DANGER_MS) {
-  return remainingMs <= thresholdMs;
-}
-
-// CB-BUILD-009 (R81): "the player's own selections are kept; only unpicked
-// rounds are filled, uniform-random" -- a pure, exported merge so the
-// auto-commit fill rule is unit-testable without a DOM. `moves` is the
-// five-slot array of element NAMES (or null) the commit screen tracks;
-// `toIndex` converts a chosen name to its element index (engine/duel.js's
-// elementIndex); `random` is injectable for a deterministic test.
-export function computeAutoCommitMoves(moves, toIndex, random = Math.random) {
-  return moves.map((mv) => (mv != null ? toIndex(mv) : Math.floor(random() * 3)));
-}
-
-// CB-BUILD-010/§12-R83: the seal button is disabled exactly when some round
-// is still unpicked -- a pure predicate shared by the initial build AND the
-// in-place update (updateSealButtonState), so both agree by construction.
-export function isSealDisabled(moves) {
-  return moves.some((m) => m == null);
-}
-
-// CB-BUILD-010/§12-R83: a move tap must mutate ONLY the tapped round's own
-// three buttons (toggling `selected`) -- never the other four rounds, and
-// never a full screen rebuild. `roundButtons` is a { fire, water, air } map
-// of that round's three button-like objects (anything with a
-// `classList.toggle(name, cond)`, so this is unit-testable against plain
-// fakes, no real DOM required).
-export function applyRoundSelectionClasses(roundButtons, elements, chosenElement) {
-  for (const name of elements) {
-    const btn = roundButtons[name];
-    if (btn) btn.classList.toggle('selected', name === chosenElement);
-  }
-}
-
-// CB-BUILD-fix-round-1 #8: the incumbent's preload gate is BOUNDED. The gate
-// itself (preload EVERYTHING, then play — R74) stands; what was missing was
-// any timeout/cancel: one stalled bucket (a fetch that never settles)
-// stranded the player on "SUMMONING COMBATANTS…" forever, AFTER the ledger
-// had already resolved the duel, with no navigation out. A gate that outlives
-// this budget degrades to the EXISTING stageFailed path (the dark
-// provisional field — the duel stays watchable and completable, the result
-// card stays reachable). This is a presentation-layer tunable-style
-// constant, NOT a spec/economy/gate-threshold constant.
-export const STAGE_PRELOAD_TIMEOUT_MS = 10000;
-
-/** Race a preload promise against the timeout. Resolves (never rejects) with
- * `{ ok, timedOut }`: ok=true only when the preload itself fulfilled in
- * time; a rejection or a timeout is ok=false (the caller degrades). Timer
- * functions are injectable so the bound is unit-testable without real time
- * or a DOM. */
-export function boundStagePreload(preloadPromise, { timeoutMs = STAGE_PRELOAD_TIMEOUT_MS, setTimeoutFn = setTimeout, clearTimeoutFn = clearTimeout } = {}) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (result) => { if (!settled) { settled = true; resolve(result); } };
-    const handle = setTimeoutFn(() => finish({ ok: false, timedOut: true }), timeoutMs);
-    Promise.resolve(preloadPromise).then(
-      () => { clearTimeoutFn(handle); finish({ ok: true, timedOut: false }); },
-      () => { clearTimeoutFn(handle); finish({ ok: false, timedOut: false }); }
-    );
-  });
 }
 
 export function mountDuel(ctx) {
@@ -226,6 +178,22 @@ export function mountDuel(ctx) {
 
   const opponentSeatIndex = match.seatA === humanSeatIndex ? match.seatB : match.seatA;
   const opponentSeat = bracket.seats[opponentSeatIndex];
+
+  // CB-BUILD-005/006 (incumbent only): kick off the battle-animation preload
+  // NOW, at commit-screen mount — the duel's every animation source (both
+  // combatants' own shape sets, recoloured to their own palettes, plus the
+  // affinity-cape FX) is fetching while the player picks moves, and the
+  // reveal never fetches mid-duel. The alternates keep their placeholder
+  // stage (CB-BUILD-007/011 are a different patch).
+  const useRig = treatment.id === 'incumbent';
+  let rigLoadout = null;
+  let rigStage = null;
+  if (useRig) {
+    const chars = ctx.game.snapshot().characters;
+    const p2Char = chars[opponentSeat.characterId]
+      || { id: opponentSeat.characterId || `seat-${opponentSeatIndex}-${opponentSeat.name}`, element: opponentSeat.element, tier: bracket.tier || 0 };
+    rigLoadout = createRigLoadout({ p1Character: character, p2Character: p2Char });
+  }
 
   function autoResolveOthers() {
     let guard = 0;
@@ -270,11 +238,21 @@ export function mountDuel(ctx) {
   // `sync.autoCommitHesitated` + `commit(...)` -- a real ledger mutation
   // for a screen the player is no longer looking at (see
   // duel-teardown.test.js for the reproduction).
-  // A3: unmounting the duel screen also stops every battle sound --
-  // otherwise a lingering loop/intro/beat sample kept playing after
-  // navigating away (an explicit navigate, back/forward, or a reload),
-  // audible over whatever screen the player is actually looking at now.
-  ctx.router.onUnmount(() => { clearInterval(timerHandle); clearTimeout(timerHandle); stopAll(); });
+  // A3 (as amended by fix round f5/R78a [LAW]): unmounting the duel screen
+  // stops the one-shot battle sounds (intro sting, round beats, pending
+  // round voices) -- but the looping BED now CARRIES to another
+  // bracket-context screen (bracket board, sitting, or this screen's own
+  // next mount) instead of stopping on every unmount: R78a says the bed
+  // "plays through the bracket as the 2019 client played it", whose sound
+  // layer stopped only on leaving the duel-player context entirely.
+  // releaseAudioForRoute(ctx.router.current()) reads the route being
+  // mounted NEXT (inside an onUnmount callback the hash has already moved)
+  // and stops EVERYTHING -- the A3 guarantee -- when that route is outside
+  // the bracket context (lobby, wallet, landing, ...).
+  // (CB-BUILD-005: the rig stage tears ITSELF down when its root leaves the
+  // document -- see rigStage.js's disconnect watchdog -- so navigation away
+  // mid-reveal stops its players without a third teardown site here.)
+  ctx.router.onUnmount(() => { clearInterval(timerHandle); clearTimeout(timerHandle); releaseAudioForRoute(ctx.router.current()); });
 
   // A17 fix (f2): `renderCommit()` used to be called on every 500ms tick,
   // tearing down and rebuilding the ENTIRE screen just to update the clock
@@ -287,12 +265,6 @@ export function mountDuel(ctx) {
   // ticks -- nothing rebuilds it out from under the user.
   let commitTimerNode = null;
 
-  // CB-BUILD-010: persistent references to the per-round move buttons and
-  // the seal button, so a move tap can mutate them in place instead of
-  // rebuilding the screen (see selectMove()/updateSealButtonState() below).
-  let roundButtonRefs = [];
-  let sealButtonNode = null;
-
   // Disconnect-safe: a sealed commit stands. If this device already sealed a
   // commit for this exact match (e.g. before a reload), resolve with it
   // rather than asking again.
@@ -303,128 +275,153 @@ export function mountDuel(ctx) {
 
   function buildCommitScreen() {
     const remainingMs = Math.max(0, window_.deadline - Date.now());
-    // CB-BUILD-009/R81: promoted from a small `cb-timer cb-data` span to a
-    // large, persistent `cb-commit-clock` -- never a small data span (see
-    // base.css: display-face, large size, a `.danger` modifier that shifts
-    // the color as it nears zero).
-    commitTimerNode = el('span', { class: 'cb-commit-clock', 'data-danger': isClockDanger(remainingMs) ? 'true' : 'false' }, `${Math.ceil(remainingMs / 1000)}s`);
-    applyClockDangerState(remainingMs);
+    // CB-BUILD-009/R81: a PROMINENT, PERSISTENT countdown -- pinned in view
+    // for the whole selection, large enough to read at a glance, shifting
+    // to the danger color as it nears zero -- replaces the small
+    // `cb-timer` data span that used to sit quietly in the top bar next to
+    // the logo (easy to miss entirely).
+    commitTimerNode = el('div', {
+      class: `cb-commit-clock cb-data${remainingMs <= COMMIT_CLOCK_DANGER_MS ? ' danger' : ''}`,
+    }, `${Math.ceil(remainingMs / 1000)}s`);
+
+    // CB-BUILD-010/§12/R83: a move tap must mutate ONLY that round's three
+    // buttons + the seal button's disabled state, in place -- no
+    // buildCommitScreen() remount (a full mountScreen() teardown+rebuild,
+    // which resets scroll to whatever the browser lands on) on selection.
+    // `roundButtonGroups[i]` holds the three live button nodes for round i
+    // so `selectMove` can toggle `.selected` on exactly those three,
+    // without touching any other round's DOM or re-mounting the screen.
+    const roundButtonGroups = [];
+    // CB-BUILD-008 optional enhancement (folded, manager-announced on PR #8):
+    // `roundCardNodes[i]` holds round i's own card element (parallel to
+    // roundButtonGroups[i]'s three buttons), captured at build time purely
+    // so a press on a still-gated Seal Commitment can highlight exactly the
+    // rounds still missing a move, in place -- no rebuild, no gate-logic
+    // change (the gate itself -- aria-disabled + the no-op guard below --
+    // is untouched).
+    const roundCardNodes = [];
+    let sealButtonNode;
+    let missingHighlightTimer = null;
+
+    function selectMove(i, elName) {
+      moves[i] = elName;
+      for (const [name, btn] of Object.entries(roundButtonGroups[i])) {
+        btn.classList.toggle('selected', name === elName);
+      }
+      const stillGated = moves.some((m) => m == null);
+      if (stillGated) sealButtonNode.setAttribute('aria-disabled', 'true');
+      else sealButtonNode.removeAttribute('aria-disabled');
+    }
+
+    // CB-BUILD-008 optional enhancement: "briefly highlight the rounds
+    // still missing a move, so the player is told what is left rather than
+    // met with a dead control." Fires on a press of the STILL-GATED seal
+    // button only (the no-op branch); a real seal press (every round
+    // picked) never calls this. Purely additive visual feedback -- toggles
+    // one CSS class per missing round's own card, in place, and clears it
+    // after a fixed window (re-triggerable: a second press while the
+    // pulse is still showing restarts the same window rather than stacking
+    // timers).
+    const MISSING_ROUND_HIGHLIGHT_MS = 900;
+    function flashMissingRounds() {
+      clearTimeout(missingHighlightTimer);
+      const missingIdxs = [];
+      moves.forEach((m, i) => { if (m == null) missingIdxs.push(i); });
+      for (const i of missingIdxs) roundCardNodes[i].classList.add('cb-round-missing');
+      missingHighlightTimer = setTimeout(() => {
+        for (const i of missingIdxs) roundCardNodes[i].classList.remove('cb-round-missing');
+      }, MISSING_ROUND_HIGHLIGHT_MS);
+    }
+
+    const roundCards = moves.map((mv, i) => {
+      const group = {};
+      // CB-BUILD-011/R11/R79/R83: "five round pickers roomy and card-like
+      // (whole card a target, >=44px, >=8px spacing)" -- cb-round-picker
+      // (styles/base.css) gives the round its own roomier padding/spacing;
+      // the three moves inside render as bigger, rounder, more evidently
+      // tappable "cards" (each already its own whole-button target, >=44px
+      // -- see the CB-BUILD-011 .cb-element-btn sizing below -- with a
+      // >=8pt gap between them, per .cb-element-row).
+      const card = el('div', { class: 'cb-card cb-round-picker' }, [
+        el('div', { class: 'cb-micro' }, `ROUND ${i + 1}`),
+        el('div', { class: 'cb-element-row' }, ELEMENTS.map((elName) => {
+          const btn = el('button', {
+            class: `cb-element-btn${moves[i] === elName ? ' selected' : ''}${elName === character.element ? ' affinity' : ''}`,
+            'data-el': elName,
+            onClick: () => selectMove(i, elName),
+          }, treatment.elements[elName].label);
+          group[elName] = btn;
+          return btn;
+        })),
+      ]);
+      roundButtonGroups.push(group);
+      roundCardNodes.push(card);
+      return card;
+    });
+
+    sealButtonNode = el('button', {
+      class: 'cb-btn block',
+      'aria-disabled': moves.some((m) => m == null),
+      onClick: () => {
+        if (!moves.some((m) => m == null)) commit(moves.map(elementIndex), false);
+        else flashMissingRounds();
+      },
+    }, 'Seal Commitment');
+
     mountScreen([
-      // CB-BUILD-009/R81: `cb-commit-topbar` pins this row (logo + the
-      // clock) in view for the whole selection (base.css: position:
-      // sticky) -- the clock is never scrolled out of sight while picking
-      // moves across five round cards.
-      el('div', { class: 'cb-topbar cb-commit-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark), commitTimerNode]),
-      // CB-BUILD-009/R81: stated BEFORE the clock runs low (rendered from
-      // the first frame, not conditionally near zero) what happens at
-      // zero -- the player's own selections are kept, only the unpicked
-      // rounds fill uniform-random, and the duel is flagged "hesitated".
-      // Prose content (R11): a sentence a player reads is set in the
-      // prose face, not the data/mono face.
-      el('p', { class: 'cb-prose cb-commit-explainer' }, 'If the clock runs out, your own picks stay locked in — only the rounds you haven\u2019t chosen yet are filled at random, and this duel is flagged \u201chesitated\u201d.'),
+      // Fix round f5/R78a: the bed now carries INTO this screen from the
+      // previous duel's result/intermission, so the commit screen needs the
+      // visible mute too. It sits in the topbar beside the logo (audio
+      // chrome only) -- the move-choice layout below (clock, pickers, seal)
+      // is untouched, per CB-BUILD-010/011's protected structure.
+      el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark), soundToggleButton()]),
+      commitTimerNode,
+      // CB-BUILD-009r/R81: states, BEFORE the clock ever runs low, exactly
+      // what happens at zero -- shown for the whole selection window, not
+      // sprung on the player only once time is nearly out. Reverted copy:
+      // the owner ruled (2026-09-15) that ALL FIVE moves are chosen at
+      // random at zero, including any already picked -- not just the blanks.
+      el('p', { class: 'cb-legal', style: 'text-align:center;' }, 'If this hits 0:00, all five moves are chosen at random \u2014 even any you\u2019ve already picked \u2014 and this duel is flagged hesitated.'),
+      // CB-BUILD-011/R79: the screen's one hero moment (display face,
+      // Bebas Neue via the fixed h2 rule) -- used exactly once on this
+      // screen, per R79's "one hero-moment face used at most once".
       el('h2', {}, `${character.name} vs ${opponentSeat.name}`),
-      // CB-BUILD-011/R11-R79: the opponent panel groups the tendency card
-      // with whatever scouting/pre-match-brief card is active (below), an
-      // uncramped section with visual room for a future scouting panel to
-      // slot into -- renderScoutingAndBrief already renders nothing when
-      // its hypothesis card is inactive (this is the "room in the layout",
-      // not new scouting CONTENT; deep opponent match-history stays an
-      // unresolved product tension, out of this build's scope).
-      el('div', { class: 'cb-commit-opponent-panel' }, [
-        el('div', { class: 'cb-card' }, [
-          el('div', { class: 'cb-micro' }, 'OPPONENT TENDENCY'),
-          el('div', { class: 'cb-data', style: 'margin-top:4px;' }, [
-            `${opponentSeat.name} `,
-            opponentSeat.kind === 'npc' ? el('span', { class: 'cb-npc-tag' }, treatment.copy.npcTagLabel) : null,
-          ]),
-          el('div', { class: 'cb-micro', style: 'margin-top:6px;' }, opponentSeat.tendency ? `F/W/A ${tendencyLabel(opponentSeat.tendency)}` : ''),
+      // CB-BUILD-011/R11/R79: "the opponent tendency card readable" --
+      // cb-tendency-card (styles/base.css) gives the card more breathing
+      // room; a plain-language lean sentence (prose face) now sits above
+      // the raw F/W/A figures (data face, unchanged) instead of being the
+      // card's only content.
+      el('div', { class: 'cb-card cb-tendency-card' }, [
+        el('div', { class: 'cb-micro' }, 'OPPONENT TENDENCY'),
+        el('div', { class: 'cb-data', style: 'margin-top:4px;' }, [
+          `${opponentSeat.name} `,
+          opponentSeat.kind === 'npc' ? el('span', { class: 'cb-npc-tag' }, treatment.copy.npcTagLabel) : null,
         ]),
-        renderScoutingAndBrief(ctx, opponentSeat, treatment),
+        opponentSeat.tendency
+          ? el('p', { class: 'cb-prose', style: 'margin:8px 0 4px;' }, dominantTendencyPhrase(opponentSeat.tendency))
+          : null,
+        el('div', { class: 'cb-micro' }, opponentSeat.tendency ? `F/W/A ${tendencyLabel(opponentSeat.tendency)}` : ''),
       ]),
-      // CB-BUILD-011/R11-R79: a plain-language prose lead-in (the prose
-      // face, not mono/data -- R11: every sentence a player reads) above
-      // the five round cards, which now sit in their own uncramped,
-      // breathing-room section (`cb-commit-rounds`) instead of running
-      // straight on from the opponent panel.
-      el('p', { class: 'cb-prose' }, 'Pick a move for each of the five rounds below, then seal your commitment.'),
-      el('div', { class: 'cb-commit-rounds' }, moves.map((mv, i) => {
-        // CB-BUILD-010/§12-R83: each round's three buttons are built ONCE
-        // here and kept in `roundButtonRefs[i]` -- a move tap
-        // (`selectMove` below) mutates only THOSE three buttons and the
-        // seal button in place; it no longer calls buildCommitScreen() (a
-        // full mountScreen() remount, which resets scroll to the top --
-        // see mountScreen's `window.scrollTo(0, 0)`). Scroll position is
-        // therefore preserved across a selection, exactly as the A17 fix
-        // already does for the timer.
-        roundButtonRefs[i] = {};
-        // CB-BUILD-fix-round-1 #2: this card's class was `cb-round-card`,
-        // which COLLIDES with battle.css's reveal-side `.cb-round-card`
-        // (mono flex row, 6px padding — battle.css loads after base.css per
-        // index.html), re-cramping the commit screen and killing
-        // CB-BUILD-011's breathing room. The commit screen now uses its own
-        // `cb-commit-round-card` class; the reveal side's `.cb-round-card`
-        // (rails.js + battle.css) stays untouched.
-        return el('div', { class: 'cb-card cb-commit-round-card' }, [
-          el('div', { class: 'cb-micro' }, `ROUND ${i + 1}`),
-          el('div', { class: 'cb-element-row' }, ELEMENTS.map((elName) => {
-            const btn = el('button', {
-              class: `cb-element-btn${moves[i] === elName ? ' selected' : ''}${elName === character.element ? ' affinity' : ''}`,
-              'data-el': elName,
-              onClick: () => selectMove(i, elName),
-            }, treatment.elements[elName].label);
-            roundButtonRefs[i][elName] = btn;
-            return btn;
-          })),
-        ]);
-      })),
-      (sealButtonNode = el('button', {
-        class: 'cb-btn block',
-        'aria-disabled': isSealDisabled(moves),
-        onClick: () => { if (!isSealDisabled(moves)) commit(moves.map(elementIndex), false); },
-      }, 'Seal Commitment')),
+      renderScoutingAndBrief(ctx, opponentSeat, treatment),
+      // CB-BUILD-011/R79: a clear section break (data-face label, not a
+      // second hero moment) between the opponent info above and the five
+      // move pickers below -- visual hierarchy the old flat stack lacked.
+      el('div', { class: 'cb-micro cb-section-label' }, 'CHOOSE YOUR FIVE MOVES'),
+      ...roundCards,
+      sealButtonNode,
     ]);
   }
 
-  // CB-BUILD-010/§12-R83: a move tap mutates only the tapped round's three
-  // buttons (toggling `selected`) and the seal button's disabled state, IN
-  // PLACE -- never rebuilding the screen (no buildCommitScreen()/mountScreen()
-  // call here, so scroll position holds exactly where the player left it).
-  function selectMove(i, elName) {
-    moves[i] = elName;
-    if (roundButtonRefs[i]) applyRoundSelectionClasses(roundButtonRefs[i], ELEMENTS, elName);
-    updateSealButtonState();
-  }
-
-  // CB-BUILD-010: the seal button's disabled state updates in place (the
-  // same node the screen mounted once), not via a rebuild. The muted-fill
-  // disabled look (t2/CB-BUILD-008) comes free from `.cb-btn[aria-disabled="true"]`
-  // in base.css -- toggling the attribute is all that's needed here.
-  function updateSealButtonState() {
-    if (!sealButtonNode) return;
-    if (isSealDisabled(moves)) sealButtonNode.setAttribute('aria-disabled', 'true');
-    else sealButtonNode.removeAttribute('aria-disabled');
-  }
-
   // A17: the targeted per-tick update -- touches only the timer text node.
-  // CB-BUILD-009: also re-applies the danger-color state as time runs down
-  // (still a targeted mutation, no rebuild).
+
   function updateClockDisplay() {
     if (!commitTimerNode) return;
     const remainingMs = Math.max(0, window_.deadline - Date.now());
     commitTimerNode.textContent = `${Math.ceil(remainingMs / 1000)}s`;
-    applyClockDangerState(remainingMs);
+    // CB-BUILD-009/R81: shift to the danger color as the clock nears zero.
+    commitTimerNode.classList.toggle('danger', remainingMs <= COMMIT_CLOCK_DANGER_MS);
   }
 
-  // CB-BUILD-009/R81: the clock shifts to the danger color (and, optionally,
-  // pulses) as it nears zero (~under 10s) -- `isClockDanger` is the single
-  // shared, unit-tested threshold check.
-  function applyClockDangerState(remainingMs) {
-    if (!commitTimerNode) return;
-    const danger = isClockDanger(remainingMs);
-    commitTimerNode.classList.toggle('danger', danger);
-    commitTimerNode.classList.toggle('pulse', danger);
-    commitTimerNode.setAttribute('data-danger', danger ? 'true' : 'false');
-  }
 
   // C16/AC0: the kill switch must stop an in-flight duel -- not just gate
   // navigation between screens. Checked here (before any commit/resolve)
@@ -492,113 +489,60 @@ export function mountDuel(ctx) {
     const p1 = { name: character.name, element: character.element, isNpc: false };
     const p2 = { name: opponentSeat.name, element: opponentSeat.element, isNpc: opponentSeat.kind === 'npc' };
     const startShare = combatant.stakeBefore / Math.max(1, combatant.stakeBefore + opponentCombatant.stakeBefore) * 100;
-    // p1 is the human, so the duel winner's side follows the reoriented outcome.
-    const winnerSide = (outcome.winner === 1 || outcome.coinFlipWinner === 1) ? 'p1' : 'p2';
+
+    // CB-BUILD-005 (incumbent): the rig stage — both combatants as their
+    // OWN wizards on the arena composite, every state preloaded and
+    // cross-faded. Built ONCE per reveal; updateFrame drives it via
+    // setStep. The node persists across frames (its player canvases are
+    // never torn down mid-duel).
+    if (useRig && rigLoadout && !rigStage) {
+      rigStage = createRigStage({ loadout: rigLoadout, p1, p2, treatment });
+    }
+
+    // R75: the affinity FX pass — per side, the library's affinity-cape
+    // overlay (win or lose flavour by that round's own result), only for a
+    // side that actually played its affinity. FX from the bundle's own
+    // sources, not a flat fill (CB-BUILD-005).
+    function affinityCapesForRound(roundNo) {
+      const r = outcome.rounds && outcome.rounds[roundNo - 1];
+      if (!r) return { p1Cape: null, p2Cape: null };
+      return {
+        p1Cape: r.p1Affinity ? (r.result === 'WIN' ? 'win' : r.result === 'LOSS' ? 'lose' : null) : null,
+        p2Cape: r.p2Affinity ? (r.result === 'LOSS' ? 'win' : r.result === 'WIN' ? 'lose' : null) : null,
+      };
+    }
 
     const canSkip = !!ctx.session.hasSeenDuelPlaythrough;
     let stepIdx = -1; // -1 = the pre-round-one hold (R76: "readable for one second before round one")
     let throughRound = 0;
     let cancelled = false;
 
-    // ---- CB-BUILD-005: the incumbent's ported battle stage ------------------
-    // Each combatant renders from its OWN cosmetic shape set, recoloured to
-    // its own palette by the parametric rig (CB-BUILD-006), composited on the
-    // bundle's arena art; every state player is created and preloaded BEFORE
-    // the timeline starts (the reference DuelPlayer's loadAnimations gate),
-    // then cross-faded -- no img src swap, no re-fetch, no blank, no flash.
-    const isIncumbent = treatment.id === 'incumbent';
-    let battleStage = null;
-    let stageFailed = false; // no reachable shape source at all: degrade to the provisional stage, never to a blank/white field
-
-    async function prepareIncumbentStage() {
-      const humanIdentity = { id: character.id, name: character.name, element: character.element };
-      const opponentIdentity = { id: opponentCombatant.characterId, name: opponentSeat.name, element: opponentSeat.element };
-      preloadDuelAudio();
-      const totalUnits = 24; // 2x10 wizard states + 2 cape pairs + 2 flags
-      let doneUnits = 0;
-      const bump = () => {
-        doneUnits += 1;
-        const bar = document.querySelector('.cb-stage-progress-bar');
-        if (bar) bar.style.width = `${Math.min(100, Math.round((doneUnits / totalUnits) * 100))}%`;
-      };
-      const fetchLocalJson = async (url) => { const r = await fetch(url); if (!r.ok) throw new Error(`fetch ${url}: ${r.status}`); return r.json(); };
-      const actorP1 = await shapeLoader.preloadWizard(humanIdentity, { onProgress: bump });
-      // R74: visually distinct, guaranteed -- the opponent's rig derives with
-      // a distinctness guard against the human's.
-      const actorP2 = await shapeLoader.preloadWizard(opponentIdentity, { distinctFrom: actorP1.rig, onProgress: bump });
-      const [capesP1, capesP2, flagP1, flagP2] = await Promise.all([
-        shapeLoader.preloadAffinityCapes(humanIdentity).then((v) => { bump(); return v; }),
-        shapeLoader.preloadAffinityCapes(opponentIdentity).then((v) => { bump(); return v; }),
-        fetchLocalJson(fxFlagUrl(p1.element)).then((v) => { bump(); return v; }).catch(() => { bump(); return null; }),
-        fetchLocalJson(fxFlagUrl(p2.element)).then((v) => { bump(); return v; }).catch(() => { bump(); return null; }),
-      ]);
-      // CB-BUILD-fix-round-2 (re-review A): the late-settle guard is HOISTED
-      // ABOVE the constructor. createBattleStage's FIRST statement is the
-      // module-global destroyActiveBattleStage(), so fix round 1's
-      // post-constructor guard still let an ORPHAN preload (this duel already
-      // degraded at the bound, was skipped, or unmounted) destroy a LATER
-      // duel's live stage — its 20 players gone, its layer map cleared (every
-      // subsequent showStep a silent no-op via setVisible's !nextPlayer
-      // early-return) — and silently steal freeze-hook ownership, before
-      // self-destructing. Guarding BEFORE the constructor means an orphan
-      // fires NO global side effect at all — it never constructs (so never
-      // constructs-then-destroys the 20 players either) and never touches
-      // the active stage or the freeze hook.
-      if (stageFailed || cancelled || !tugBarContainer.isConnected) return;
-      battleStage = createBattleStage({
-        treatment,
-        p1: { name: p1.name, element: p1.element, isNpc: p1.isNpc },
-        p2: { name: p2.name, element: p2.element, isNpc: p2.isNpc },
-        actors: { p1: actorP1, p2: actorP2 },
-        capes: { p1: capesP1, p2: capesP2 },
-        flags: { p1: flagP1, p2: flagP2 },
-      });
-      stageCenterContainer.replaceChildren(battleStage.root);
-      await battleStage.whenReady();
-    }
-
-    function fxFlagUrl(elementKey) {
-      // the bundle's element flag animation (fire/water/wind naming; Air is
-      // the game copy, wind the asset key -- R74)
-      return `../assets/cw-asset-bundle/lottie/${{ fire: 'fireFlag', water: 'waterFlag', air: 'windFlag' }[elementKey] || 'neutralFlag'}.json`;
-    }
+    playIntro();
+    playLoop();
+    // Fix round f5 (R78a/R78): the reference's player-ready beat also
+    // schedules voice-round-1 at +2.2s (soundManager.js:112); each round
+    // beat below schedules the next round's voice at +3.6s inside
+    // playRoundBeat itself (soundManager.js:136).
+    scheduleDuelReadyVoice();
 
     function stepAt(i) { return i >= 0 ? timeline[i] : null; }
 
     // A2 fix (f2): the reveal loop used to call `mountScreen()` -- a full
     // `#app.innerHTML = ''` teardown + rebuild of every node -- on EVERY
     // timeline step (up to 39 times in the worst case). The shell (tug-bar
-    // container, stage containers, controls row, round-cards container) is
+    // container, stage container, controls row, round-cards container) is
     // now built ONCE by `buildShell()`; every subsequent frame calls
     // `updateFrame()`, which only replaces the CONTENTS of those specific
-    // containers (`replaceChildren`), never tearing down the shell itself.
-    // CB-BUILD-005 tightens this further for the incumbent: the stage node
-    // itself (battleStage.root) is PERSISTENT -- created once with every
-    // state layer preloaded, patched only by visibility cross-fades.
-    let tugBarContainer, railLeftContainer, stageCenterContainer, railRightContainer, roundCardsContainer, skipBtnContainer, soundBtnContainer;
+    // containers (`replaceChildren`), never tearing down the shell itself
+    // (topbar, skip/sound buttons row structure) it doesn't need to.
+    let tugBarContainer, stageRowContainer, roundCardsContainer, skipBtnContainer, soundBtnContainer;
 
     function buildShell() {
       tugBarContainer = el('div', { class: 'cb-tugbar-container' });
-      railLeftContainer = el('div', { class: 'cb-rail-container' });
-      stageCenterContainer = el('div', { class: 'cb-stage-center' });
-      railRightContainer = el('div', { class: 'cb-rail-container' });
+      stageRowContainer = el('div', { class: 'cb-stage-row' });
       roundCardsContainer = el('div', { class: 'cb-round-cards-container' });
       skipBtnContainer = el('div', {});
       soundBtnContainer = el('div', {});
-
-      if (isIncumbent) {
-        // the reference's loading gate: arena-dark loader with a progress
-        // bar until every animation source is preloaded -- never a bare or
-        // white field, and the timeline does not start under it.
-        const arena = arenaSources(treatment);
-        stageCenterContainer.replaceChildren(el('div', { class: 'cb-arena-stage' }, [
-          el('div', { class: 'cb-stage-loader' }, [
-            arena.loader ? el('img', { class: 'cb-stage-loader-img', src: arena.loader, alt: '' }) : null,
-            el('div', { class: 'cb-stage-progress' }, [el('div', { class: 'cb-stage-progress-bar' })]),
-            el('div', { class: 'cb-micro' }, 'SUMMONING COMBATANTS…'),
-          ]),
-        ]));
-      }
 
       mountScreen([
         tugBarContainer,
@@ -607,25 +551,11 @@ export function mountDuel(ctx) {
         // all render within this same screen mount).
         compactMoneyTruth(ctx),
         el('div', { class: 'cb-battle-stage' }, [
-          el('div', { class: 'cb-stage-row' }, [railLeftContainer, stageCenterContainer, railRightContainer]),
+          stageRowContainer,
           el('div', { class: 'cb-tag-row', style: 'justify-content:space-between;' }, [skipBtnContainer, soundBtnContainer]),
           roundCardsContainer,
         ]),
       ]);
-    }
-
-    function momentNodeFor(step) {
-      if (!step) return null;
-      if (step.state === 'floorDrain') {
-        return renderFloorDrain({ candidate: step.candidate, loserName: lastOutcome.humanWon ? opponentSeat.name : character.name, treatment });
-      }
-      if (step.state === 'coinFlip') {
-        return renderCoinFlip({ candidate: step.candidate, p1Name: p1.name, p2Name: p2.name, winnerName: lastOutcome.humanWon ? character.name : opponentSeat.name });
-      }
-      if (step.state === 'prizeAward') {
-        return renderPrizeAward({ candidate: step.candidate, treatment, winOutcome });
-      }
-      return null;
     }
 
     function updateFrame() {
@@ -640,38 +570,44 @@ export function mountDuel(ctx) {
       });
       tugBarContainer.replaceChildren(tugBar);
 
-      if (isIncumbent && battleStage && !stageFailed) {
-        // CB-BUILD-005: persistent stage -- visibility cross-fades only.
-        const fxRound = outcome.rounds[(step && step.round ? step.round : 1) - 1];
-        battleStage.showStep(step, {
-          affinityElement: fxRound ? fxRound.move1 : p1.element,
-          p1WonRound: fxRound ? fxRound.result === 'WIN' : true,
-          winnerSide,
-        });
-        // R75 coverage-gap moments overlay the composite (arena and
-        // combatants stay live behind them -- no blank swap).
-        battleStage.setMomentOverlay(momentNodeFor(step));
-      } else if (!isIncumbent || stageFailed) {
-        // the alternates' provisional stage (R12/CB-BUILD-007), and the
-        // incumbent's last-resort degrade when NO shape source is reachable
-        // -- still the dark treatment field, never bare/white.
-        let stageMain = momentNodeFor(step);
-        if (!stageMain) {
-          const displayStep = step || { state: 'battleIdle' };
-          stageMain = el('div', { class: 'cb-stage-main' }, [
-            renderCombatant({ treatment, name: p1.name, element: p1.element, step: displayStep, side: 'p1', isNpc: p1.isNpc }),
-            el('div', { class: 'cb-vs-marker cb-micro' }, 'VS'),
-            renderCombatant({ treatment, name: p2.name, element: p2.element, step: displayStep, side: 'p2', isNpc: p2.isNpc }),
-            step && step.state === 'affinityFx' ? renderAffinityFx({ element: outcome.rounds[throughRound - 1] ? outcome.rounds[throughRound - 1].move1 : 'fire' }) : null,
-          ]);
-        }
-        stageCenterContainer.replaceChildren(stageMain);
+      let stageMain;
+      if (step && step.state === 'floorDrain') {
+        stageMain = renderFloorDrain({ candidate: step.candidate, loserName: lastOutcome.humanWon ? opponentSeat.name : character.name, treatment });
+      } else if (step && step.state === 'coinFlip') {
+        stageMain = renderCoinFlip({ candidate: step.candidate, p1Name: p1.name, p2Name: p2.name, winnerName: lastOutcome.humanWon ? character.name : opponentSeat.name });
+      } else if (step && step.state === 'prizeAward') {
+        stageMain = renderPrizeAward({ candidate: step.candidate, treatment, winOutcome });
+      } else if (useRig && rigStage) {
+        // CB-BUILD-005: the persistent rig stage IS the frame's stage —
+        // setStep toggles preloaded, recoloured players (cross-fade, no
+        // src swap, no fetch); an affinityFx step plays the cape FX pass.
+        const displayStep = step || { state: 'battleIdle' };
+        rigStage.setStep(displayStep, displayStep.state === 'affinityFx' ? affinityCapesForRound(displayStep.round) : {});
+        stageMain = rigStage.root;
+      } else {
+        const displayStep = step || { state: 'battleIdle' };
+        stageMain = el('div', { class: 'cb-stage-main' }, [
+          // CB-BUILD-007 track 1/R12: the alternates' placeholder stage
+          // carries a clearly-marked, honest provisional-art notice (this
+          // branch only ever runs for a non-incumbent treatment -- the
+          // incumbent's real rig stage is handled by the `useRig &&
+          // rigStage` branch above); renderProvisionalStageNotice returns
+          // null for any treatment without the line (defensive).
+          renderProvisionalStageNotice(treatment),
+          renderCombatant({ treatment, name: p1.name, element: p1.element, step: displayStep, side: 'p1', isNpc: p1.isNpc }),
+          el('div', { class: 'cb-vs-marker cb-micro' }, 'VS'),
+          renderCombatant({ treatment, name: p2.name, element: p2.element, step: displayStep, side: 'p2', isNpc: p2.isNpc }),
+          step && step.state === 'affinityFx' ? renderAffinityFx({ element: outcome.rounds[throughRound - 1] ? outcome.rounds[throughRound - 1].move1 : 'fire' }) : null,
+        ]);
       }
 
       const skipVisible = canSkip && !cancelled && stepIdx < timeline.length - 1;
 
-      railLeftContainer.replaceChildren(renderRail({ treatment, rounds: outcome.rounds, throughRound, perspective: 'p1' }));
-      railRightContainer.replaceChildren(renderRail({ treatment, rounds: outcome.rounds, throughRound, perspective: 'p2' }));
+      stageRowContainer.replaceChildren(
+        renderRail({ treatment, rounds: outcome.rounds, throughRound, perspective: 'p1' }),
+        stageMain,
+        renderRail({ treatment, rounds: outcome.rounds, throughRound, perspective: 'p2' }),
+      );
 
       skipBtnContainer.replaceChildren(skipVisible ? el('button', { class: 'cb-skip-btn', onClick: skip }, 'Skip \u203a') : el('span'));
       soundBtnContainer.replaceChildren(el('button', {
@@ -685,78 +621,65 @@ export function mountDuel(ctx) {
     function skip() {
       cancelled = true;
       clearTimeout(timerHandle);
-      stopLoop();
+      // Fix round f5/R78a: an abrupt jump cuts the one-shots (a mid-ring
+      // beat, every pending round voice) but the BED carries to the result
+      // card -- it no longer stops at the reveal's edge.
+      stopAllExceptBed();
       throughRound = 5;
       stepIdx = timeline.length - 1;
       finish();
     }
 
     function advance() {
-      if (cancelled || !tugBarContainer.isConnected) return;
+      if (cancelled) return;
       stepIdx += 1;
       if (stepIdx >= timeline.length) { finish(); return; }
       const step = timeline[stepIdx];
-      if (step.state === 'attack') {
-        // CB-BUILD-005: the reference triggers the round's fight sample and
-        // schedules the loop restart / next voice AT the attack (its
-        // onDuelPlayerRoundStart), 0-based round index.
-        scheduleRoundStart((step.round || 1) - 1);
-      }
       if (step.roundComplete) {
         throughRound = step.round;
+        playRoundBeat(step.round);
       }
       updateFrame();
       timerHandle = setTimeout(advance, step.ms);
     }
 
     function finish() {
-      stopLoop();
+      // Fix round f5/R78a: no stopLoop() here -- the bed plays on through
+      // the result card and the rest of the bracket (renderResult carries it).
       if (!cancelled) ctx.patchSession({ hasSeenDuelPlaythrough: true });
       phase = 'result';
       renderResult();
     }
 
-    function startTimeline() {
-      // Liveness guard: the preload is async, so the player may have
-      // navigated away (or skipped) before it settled -- a mount that is no
-      // longer in the document must not restart timers or the sound bed
-      // (the unmount teardown already cleared/stopped everything).
-      if (cancelled || !tugBarContainer.isConnected) return;
-      // CB-BUILD-005: the reference starts sound at onDuelPlayerReady --
-      // only once every animation source is preloaded (intro now, loop at
-      // +1.8s, round-1 voice at +2.2s).
-      scheduleDuelStart();
-      updateFrame();
-      // R76: "the bar holds readable for one second before round one." (A2:
-      // one source for this expression -- presentationTimeline.js's
-      // preRoundHoldMs, also what totalDurationMs(steps, cadenceMs) counts.)
-      timerHandle = setTimeout(advance, preRoundHoldMs(cadenceMs));
-    }
-
     buildShell();
+    // R76: "the bar holds readable for one second before round one." (A2:
+    // one source for this expression -- presentationTimeline.js's
+    // preRoundHoldMs, also what totalDurationMs(steps, cadenceMs) counts.)
     updateFrame();
-    if (isIncumbent) {
-      // R74: preload EVERYTHING, then play -- the timeline never starts over
-      // a half-loaded stage, and nothing fetches once it starts.
-      // CB-BUILD-fix-round-1 #8: the gate is BOUNDED — a preload that
-      // rejects OR outlives STAGE_PRELOAD_TIMEOUT_MS degrades to the
-      // existing stageFailed path (dark provisional field; duel watchable,
-      // result card reachable) instead of stranding the player on the
-      // loader. The happy path is unchanged: a preload that settles in time
-      // starts the timeline exactly as before.
-      boundStagePreload(prepareIncumbentStage())
-        .then((gate) => { if (!gate.ok) stageFailed = true; })
-        .then(() => startTimeline());
+    if (useRig && rigStage) {
+      // CB-BUILD-005/R74: the timeline starts only once EVERY animation
+      // source is preloaded and painted (the reference gated its chain on
+      // isAnimationReady the same way; its loader shows real progress until
+      // then). A load failure never strands the duel: the stage degrades
+      // (loadout fallback / nameplates-over-arena) and the reveal proceeds.
+      rigStage.whenReady.catch(() => {}).then(() => {
+        if (cancelled || phase !== 'reveal') return;
+        updateFrame();
+        timerHandle = setTimeout(advance, preRoundHoldMs(cadenceMs));
+      });
     } else {
-      startTimeline();
+      timerHandle = setTimeout(advance, preRoundHoldMs(cadenceMs));
     }
   }
 
   function renderResult() {
-    stopAll();
-    // CB-BUILD-005: the reveal is over -- release the persistent stage's
-    // players (mountScreen below removes its DOM; this stops the tickers).
-    destroyActiveBattleStage();
+    // Fix round f5/R78a [LAW]: the bed CARRIES onto the result card (it used
+    // to stopAll() here -- the reviewer's finding: audio existed only during
+    // the reveal). One-shot round samples ring out naturally, as the 2019
+    // client let them; carryBed() keeps the loop sounding -- and STARTS it
+    // for a path that never ran the reveal (a legacy replay-unavailable duel
+    // commits straight to this card).
+    carryBed();
     const outcome = reorientOutcome(lastOutcome.outcome, lastOutcome.humanIsSeatA);
     const combatant = lastOutcome.combatants.find((c) => c.characterId === character.id);
     const opponentCombatant = lastOutcome.combatants.find((c) => c.characterId !== character.id);
@@ -812,6 +735,9 @@ export function mountDuel(ctx) {
 
     const rows = [
       truthBadge(ctx), // C7/R8a: the result card shows real money movement (stakes are play-money units, but the transfer numbers are exactly the kind of "money figure" R8a's line must sit beside)
+      // Fix round f5/R78a: the bed is sounding on this card now -- the
+      // visible mute control comes with it.
+      el('div', { class: 'cb-tag-row', style: 'justify-content:flex-end;' }, [soundToggleButton()]),
       renderResultCard({
         treatment, humanWon, outcome,
         p1Name: character.name, p2Name: opponentSeat.name,
@@ -884,8 +810,10 @@ export function mountDuel(ctx) {
     // intermission starts) with one covering THIS timer instead --
     // navigating away during the intermission must stop it from
     // eventually calling `ctx.router.navigate('duel')` into a screen the
-    // player already left.
-    ctx.router.onUnmount(() => clearInterval(intermissionTimer));
+    // player already left. Fix round f5/R78a: the bed sounds through the
+    // intermission too, so this teardown is route-aware the same way the
+    // mount-time one is -- carry to a bracket-context route, stop otherwise.
+    ctx.router.onUnmount(() => { clearInterval(intermissionTimer); releaseAudioForRoute(ctx.router.current()); });
 
     function boardSnapshot() {
       return bracket.rounds.map((round, ri) => el('div', {}, [
@@ -905,9 +833,11 @@ export function mountDuel(ctx) {
     function render() {
       const remainingMs = Math.max(0, intermission.endsAt - virtualNow());
       mountScreen([
-        el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark), el('span', { class: 'cb-timer cb-data' }, `${Math.ceil(remainingMs / 1000)}s`)]),
+        // Fix round f5/R78a: the bed sounds through the intermission (20-30s)
+        // -- the visible mute rides in the topbar.
+        el('div', { class: 'cb-topbar' }, [el('span', { class: 'cb-logo' }, treatment.logoMark), el('span', { class: 'cb-timer cb-data' }, `${Math.ceil(remainingMs / 1000)}s`), soundToggleButton()]),
         el('h2', {}, 'Intermission'),
-        el('p', { class: 'cb-prose cb-prose-small' }, 'The updated board:'),
+        el('p', { class: 'cb-micro' }, 'The updated board:'),
         el('div', { class: 'cb-bracket-tree' }, boardSnapshot()),
         el('div', { class: 'cb-card' }, [
           el('div', { class: 'cb-micro' }, 'NEXT OPPONENT'),
@@ -916,7 +846,10 @@ export function mountDuel(ctx) {
                 nextOpponent.name,
                 nextOpponent.kind === 'npc' ? el('span', { class: 'cb-npc-tag' }, treatment.copy.npcTagLabel) : null,
               ])
-            : el('div', { class: 'cb-prose cb-prose-small', style: 'margin-top:4px;' }, 'Still being decided elsewhere in the bracket…'),
+            // C6/R11 [LAW]: a full sentence belongs on the PROSE face
+            // (--font-prose), never the data face (--font-data, .cb-micro
+            // -- figures/tags/timestamps only). This is a sentence.
+            : el('div', { class: 'cb-prose', style: 'margin-top:4px;' }, 'Still being decided elsewhere in the bracket…'),
         ]),
       ]);
     }
@@ -941,20 +874,11 @@ export function mountDuel(ctx) {
     if (ctx.game.isKilled()) { handleKillMidDuel(); return; }
     const remaining = window_.deadline - Date.now();
     if (remaining <= 0) {
-      // CB-BUILD-009/R81: master rule now keeps the player's own picks on
-      // auto-commit -- only the still-unpicked rounds fill uniform-random
-      // (previously `sync.autoCommitHesitated` overwrote EVERY round with
-      // a fresh random pick, discarding any in-progress selection, which
-      // read as "the game changing the player's moves"). `computeAutoCommitMoves`
-      // (this file, pure + unit-tested) does the merge; the window's
-      // commits bag is written directly, in the SAME shape
-      // `sync.autoCommitHesitated` used, so `recordCommit`'s idempotency
-      // check inside `commit()` and the disconnect-safe resume path above
-      // both still see exactly what they expect.
-      if (!window_.commits[humanSeatIndex]) {
-        window_.commits[humanSeatIndex] = { moves: computeAutoCommitMoves(moves, elementIndex), hesitated: true, ts: Date.now() };
-      }
-      const autoMoves = window_.commits[humanSeatIndex];
+      // CB-BUILD-009r/R81: the owner reversed the preserve-partial rule
+      // (2026-09-15) -- a missed clock now commits a uniform-random FIVE-move
+      // hand, the WHOLE hand, including any rounds already picked. No
+      // picked-moves are passed in; nothing survives.
+      const autoMoves = sync.autoCommitHesitated(window_, humanSeatIndex, Date.now(), Math.random);
       commit(autoMoves.moves, true);
     } else {
       // A17: targeted update, not a full rebuild, on every 500ms tick.

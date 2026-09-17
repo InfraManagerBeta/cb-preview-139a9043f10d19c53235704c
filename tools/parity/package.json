@@ -1,0 +1,20 @@
+{
+  "name": "cb-parity-harness",
+  "private": true,
+  "type": "module",
+  "description": "AC1 battle-fidelity verification: recolour identity vs the bundle renders (A), reference-pipeline recolour fidelity for arbitrary summoned wizards (B), timing vs the reference constants (C), the four AC1 battle-fidelity criteria \u2014 distinctness, arena-composite, no-blank, FX-fidelity \u2014 measured on rendered output with declared tolerances and explicit PASS/FAIL verdicts (D), and CB-BUILD-015's id-keyed parity: given a wizard id, the 2019 reference pipeline and the new engine both run for that SAME id and are diffed per duel state against pre-registered tolerances (E). Node-runnable, no browser.",
+  "scripts": {
+    "check-a": "node check-a-gifs.mjs",
+    "check-b": "node check-b-wizards.mjs",
+    "check-c": "node check-c-timing.mjs",
+    "all": "node check-a-gifs.mjs && node check-b-wizards.mjs && node check-c-timing.mjs && node check-d-ac1.mjs && node check-e-idparity.mjs",
+    "check-d": "node check-d-ac1.mjs",
+    "check-e": "node check-e-idparity.mjs",
+    "parity": "node parity-wizard.mjs"
+  },
+  "dependencies": {
+    "canvas": "^3.2.0",
+    "jsdom": "^29.0.0",
+    "omggif": "^1.0.10"
+  }
+}

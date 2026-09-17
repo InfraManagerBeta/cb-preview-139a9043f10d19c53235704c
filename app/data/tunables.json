@@ -72,7 +72,7 @@
 
   "timers": {
     "commitWindowSec": { "default": 60, "alternatives": [45, 90], "_oItem": "O5" },
-    "lobbyHumanWaitSec": { "default": 60, "alternatives": [30, 120], "_oItem": "O6" },
+    "lobbyHumanWaitSec": { "default": 30, "alternatives": [60, 120], "_oItem": "O6" },
     "revealCadenceMs": { "default": 1170, "alternatives": [900, 1500], "_oItem": "O9" },
     "npcJoinDelayRangeSec": [2, 10],
     "npcCommitRangeSec": [10, 45],

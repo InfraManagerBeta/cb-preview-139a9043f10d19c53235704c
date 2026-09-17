@@ -1,55 +1,18 @@
-// app/ui/components/battle/assets.js — R74/R78: the incumbent's battle
-// visuals come from the bundle's arena/FX sources and the parametric rig
-// (rig.js/shapes.js/player.js — CB-BUILD-005/006); the bundle's nine
-// canonical GIFs are PARITY REFERENCE ONLY and are never loaded at runtime.
-// The two alternate treatments have no bundled character art (R12: art
-// sources are theme-bound), so they render a clean treatment-colored stage
-// with inline, currentColor-tinted SVG element glyphs instead (a
-// placeholder-art alternate, acceptable for this artifact per the brief, so
-// long as the timeline/states/copy stay treatment-correct). All paths are
-// relative to the HTML document (app/index.html or app/console.html), never
-// absolute "/" (GitHub Pages subpath safety).
+// app/ui/components/battle/assets.js — R74/R78: the incumbent's combatant
+// animation layer is the parametric rig (rigStage.js/rigAssets.js — each
+// summoned wizard's own shape set recoloured to its own palette; the nine
+// bundle GIFs are parity reference only, CB-BUILD-005/006, and are no
+// longer referenced by any runtime path). The two alternate treatments have
+// no bundled character art (R12: art sources are theme-bound), so they
+// render a clean treatment-colored stage with inline, currentColor-tinted
+// SVG element glyphs instead (a placeholder-art alternate, acceptable for
+// this artifact per the brief, so long as the timeline/states/copy stay
+// treatment-correct). All paths are relative to the HTML document
+// (app/index.html or app/console.html), never absolute "/" (GitHub Pages
+// subpath safety).
 
-const BUNDLE_BASE = '../assets/cw-asset-bundle/';
-const ICON_BASE = '../assets/cw-asset-bundle/ui-icons/affinity/colour/';
-const PORTRAIT_BASE = '../assets/cw-asset-bundle/client-static/img/wizards/';
-
-// ---- CB-BUILD-005: the arena composite sources ------------------------------
-
-/** The treatment's arena art (R74: composited on the treatment's arena,
- * never a bare or white field). The incumbent's is the bundle's fight-scene
- * background; an alternate (no bundled art, R12/CB-BUILD-007) returns null
- * and the stage renders its provisional treatment-colored field instead —
- * dark treatment chrome, still never bare/white. */
-export function arenaSources(treatment) {
-  if (treatment.id === 'incumbent') {
-    return {
-      background: `${BUNDLE_BASE}client-static/img/fightScene/fightBG.svg`,
-      gridPattern: `${BUNDLE_BASE}client-static/img/general/gridPattern.svg`,
-      loader: `${BUNDLE_BASE}client-static/img/fightScene/loader.gif`,
-    };
-  }
-  return { background: null, gridPattern: null, loader: null, provisional: true };
-}
-
-// ---- CB-BUILD-005: the element/affinity FX pass sources ----------------------
-// R74: "Element and affinity effects render to the fidelity of the bundle's
-// FX sources, not a flat color fill." The pass is layered from three real
-// sources: the per-element backdrop art (client-static/img/duel/), the
-// element flag animation (lottie/), and the per-element/per-tier affinity
-// cape overlay from the shape library (see rig.js#affinityCapeObjectName).
-
-const ELEMENT_TO_BUNDLE_KEY = { fire: 'fire', water: 'water', air: 'wind' }; // the bundle files say "wind"; all COPY says Air (R74)
-
-export function elementBackdropUrl(elementKey, won = true) {
-  const key = ELEMENT_TO_BUNDLE_KEY[elementKey] || 'neutral';
-  return `${BUNDLE_BASE}client-static/img/duel/wizard-bg-${key}-${won ? 'win' : 'lose'}.svg`;
-}
-
-export function elementFlagUrl(elementKey) {
-  const key = ELEMENT_TO_BUNDLE_KEY[elementKey];
-  return `${BUNDLE_BASE}lottie/${key ? `${key}Flag` : 'neutralFlag'}.json`;
-}
+const ICON_BASE = '../assets/cw/ui-icons/affinity/colour/';
+const PORTRAIT_BASE = '../assets/cw/client-static/img/wizards/';
 
 const ELEMENT_TO_ICON_FILE = { fire: 'fire.png', water: 'water.png', air: 'wind.png' };
 
@@ -106,5 +69,5 @@ export function elementSvgMarkup(elementKey, size = 20) {
 }
 
 export function soundUrl(name) {
-  return `../assets/cw-asset-bundle/sound/${name}`;
+  return `../assets/cw/sound/${name}`;
 }

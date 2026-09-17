@@ -7,15 +7,6 @@
 // #1 ranking in every case).
 import { el, cheddar, money } from '../dom.js';
 
-// CB-BUILD-fix-round-2 (re-review B): the moment captions render as
-// <div class="cb-moment-caption">, never as <p> body copy.
-// CB-BUILD-fix-round-3 (R11): the captions are AUTHORED SENTENCES a player
-// reads ("{loser} — struck from the ledger."), not figures/tags, so the
-// caption class itself now carries the PROSE face in battle.css
-// (.cb-moment-caption { font-family: var(--font-prose); … }) with a 12px
-// top margin restoring the clearance the old <p> UA margin gave it. The
-// class is caption-only, so the reclass touches nothing else.
-
 /** Floor drain (R55/R75): "an erasure treatment in the Narrator-accent
  * color composed from Lose and the bundle's mold material." */
 export function renderFloorDrain({ candidate = 1, loserName, treatment }) {
@@ -23,14 +14,14 @@ export function renderFloorDrain({ candidate = 1, loserName, treatment }) {
     // Candidate 2: "Ledger Stamp" -- a rubber-stamp slam, Narrator-accent ink.
     return el('div', { class: 'cb-moment cb-moment-floordrain cb-moment-candidate-2' }, [
       el('div', { class: 'cb-stamp' }, 'VOID'),
-      el('div', { class: 'cb-moment-caption' }, `${loserName} — struck from the ledger.`),
+      el('p', { class: 'cb-moment-caption' }, `${loserName} — struck from the ledger.`),
     ]);
   }
   // Candidate 1 (default): "Erosion Wipe" -- desaturate + wipe in the
   // Narrator-accent color, composed with the Lose state.
   return el('div', { class: 'cb-moment cb-moment-floordrain cb-moment-candidate-1' }, [
     el('div', { class: 'cb-erosion-wipe' }),
-    el('div', { class: 'cb-moment-caption' }, `${loserName} — drained to nothing.`),
+    el('p', { class: 'cb-moment-caption' }, `${loserName} — drained to nothing.`),
   ]);
 }
 
@@ -44,13 +35,13 @@ export function renderCoinFlip({ candidate = 1, p1Name, p2Name, winnerName }) {
         el('div', { class: 'cb-strobe-half left' }, p1Name),
         el('div', { class: 'cb-strobe-half right' }, p2Name),
       ]),
-      el('div', { class: 'cb-moment-caption' }, `${winnerName} advances — coin flip.`),
+      el('p', { class: 'cb-moment-caption' }, `${winnerName} advances — coin flip.`),
     ]);
   }
   // Candidate 1 (default): "Spinning Coin" -- a 3D-flipping disc.
   return el('div', { class: 'cb-moment cb-moment-coinflip cb-moment-candidate-1' }, [
     el('div', { class: 'cb-coin' }, [el('div', { class: 'cb-coin-face front' }, 'H'), el('div', { class: 'cb-coin-face back' }, 'T')]),
-    el('div', { class: 'cb-moment-caption' }, `${winnerName} advances — coin flip.`),
+    el('p', { class: 'cb-moment-caption' }, `${winnerName} advances — coin flip.`),
   ]);
 }
 

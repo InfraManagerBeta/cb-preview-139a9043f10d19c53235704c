@@ -61,7 +61,9 @@ export function defaultOverrides() {
 
     // ---- presentation coverage-gap moment choices (R75) ----
     presentationMoments: { floorDrain: 1, coinFlip: 1, prizeAward: 1 }, // candidate # (1 or 2)
-    soundEnabled: false,
+    // CB-BUILD-016/R78a [LAW]: sound is ON by default (the prior false was
+    // a guess no rule backed). An explicit mute persists as false here.
+    soundEnabled: true,
 
     // run seed, for reproducibility across a console session
     runSeed: 20260910,

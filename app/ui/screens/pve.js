@@ -23,7 +23,7 @@ function renderRosterPanel(ctx, treatment) {
   const canonical = (treatment.seedRoster || []).filter((r) => r.canonical);
   return el('div', { class: 'cb-card' }, [
     el('div', { class: 'cb-display', style: 'font-size:16px;' }, 'House roster'),
-    el('p', { class: 'cb-prose cb-prose-small' }, card.fairTestLine),
+    el('p', { class: 'cb-legal' }, card.fairTestLine),
     ...canonical.map((r) => {
       const rec = records[r.name] || { w: 0, l: 0 };
       return el('div', { class: 'cb-round-row' }, [
@@ -98,7 +98,14 @@ export function mountPve(ctx) {
             if (err instanceof KillSwitchFrozenError) { renderKillStopBanner(ctx); return; }
             throw err;
           }
-          ctx.toast(result.playerDelta >= 0 ? `+${cheddar(result.playerDelta)}` : `${cheddar(result.playerDelta)}`);
+          // N-C6/R11: this toast is a genuine BARE FIGURE (e.g. "+50C" /
+          // "-30C") with no sentence around it at all -- the data face is
+          // the correct, intentional home for it (R11 itself: "the data
+          // face carries figures ... only"), so it opts explicitly back
+          // onto `.cb-toast-figure` instead of inheriting `.cb-toast`'s
+          // new prose-face default (which is right for every OTHER toast
+          // in this app, all of which are full sentences).
+          ctx.toast(result.playerDelta >= 0 ? `+${cheddar(result.playerDelta)}` : `${cheddar(result.playerDelta)}`, { figure: true });
           if (result.opponentZeroed) {
             const fresh = ctx.game.startPveOpponent(c.id);
             ctx.patchSession({ pveOpponent: fresh });

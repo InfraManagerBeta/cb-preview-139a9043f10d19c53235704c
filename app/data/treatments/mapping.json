@@ -42,6 +42,33 @@
       "incumbent": "an ancient cheese archivist / dry, precise, and British (Terry Pratchett calibration)",
       "adjacent": "the yard scrutineer who logs every bout in the scrap ledger / deadpan, exact, and mechanical (shop-manual calibration)",
       "far": "the commission scorekeeper at ringside / terse, plain, and broadcast-neutral"
+    },
+    "adCreative": {
+      "_r12r18r22": "CB-BUILD-007 track 1/R12/R18/R22: each treatment's ad + landing creative, as product data (treatment.json's own adCreative block); recorded here for one-screen comparison, same convention as colorRoles/heroFace above. fixedMessage is R11-LAW (identical in all three); headline/body/cta are theme-bound.",
+      "fixedMessage": "Outsmart for real money. (identical string in all three treatments' adCreative.fixedMessage, matching copy.acquisitionMessage)",
+      "headline": { "incumbent": "Outsmart. Outlast. Out-cheese everyone.", "adjacent": "Build sharper. Win the yard.", "far": "Read your man. Take the purse." },
+      "cta": { "incumbent": "Summon Now", "adjacent": "Build Your Bot", "far": "Sign In" },
+      "provisionalStageLine": {
+        "_note": "R12: the alternates' battle stage carries a clearly-marked, honest 'provisional presentation, final art pending' line (behind the click, on the alternates' placeholder stage only); the incumbent has real rig art and carries no such line.",
+        "incumbent": null,
+        "adjacent": "Provisional rig — final chassis art pending.",
+        "far": "Provisional card art — final fighter look pending."
+      }
+    },
+    "otherThemeVoicedNotices": {
+      "_note": "R13 fold (N-A2 re-probe round): two more theme-bound in-frame copy strings, recorded here for the same one-screen comparison `provisionalStageLine` above already gets -- each substitutes only the role noun (wizards/bots/fighters, the workingTitle) through the identical sentence shape, same as roleNouns' other mapped copy.",
+      "screenerNotAvailableMessage": {
+        "_note": "R70: the screener's jurisdiction-not-permitted outcome (screener.js) -- 'nothing was charged and nothing was saved beyond this screening result' is R11-fixed wording; only the product's workingTitle substitutes.",
+        "incumbent": "Cheddar Battles is not available in your region. Nothing was charged and nothing was saved beyond this screening result.",
+        "adjacent": "Scrapyard Kings is not available in your region. Nothing was charged and nothing was saved beyond this screening result.",
+        "far": "Undercard is not available in your region. Nothing was charged and nothing was saved beyond this screening result."
+      },
+      "stageDegradedNotice": {
+        "_note": "R74/§12/R83 (F2's A-loader fix): a total rig-asset load failure degrades honestly -- no frozen loader, no hidden stage -- this notice replaces the stage; only the role noun (wizards/bots/fighters) and its theme-appropriate stage-entrance verb substitute through the identical 'the duel/bout still plays out right here, blow by blow' sentence shape.",
+        "incumbent": "The wizards couldn't take the stage this time — the duel still plays out right here, blow by blow.",
+        "adjacent": "The bots couldn't roll onto the stage this time — the duel still plays out right here, blow by blow.",
+        "far": "The fighters couldn't make their walkout this time — the bout still plays out right here, blow by blow."
+      }
     }
   },
 
@@ -52,7 +79,7 @@
     "elementLabels": "Fire / Water / Air kept as the literal label words in every treatment (R74: 'Wind is Air in all copy'); only the icon MOTIF (elements.<el>.iconMotif) is theme-flavored, per t3's brief ('element labels themed if the card says so -- labels only, mechanics fixed'). Neither built card calls for renaming the words themselves.",
     "mechanicalVocabulary": "Generic engine/state-machine words that are not one of the four role nouns stay identical across treatments, the same way 'Round' is fixed in the Narrator's Voice rules: 'duel', 'bracket', 'round', 'tier', the SITTING state heading, the ledger (R61's 'RETIRE TO THE LEDGER' / 'Holds nothing. The ledger will take the name.' -- the permanent record-keeper concept, distinct from the floor/drain role noun), NPC/HESITATED tags.",
     "law-literalUIText": "Strings the PRD's LAW text prescribes by exact literal wording, held identical in every treatment: R77's result-card headers 'CLAIMED'/'DRAINED'; R56's win-screen line 'DUEL WON'; R67's Load Funds heading 'PLAY CASH ONLY \u00b7 How much would you like to deposit?'.",
-    "genericChrome": "Copy strings that carry no theme-bound token in the incumbent's original text (no role noun, no world reference) are kept identical rather than manufacturing a difference for its own sake: cashOutHeading/Button, walletHeading, withdrawHeading, reserveHeading/Button/Confirmed, loadFundsContinue/Back, moneyTruthBadge, prizeLine, screenerAgeQuestion/JurisdictionQuestion, signupGrantNotice, tieLineAdvance/Eliminated, npcTagLabel, hesitatedTagLabel."
+    "genericChrome": "Copy strings that carry no theme-bound token in the incumbent's original text (no role noun, no world reference) are kept identical rather than manufacturing a difference for its own sake: cashOutHeading/Button, walletHeading, withdrawHeading, reserveHeading/Button/Confirmed, loadFundsContinue/Back, moneyTruthBadge, prizeLine, signupGrantNotice, tieLineAdvance/Eliminated, npcTagLabel, hesitatedTagLabel. (A1/fix-round: screenerAgeQuestion/JurisdictionQuestion were removed outright, not carried forward -- dead self-report copy the R70 fix (C1/C2) outlawed; screener.js stopped reading them at CB-BUILD-001.)"
   },
 
   "conflicts": {

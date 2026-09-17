@@ -46,17 +46,7 @@ export function renderRoundCards({ rounds, throughRound, treatment }) {
 /** The result card: CLAIMED/DRAINED header, BOTH combatants' before/after/
  * delta (C8/R77 -- `lastOutcome.combatants` carries both sides' data, and
  * the card now shows both, not just the human's own), score string with
- * draws, verbatim tie line (from the active treatment's copy).
- * CB-BUILD-fix-round-2 (re-review B): the card's lines are result FIGURES
- * (stakes, deltas, the score string, the verbatim score record) —
- * data-face by role per CB-BUILD-004's build-forward ("reserve --font-data
- * for figures … result deltas"), so they render as <div>s, never as <p>
- * body copy.
- * CB-BUILD-fix-round-3 (R11): the true-tie line is the exception — it is
- * three AUTHORED SENTENCES a player reads ("All square — coin flip. You
- * advance. No cheddar transferred."), not a figure, so THAT node wears the
- * prose face (.cb-prose .cb-prose-small); the sibling figure rows
- * (combatantRow, Score, delta) stay data-face. */
+ * draws, verbatim tie line (from the active treatment's copy). */
 export function renderResultCard({ treatment, humanWon, outcome, p1Name, p2Name, stakeBefore, stakeAfter, opponentStakeBefore, opponentStakeAfter, floorDrain }) {
   const headerClass = humanWon ? 'claimed' : 'drained';
   const header = humanWon ? treatment.copy.resultClaimedHeader : treatment.copy.resultDrainedHeader;
@@ -67,7 +57,7 @@ export function renderResultCard({ treatment, humanWon, outcome, p1Name, p2Name,
   function combatantRow(name, before, after, isHuman) {
     if (before == null || after == null) return null;
     const d = after - before;
-    return el('div', { class: 'cb-result-line' }, [
+    return el('p', { class: 'cb-result-line' }, [
       el('span', {}, `${name}${isHuman ? ' (you)' : ''}: `),
       `${cheddar(before)} \u2192 ${cheddar(after)} `,
       el('span', { style: d >= 0 ? 'color:var(--cb-green);' : 'color:var(--cb-red);' }, `${d >= 0 ? '+' : ''}${cheddar(d)}`),
@@ -77,11 +67,21 @@ export function renderResultCard({ treatment, humanWon, outcome, p1Name, p2Name,
   return el('div', { class: `cb-card cb-result-card ${headerClass}${floorDrain ? ' floor-drain' : ''}` }, [
     el('div', { class: 'cb-result-header' }, header),
     outcome.trueTie
-      ? el('div', { class: 'cb-prose cb-prose-small' }, treatment.copy.tieLine.replace('{ADVANCE_OR_ELIMINATED}', humanWon ? treatment.copy.tieLineAdvance : treatment.copy.tieLineEliminated))
+      // N-C6/R11 [LAW] re-probe fix: `copy.tieLine` is a full, verbatim
+      // sentence ("All square — coin flip. You advance. No cheddar
+      // transferred.") from the active treatment's own data, not a
+      // figure/tag -- the C6 sweep only ever inspected literal JS string
+      // children, so a data-driven (treatment.copy.*) sentence like this
+      // one was invisible to it entirely. `cb-prose` rides alongside
+      // `cb-result-line` (a compound-selector CSS override, base.css) so
+      // this ONE row moves to the prose face while the card's other two
+      // `cb-result-line` rows (the combatant before/after figures, the
+      // "Score: W-L" line -- genuine data, not sentences) stay put.
+      ? el('p', { class: 'cb-result-line cb-prose' }, treatment.copy.tieLine.replace('{ADVANCE_OR_ELIMINATED}', humanWon ? treatment.copy.tieLineAdvance : treatment.copy.tieLineEliminated))
       : null,
-    el('div', { class: 'cb-result-line' }, `Score: ${scoreString}`),
+    el('p', { class: 'cb-result-line' }, `Score: ${scoreString}`),
     combatantRow(p1Name || 'You', stakeBefore, stakeAfter, true),
     combatantRow(p2Name || 'Opponent', opponentStakeBefore, opponentStakeAfter, false),
-    el('div', { class: 'cb-result-delta', style: humanWon ? 'color:var(--cb-green);' : 'color:var(--cb-red);' }, `${delta >= 0 ? '+' : ''}${cheddar(delta)}`),
+    el('p', { class: 'cb-result-delta', style: humanWon ? 'color:var(--cb-green);' : 'color:var(--cb-red);' }, `${delta >= 0 ? '+' : ''}${cheddar(delta)}`),
   ]);
 }
