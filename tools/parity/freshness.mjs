@@ -176,6 +176,10 @@ export function freshnessBanner({ commit, shortCommit, ranAt }) {
     '> node tools/parity/freshness.mjs',
     '> ```',
     '>',
+    '> (In a SHALLOW clone the companion assertion — that the commit above is an',
+    '> ancestor of HEAD — degrades to a skip, since the object is not there to',
+    '> compare; the digests still bind, being hashes of the files in front of you.)',
+    '>',
     `> Re-make the run with \`${RERUN_COMMAND}\`.`,
   ].join('\n');
 }

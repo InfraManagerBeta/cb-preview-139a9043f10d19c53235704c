@@ -7,6 +7,20 @@ import { hypothesisCard } from '../../engine/hypotheses.js';
 import { openLoadFundsSheet } from '../components/money-sheets.js';
 import { renderReserveOffer } from '../components/reserveOffer.js';
 import { soundToggleButton, releaseAudioForRoute } from '../components/battle/sound.js';
+import { renderKillStopBanner } from '../components/chrome.js';
+
+// Round-4 fix g4 (CB-BUILD-016/AC0, final-gate tester CRUCIAL): the same
+// stationary kill poll bracket-board.js carries -- duel.js's "C16/AC0: the
+// kill switch must stop an in-flight duel -- not just gate navigation between
+// screens" principle, applied to the last bracket-context screen that lacked
+// it. A player parked here with the bed carried in kept hearing it
+// indefinitely on a kill; now the screen itself detects the kill within one
+// poll interval, silences everything, and lands the stop banner -- no
+// navigation required. Module-level handle: renderReserveOffer's refresh and
+// this file's own re-mount callbacks re-call mountSitting IN PLACE (no
+// unmount runs) -- the re-mount clears the previous poll, never stacks.
+const KILL_POLL_MS = 500; // duel.js's own tick()/showIntermission() cadence
+let killPollTimer = null;
 
 /** A19: the cash-out toast amount -- `cashUSD` (computed once, before the
  * cash-out call, from the character's pre-cash-out stake) is always the
@@ -23,6 +37,11 @@ export function mountSitting(ctx) {
   const session = ctx.refreshSession();
   const character = ctx.game.snapshot().characters[session.activeCharacterId];
 
+  // g4: an in-place re-mount (renderReserveOffer's refresh / this file's own
+  // remount callbacks) arrives without any unmount -- clear before restarting.
+  clearInterval(killPollTimer);
+  killPollTimer = null;
+
   // Fix round f5/R78a [LAW]: an eliminated player lands HERE from the loss
   // result card with the bed still sounding (the bed plays through the
   // bracket, including post-elimination spectating -- the "Watch the
@@ -33,11 +52,31 @@ export function mountSitting(ctx) {
   // guard clause below -- that guard navigates to lobby-entry, and when the
   // registration came after it, the redirect left NO teardown to run, so a
   // carried bed kept sounding on lobby-entry.
+  // g4: the kill poll rides in the SAME registration (router.onUnmount
+  // REPLACES the registered callback, so two separate calls would drop one).
   if (ctx.router && typeof ctx.router.onUnmount === 'function') {
-    ctx.router.onUnmount(() => releaseAudioForRoute(ctx.router.current()));
+    ctx.router.onUnmount(() => {
+      clearInterval(killPollTimer);
+      killPollTimer = null;
+      releaseAudioForRoute(ctx.router.current());
+    });
   }
 
   if (!character) { ctx.router.navigate('lobby-entry'); return; }
+
+  // g4 (CB-BUILD-016/AC0): detect the kill WHILE MOUNTED, on both branches
+  // below (the emptied card and the three-choice screen are equally
+  // stationary). renderKillStopBanner stopAll()s before rendering and never
+  // touches soundEnabled (a pre-kill mute survives); the poll clears itself
+  // before rendering -- it must never keep firing under the banner.
+  killPollTimer = setInterval(() => {
+    if (!ctx.game.isKilled()) return;
+    clearInterval(killPollTimer);
+    killPollTimer = null;
+    renderKillStopBanner(ctx);
+  }, KILL_POLL_MS);
+  // Never hold a Node process open (same discipline as sound.js's timers).
+  if (killPollTimer && typeof killPollTimer.unref === 'function') killPollTimer.unref();
 
   if (economy.isEmptied(character)) {
     // f4/N2 fix: a topped-out (T6) champion also lands here -- its stake

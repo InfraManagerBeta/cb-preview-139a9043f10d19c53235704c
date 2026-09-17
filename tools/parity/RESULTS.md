@@ -20,8 +20,12 @@ each instance is handed a **node-canvas 2D context** in place of a DOM
 container (no mount, no layout, no CSS — see "Residual" below). What headless
 execution cannot measure is named in "Residual" below — nothing is claimed
 beyond the verdict table. Committed results were produced in this repo's CI
-container (Node v22.22.0); **all five recorded runs below were made at commit
-`0c43a0c`** — every run names the commit it was made at and digests the
+container (Node v22.22.0); **checks A, C, D and E below were re-run at commit
+`60478e0`** (fix round g5 widened their declared inputs — see "A recorded
+result is a claim about ONE tree" below — and every measured number came back
+identical; check B, whose declared inputs did not change, still carries its
+run at `0c43a0c`, which is an ancestor of this head) — every run names the
+commit it was made at and digests the
 sources it measured (`results/check-*.json` `.provenance`), and those digests
 are **asserted**, so a run that no longer describes the tree fails the root
 test suite instead of quietly reading as if it did (see "A recorded result is
@@ -213,7 +217,8 @@ Full deltas (incl. `timeline.ceilingByO9Arm`) in
   different-combo pairs run 68.87–73.51% (re-measured at `0c43a0c`: fix
   round f3's `deriveIdentity` change moved which combos the sampled ids
   resolve to, so these per-pair figures moved with it; every verdict number
-  above — the 32.54% floor included — is unchanged).
+  above — the 32.54% floor included — is unchanged, and the whole check was
+  re-run at `60478e0` in fix round g5 with every number identical).
 - **D2 arena-composite.** The actual arena source
   (`client-static/img/fightScene/fightBG.svg`) rasterized (100% ink — a
   drawn scene, not a bare field) and both combatants composited at the
@@ -293,7 +298,7 @@ both facts, and fails if a tolerance is edited without re-running).
 
 **The run** (recorded in `results/check-e-idparity.json`, reported per state
 per wizard in [`PARITY-REPORT.md`](PARITY-REPORT.md)): made at commit
-`0c43a0c` (nothing it measures uncommitted), `2026-09-17T02:39:03Z`, Node
+`60478e0` (nothing it measures uncommitted), `2026-09-17T04:02:18Z`, Node
 v22.22.0 — the
 canonical 2019 demo wizard (the pre-registered identity, combo
 `NEUTRAL-1-head01-cape01-hat01-wand01` from check A's own identification and
@@ -385,7 +390,7 @@ recolour is not merely self-consistent; it matches what the portraits meant.
 - **A recorded result is a claim about ONE tree — and the claim is GATED.**
   Every recorded run (A–E) records the commit it ran at, whether the tree was
   dirty, which of ITS OWN sources were uncommitted (`dirtySources` — always
-  empty here), and a sha256 of each harness source and each engine module it
+  empty here), and a sha256 of each harness source and each shipped input it
   measures (`results/check-*.json` `.provenance`; the per-check file lists are
   declared in `tools/parity/provenance.mjs` `CHECK_RUNS`).
   `app/tests/parity-harness.test.js` fails if a run was made with one of its
@@ -402,7 +407,37 @@ recolour is not merely self-consistent; it matches what the portraits meant.
   re-run them cannot be green and has to say so. `node
   tools/parity/freshness.mjs` (or `npm run freshness`) prints the same verdict
   per file for all five runs in one offline command, and
-  [`PARITY-REPORT.md`](PARITY-REPORT.md) opens with it.
+  [`PARITY-REPORT.md`](PARITY-REPORT.md) opens with it. In a SHALLOW clone the
+  ancestry assertion alone degrades to a skip (the commit object is not there
+  to compare against); the digests still bind, because they are hashes of the
+  files in front of you.
+- **A declared input is not "a .js file" — it is anything that decides a
+  recorded number** (fix round g5). The lists first read "code-level inputs
+  only … static assets are NOT digested", and the final-gate reviewer walked
+  two files straight through that gap: check D REGEX-PARSES
+  `app/styles/battle.css` for D2's stage geometry **and** for its
+  `noLayerBackground` criterion, and checks C, D and E read the O9 reveal
+  cadence out of `app/data/tunables.json`. Painting the combatant layer white
+  (the exact R74 violation D2 exists to catch), moving `homeLeftPct` from
+  −1.4% to −9.9%, or retuning O9 the sanctioned way (R85/§14, AC0 — tunables
+  plus both workbook mirrors) each left `node tools/parity/freshness.mjs`
+  saying FRESH and the root suite green over records asserting the old values.
+  Both files are declared now, and the same sweep added the rest of the class:
+  the nine bundle GIFs every check-A `matchPct` and check-C fps number is
+  measured against, the five portrait colour-slot SVGs the reference recolour
+  is parsed from, the arena source SVG D2 rasterizes, the vendored FX capes D4
+  falls back to, and two .js inputs next door (`presentationTimeline.js` for
+  check E's step windows, `dom.js` as the err-wide transitive import of the
+  stage). Deliberately NOT digested, each for a stated reason in
+  `provenance.mjs`: the bucket's animation documents (not in this tree at
+  all), `assets/rig/fallback/**` (zero fallback states in every recorded run),
+  and the `results/*.json` a later check reads (a record is not a source —
+  declaring one would make `npm run all` self-invalidating, since check A
+  rewrites its record before check E runs). Three tests hold the SCOPE itself:
+  a static scan that fails when a check reads a repo file by literal path
+  without declaring it, a directory-listing assertion so that ADDING a GIF or
+  a portrait is staleness too, and a negative control proving an edited
+  stylesheet or tunable is reported STALE and named.
 - **Device-matrix timing** (AC1's p95 visual-acknowledgment target on
   mid-range Android) is out of this harness's reach and is NOT claimed;
   the recolour cost measurement lives with the reviewer's findings and the

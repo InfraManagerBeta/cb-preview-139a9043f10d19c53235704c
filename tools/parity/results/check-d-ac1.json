@@ -1,17 +1,20 @@
 {
-  "ranAt": "2026-09-17T02:34:48.077Z",
+  "ranAt": "2026-09-17T03:55:30.178Z",
   "node": "v22.22.0",
   "provenance": {
     "check": "D",
     "available": true,
-    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
-    "shortCommit": "0c43a0c",
-    "branch": "rtp/task-4b9567a3-foreman-g1",
+    "commit": "60478e0e3567a32433802855aae6371765ca32de",
+    "shortCommit": "60478e0",
+    "branch": "rtp/task-4b9567a3-foreman",
     "dirty": true,
     "dirtyFiles": [
-      "ools/parity/results/check-a-gifs.json",
-      "tools/parity/results/check-b-wizards.json",
-      "tools/parity/results/check-c-timing.json"
+      "ools/parity/PARITY-REPORT.md",
+      "tools/parity/RESULTS.md",
+      "tools/parity/results/check-a-gifs.json",
+      "tools/parity/results/check-c-timing.json",
+      "tools/parity/results/check-d-ac1.json",
+      "tools/parity/results/check-e-idparity.json"
     ],
     "dirtySources": [],
     "node": "v22.22.0",
@@ -27,8 +30,14 @@
       "app/data/rigPalette.js": "sha256:ef4f749e6f4b2178c315d191f0d544a38fc166ed541d5e237e6fad3c3bf729e8",
       "app/ui/components/battle/rigAssets.js": "sha256:4b446e8ed538104189011462107112b4433093cd4c9fe80a1429f70a89621557",
       "app/ui/components/battle/rigStage.js": "sha256:817a2087b169112a2243d82ee2bc5f9be536aa8a0bb3e2a43b343e4038b2714b",
+      "app/ui/components/dom.js": "sha256:a931fc84c9ba56e64ffab6d49b21e09ee8847458cbdea4beae208d5d3a2201a3",
       "app/engine/presentationTimeline.js": "sha256:6277d3ce941c9d4214d13e18e6fb963c20187e0e57a18041e47f41227fe92d98",
-      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90"
+      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90",
+      "app/styles/battle.css": "sha256:d05fdc219a4dd5349f7579603153a187d65a665704f5b63210036a0311c93538",
+      "app/data/tunables.json": "sha256:a5a70fd90299eb96517284b74c71b6ff078d4e0c9ccf010cf85ac0721f5eac26",
+      "assets/cw/client-static/img/fightScene/fightBG.svg": "sha256:62edece54c7a18f2c3b112f0f93f599a90bbf59d1928809641c1e07b3994431f",
+      "assets/rig/fx/affinitycapewin-FIRE.json": "sha256:8c4422a48ba9417b1872b21b11acaee2c34b67dc3b818fc9e1f0a630c047cba0",
+      "assets/rig/fx/affinitycapelose-FIRE.json": "sha256:18e6d7ba82ea1e3c127ae52fc743c5e8feeb336871f51b1c6daff72dca00abbf"
     },
     "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check D being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
   },

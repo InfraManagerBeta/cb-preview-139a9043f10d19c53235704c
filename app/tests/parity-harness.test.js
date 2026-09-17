@@ -38,7 +38,7 @@ import { parsePortraitSlots, buildReferenceSlotMap, referenceRecolor, staticColo
 import { parseReferencePlayerConfig, parseStagePlayerConfig } from '../../tools/parity/player-config.mjs';
 import { compareState, frameMetrics, documentParity } from '../../tools/parity/compare.mjs';
 import { canonicalWizard, identityFor, createDeclaredIdentityLoadout, parseLoadoutFallbackBase, DECLARED_INJECTION } from '../../tools/parity/identity.mjs';
-import { HARNESS_DIGEST_FILES, ENGINE_DIGEST_FILES, CHECK_RUNS, CHECK_IDS, digestFiles, isAncestorOfHead, gitProvenance } from '../../tools/parity/provenance.mjs';
+import { HARNESS_DIGEST_FILES, ENGINE_DIGEST_FILES, BUNDLE_GIF_FILES, PORTRAIT_SVG_FILES, CHECK_RUNS, CHECK_IDS, digestFiles, isAncestorOfHead, gitProvenance } from '../../tools/parity/provenance.mjs';
 import { shippedRunFreshness, allFreshness, freshnessOf, freshnessOfRecord, freshnessBanner, stalenessMessage } from '../../tools/parity/freshness.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -591,15 +591,147 @@ test('THE GATE can fail: a single changed byte in a measured engine module is re
   }
 });
 
+// ---------------------------------------------------------------------------
+// 6c. THE SCOPE OF THE GATE (fix round g5)
+//
+// The defect these exist for: the declared lists said "code-level inputs
+// only … static assets are NOT digested", and two files that are neither
+// slipped between the words. `check-d-ac1.mjs` REGEX-PARSES
+// `app/styles/battle.css` into D2's stage geometry AND into its
+// `noLayerBackground` PASS/FAIL, and `check-c-timing.mjs`,
+// `check-d-ac1.mjs` and `parity-wizard.mjs` read the O9 reveal cadence out
+// of `app/data/tunables.json`. Neither was digested, so the final-gate
+// reviewer could paint the combatant layer white (the exact R74 violation
+// D2 exists to catch), move `homeLeftPct` from -1.4% to -9.9%, and retune
+// O9 the sanctioned way — and `node tools/parity/freshness.mjs` still said
+// FRESH over records asserting the old values.
+//
+// A gate whose scope is a hand-written list needs its scope asserted, not
+// just its digests. So: every repo file a check reads BY LITERAL PATH is
+// declared by that check, and the two directories a check GLOBS are
+// declared file-by-file and compared with the directory listing (a list of
+// files cannot notice a file being added to the folder).
+// ---------------------------------------------------------------------------
+
+/** `path.join(REPO, 'a', 'b', …)` with string literals only — the reads a
+ * static scan can be sure about. Template literals (the per-combo cache,
+ * the element-keyed FX file) are deliberately out of scope here; those
+ * paths are declared by hand and asserted by the digest sets above. */
+function literalRepoReads(relFile) {
+  const src = fs.readFileSync(path.join(REPO, relFile), 'utf8');
+  const out = new Set();
+  for (const m of src.matchAll(/path\.join\(\s*REPO\s*,\s*((?:'[^']*'\s*,\s*)*'[^']*')\s*\)/g)) {
+    const parts = m[1].split(',').map((p) => p.trim().replace(/^'|'$/g, ''));
+    out.add(parts.join('/'));
+  }
+  return [...out];
+}
+
+/** A declared path may be a file; a globbed directory expands to its files. */
+function expandRepoPath(rel) {
+  const abs = path.join(REPO, rel);
+  if (!fs.existsSync(abs)) return [];
+  if (!fs.statSync(abs).isDirectory()) return [rel];
+  return fs.readdirSync(abs).filter((f) => !f.startsWith('.')).sort().map((f) => `${rel}/${f}`);
+}
+
+test('THE SCOPE: every repo file a check reads by literal path is in THAT check\'s declared lists (the scan that would have caught battle.css and tunables.json)', () => {
+  // Read by a harness module but deliberately NOT declared, each with the
+  // reason stated in provenance.mjs's sweep note. Keeping them here rather
+  // than in the scan's silence is the point: a waiver is a decision, and it
+  // is written down.
+  const WAIVED = new Map([
+    // check E takes the canonical wizard's fitted palette from check A's
+    // RECORD (identity.mjs, via __dirname). Declaring a results file would
+    // make `npm run all` self-invalidating: check A rewrites it before
+    // check E runs, so check E's dirtySources could never be empty.
+    ['tools/parity/results/check-a-gifs.json', 'a recorded result, not a source — declaring it makes the documented re-run self-invalidating'],
+  ]);
+  const missing = [];
+  for (const id of CHECK_IDS) {
+    const spec = CHECK_RUNS[id];
+    const declared = new Set([...spec.harness, ...spec.engine]);
+    // scan the check's own script and every harness module it declares
+    for (const mod of spec.harness.filter((f) => f.endsWith('.mjs'))) {
+      for (const read of literalRepoReads(mod)) {
+        for (const file of expandRepoPath(read)) {
+          if (declared.has(file) || WAIVED.has(file)) continue;
+          missing.push(`check ${id}: ${mod} reads ${file} and check ${id} does not declare it`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(missing, [], `these files decide a recorded number and are not digested — add them to CHECK_RUNS and re-run that check:\n  ${missing.join('\n  ')}`);
+});
+
+test('THE SCOPE: the non-JS inputs that decide a recorded verdict are declared — battle.css by D, tunables.json by C, D and E (fix round g5)', () => {
+  const declaredBy = (id) => new Set([...CHECK_RUNS[id].harness, ...CHECK_RUNS[id].engine]);
+  // D2 parses BOTH its stage geometry and its `noLayerBackground` criterion
+  // out of this stylesheet: a rule change moves a recorded PASS/FAIL.
+  assert.ok(declaredBy('D').has('app/styles/battle.css'),
+    'check D parses app/styles/battle.css into D2 geometry and into the no-layer-background criterion — it must be digested');
+  // the O9 reveal cadence: a sanctioned retune (R85/§14, AC0) that leaves
+  // these records describing the old cadence is the attack that was shown.
+  for (const id of ['C', 'D', 'E']) {
+    assert.ok(declaredBy(id).has('app/data/tunables.json'),
+      `check ${id} reads the O9 cadence out of app/data/tunables.json — it must be digested`);
+  }
+  // check E records `stepWindows`, computed by the timeline module …
+  assert.ok(declaredBy('E').has('app/engine/presentationTimeline.js'),
+    'check E records stepWindows computed by app/engine/presentationTimeline.js');
+  // … and D2's arena-ink verdict is measured on the arena source itself.
+  assert.ok(declaredBy('D').has('assets/cw/client-static/img/fightScene/fightBG.svg'),
+    "check D rasterizes the arena source and measures its ink — a blank arena must not leave D2's verdict standing");
+});
+
+test('THE SCOPE: the globbed asset folders are declared file-by-file AND match the directory listing (a new file in the folder is staleness too)', () => {
+  const listing = (dir, ext) => fs.readdirSync(path.join(REPO, dir)).filter((f) => f.endsWith(ext)).sort().map((f) => `${dir}/${f}`);
+  assert.deepEqual(
+    BUNDLE_GIF_FILES.slice().sort(),
+    listing('assets/cw/renders/gifs', '.gif'),
+    'the declared bundle renders ARE the folder check A diffs against and check C globs for frame delays — add a GIF and checks A and C must be re-run',
+  );
+  assert.deepEqual(
+    PORTRAIT_SVG_FILES.slice().sort(),
+    listing('assets/cw/client-static/img/wizards', '.svg'),
+    "the declared portrait SVGs ARE the folder the reference side's colour-slot map is parsed from — add one and check E must be re-run",
+  );
+  for (const gif of BUNDLE_GIF_FILES) {
+    for (const id of ['A', 'C']) {
+      assert.ok(CHECK_RUNS[id].engine.includes(gif), `check ${id} measures ${gif}`);
+    }
+  }
+  for (const svg of PORTRAIT_SVG_FILES) assert.ok(CHECK_RUNS.E.engine.includes(svg), `check E's reference recolour is parsed from ${svg}`);
+});
+
+test('THE SCOPE can fail: the gate reports a changed stylesheet or tunable exactly as it reports a changed module, and names the file', () => {
+  // the negative control for the widening — same shape as the gate's own.
+  for (const [id, victim] of [['D', 'app/styles/battle.css'], ['C', 'app/data/tunables.json'], ['D', 'app/data/tunables.json'], ['E', 'app/data/tunables.json'], ['A', BUNDLE_GIF_FILES[0]], ['E', PORTRAIT_SVG_FILES[1]]]) {
+    const spec = CHECK_RUNS[id];
+    const synthetic = { ranAt: 'synthetic', provenance: { commit: 'f'.repeat(40), harnessDigests: digestFiles(spec.harness), engineDigests: digestFiles(spec.engine) } };
+    assert.equal(freshnessOfRecord(synthetic, spec).fresh, true, `check ${id}: a record of this tree is fresh`);
+    const moved = JSON.parse(JSON.stringify(synthetic));
+    moved.provenance.engineDigests[victim] = 'sha256:0';
+    const v = freshnessOfRecord(moved, spec);
+    assert.equal(v.fresh, false, `check ${id}: an edited ${victim} makes the record stale`);
+    assert.deepEqual(v.staleEngine, [victim], `check ${id}: the gate NAMES ${victim}`);
+    assert.match(stalenessMessage(v), new RegExp(victim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `check ${id}: the failure message names ${victim}`);
+  }
+});
+
 test('THE GATE is reachable in one offline command, and the report OPENS with it (a reader meets the rule before the numbers)', () => {
   // the whole point of the banner: the correction cannot live only where
   // nobody looks. It is the first thing after the title.
   const report = fs.readFileSync(path.join(REPO, 'tools', 'parity', 'PARITY-REPORT.md'), 'utf8');
-  const head = report.split('\n').slice(0, 30).join('\n');
+  // the banner is the opening block: title, blank line, then the banner
+  // itself (fix round g5 added the shallow-clone sentence, so the window is
+  // the banner's own length plus the title, not a magic 30).
+  const head = report.split('\n').slice(0, freshnessBanner(shippedRun.provenance).split('\n').length + 4).join('\n');
   assert.match(head, /FRESHNESS GATE/, 'the report opens with the freshness gate banner');
   assert.match(head, new RegExp(shippedRun.provenance.commit.slice(0, 7)), 'the banner names the commit this report describes');
   assert.match(head, /node tools\/parity\/freshness\.mjs/, 'the banner names the one-command check');
   assert.match(head, /asserts both lists/i, 'the banner states that the digests are asserted, not merely recorded');
+  assert.match(head, /SHALLOW clone/, 'the banner states where the ancestry assertion degrades to a skip, beside the numbers it qualifies');
   assert.equal(head.includes(freshnessBanner(shippedRun.provenance)), true,
     'the banner in the report is the one the generator emits for this run (regenerate the report: npm run check-e)');
 

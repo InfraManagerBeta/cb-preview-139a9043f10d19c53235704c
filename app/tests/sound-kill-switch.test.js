@@ -95,6 +95,18 @@ function clickButton(matcher) {
 async function settle(rounds = 8) {
   for (let i = 0; i < rounds; i++) await new Promise((r) => setTimeout(r, 0));
 }
+/** g4: the stationary-screen kill polls on a real 500ms cadence (duel.js's
+ * own tick cadence) — wait for `cond` with REAL timers, bounded well above
+ * one poll interval so the assertion is "within the poll's cadence", not
+ * "instantly". */
+async function waitFor(cond, ms = 3000, stepMs = 25) {
+  const deadline = Date.now() + ms;
+  while (Date.now() < deadline) {
+    if (cond()) return true;
+    await new Promise((r) => setTimeout(r, stepMs));
+  }
+  return cond();
+}
 
 /** A REAL window/location pair for ui/router.js: `location.hash`'s setter
  * fires the registered `hashchange` listeners synchronously, exactly the
@@ -311,6 +323,128 @@ test('g2: a kill landing mid-reveal reaches renderResult\'s logNarration catch-s
 
     assert.match(renderedText(appRoot()), /Run Stopped/, 'the catch-site rendered the stop banner');
     assert.equal(anySounding(), false, 'the stop banner silenced the bed and every one-shot');
+  } finally {
+    uninstallFakeDom();
+  }
+});
+
+// ---- Round-4 fix g4 (CB-BUILD-016/AC0, final-gate tester CRUCIAL) -------------
+// The g2 router-level release catches every route TRANSITION — but a player
+// already mounted and STATIONARY on bracket-board or sitting, with the bed
+// carried in, kept hearing it indefinitely when the operator flipped the kill
+// switch: nothing on those screens polled the kill state, so silence only
+// arrived on the player's next navigation, which may never come. AC0 requires
+// the kill to halt operations within a minute — an unbounded wait for a player
+// click is not a bound. duel.js already states and implements the principle
+// ("C16/AC0: the kill switch must stop an in-flight duel — not just gate
+// navigation between screens", a 500ms ctx.game.isKilled() poll in tick()/
+// showIntermission()); these tests pin the SAME treatment onto the two other
+// bracket-context screens. Each is the tester's own headless repro, re-run:
+// real router, real screens, bed sounding, kill flipped with NO navigation.
+
+test('g4 CRUCIAL (AC0): mounted and STATIONARY on bracket-board, bed sounding → operator kills, NO navigation → the screen\'s own poll silences everything and renders the stop banner within the poll cadence', async () => {
+  installFakeDom();
+  installFakeNavigation();
+  try {
+    for (const a of audioCreated) a.playing = false;
+    sound.armSound();
+    sound.setSoundEnabled(true);
+    const ctx = buildApp(11);
+    ctx.router.navigate('bracket-board');
+    await settle();
+    assert.equal(ctx.router.current(), 'bracket-board', 'precondition: the board mounted normally (not killed, not redirected)');
+
+    // The tester's repro, line for line: bed confirmed sounding on the board…
+    sound.playLoop();
+    assert.ok(bedSounding(), 'precondition (the tester repro\'s first line): the bed is sounding on the board');
+    // …operator flips the kill switch (console / other tab / ?kill=1)…
+    patchOverrides({ killSwitch: true, killSwitchReason: 'test-probe', killSwitchAt: Date.now() });
+    // …and the player does NOTHING. No navigation. The screen itself must act.
+    const silenced = await waitFor(() => !bedSounding());
+
+    assert.ok(silenced, 'the bed fell silent with NO navigation (was: sounding indefinitely — the tester\'s CRUCIAL finding)');
+    assert.equal(anySounding(), false, 'no battle sample at all sounds over the stop banner');
+    assert.match(renderedText(appRoot()), /Run Stopped/, 'the stop banner rendered in place (was: no banner at all)');
+    assert.equal(ctx.router.current(), 'bracket-board', 'still the same route — the banner arrived without any navigation');
+  } finally {
+    uninstallFakeDom();
+  }
+});
+
+test('g4 CRUCIAL (AC0): mounted and STATIONARY on sitting, bed sounding → operator kills, NO navigation → silent + stop banner within the poll cadence', async () => {
+  installFakeDom();
+  installFakeNavigation();
+  try {
+    for (const a of audioCreated) a.playing = false;
+    sound.armSound();
+    sound.setSoundEnabled(true);
+    const ctx = buildApp(11);
+    ctx.router.navigate('sitting');
+    await settle();
+    assert.equal(ctx.router.current(), 'sitting', 'precondition: the sitting screen mounted normally');
+
+    sound.playLoop();
+    assert.ok(bedSounding(), 'precondition: the bed is sounding on the sitting screen');
+    patchOverrides({ killSwitch: true, killSwitchReason: 'test-probe', killSwitchAt: Date.now() });
+    const silenced = await waitFor(() => !bedSounding());
+
+    assert.ok(silenced, 'the bed fell silent with NO navigation');
+    assert.equal(anySounding(), false, 'nothing sounds over the stop banner');
+    assert.match(renderedText(appRoot()), /Run Stopped/, 'the stop banner rendered in place');
+    assert.equal(ctx.router.current(), 'sitting', 'no navigation happened');
+  } finally {
+    uninstallFakeDom();
+  }
+});
+
+test('g4: a mute set BEFORE the kill survives it — the stationary poll still lands the banner (already silent), and soundEnabled stays false', async () => {
+  installFakeDom();
+  installFakeNavigation();
+  try {
+    for (const a of audioCreated) a.playing = false;
+    sound.armSound();
+    sound.setSoundEnabled(true);
+    const ctx = buildApp(11);
+    ctx.router.navigate('bracket-board');
+    await settle();
+
+    // The player mutes first (the case the final-gate tester verified works —
+    // it must KEEP working): stopAll + persisted soundEnabled:false.
+    sound.setSoundEnabled(false);
+    assert.equal(anySounding(), false, 'precondition: muted, nothing sounding');
+    patchOverrides({ killSwitch: true, killSwitchReason: 'test-probe', killSwitchAt: Date.now() });
+
+    const bannered = await waitFor(() => /Run Stopped/.test(renderedText(appRoot())));
+    assert.ok(bannered, 'the stop banner still renders for a muted player — the kill is about halting the run, not just audio');
+    assert.equal(sound.isSoundEnabled(), false, 'the pre-kill mute survived the kill (g2-established behaviour, not regressed)');
+    assert.equal(anySounding(), false, 'still silent');
+  } finally {
+    uninstallFakeDom();
+  }
+});
+
+test('g4 teardown discipline: navigating AWAY clears the stationary poll — a later kill must not let a stale interval from an unmounted screen repaint the app', async () => {
+  installFakeDom();
+  installFakeNavigation();
+  try {
+    for (const a of audioCreated) a.playing = false;
+    sound.armSound();
+    sound.setSoundEnabled(true);
+    const ctx = buildApp(11);
+    ctx.router.navigate('bracket-board');
+    await settle();
+    assert.equal(ctx.router.current(), 'bracket-board', 'precondition: the board (and its poll) mounted');
+
+    // Leave for a NON-bracket route whose stub mounts nothing — whatever
+    // appears on #app after this point can only come from a stale timer.
+    ctx.router.navigate('wallet');
+    await settle();
+    appRoot().innerHTML = ''; // a blank canvas: any later paint is a leak
+    patchOverrides({ killSwitch: true, killSwitchReason: 'test-probe', killSwitchAt: Date.now() });
+
+    // Wait comfortably past the poll cadence: nothing may render.
+    await new Promise((r) => setTimeout(r, 1200));
+    assert.equal(renderedText(appRoot()).trim(), '', 'no stale poll from the unmounted board painted the stop banner (the interval was cleared on unmount)');
   } finally {
     uninstallFakeDom();
   }

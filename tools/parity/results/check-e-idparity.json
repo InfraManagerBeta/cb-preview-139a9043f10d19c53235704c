@@ -1,18 +1,18 @@
 {
   "check": "E — CB-BUILD-015 id-keyed parity (2019 reference pipeline vs the new engine, per duel state)",
-  "ranAt": "2026-09-17T02:39:03.148Z",
+  "ranAt": "2026-09-17T04:02:18.576Z",
   "node": "v22.22.0",
   "provenance": {
     "check": "E",
     "available": true,
-    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
-    "shortCommit": "0c43a0c",
-    "branch": "rtp/task-4b9567a3-foreman-g1",
+    "commit": "60478e0e3567a32433802855aae6371765ca32de",
+    "shortCommit": "60478e0",
+    "branch": "rtp/task-4b9567a3-foreman",
     "dirty": true,
     "dirtyFiles": [
       "ools/parity/PARITY-REPORT.md",
+      "tools/parity/RESULTS.md",
       "tools/parity/results/check-a-gifs.json",
-      "tools/parity/results/check-b-wizards.json",
       "tools/parity/results/check-c-timing.json",
       "tools/parity/results/check-d-ac1.json",
       "tools/parity/results/check-e-idparity.json"
@@ -23,9 +23,9 @@
       "tools/parity/PREREGISTRATION.md": "sha256:8807a27619e5c3173148f00fe25197a661189e8180ebc7776199ec32a6ffad9d",
       "tools/parity/preregistration.mjs": "sha256:e1162c6adef7e40ebbafef2522bc567f4c5be433118303b6c4e4e6dfe1f2c8bf",
       "tools/parity/identity.mjs": "sha256:e61f83b8233c1108dfb85f9c889b6b57714fb5ec41b8139c2a06ba01f4c9e225",
-      "tools/parity/provenance.mjs": "sha256:625f88902e5afb94fa67748ef1dd32ba710758cf6d8d48bb8a4f83369bbe60b8",
+      "tools/parity/provenance.mjs": "sha256:757feca84e1e06da9fcca0df6551279c177e5efd5d544566b129a43919cf9c92",
       "tools/parity/parity-wizard.mjs": "sha256:8ac88a39391a5330c3ba6ac85d10e9fcf377c71e4b08b480cad8c44e87bd3488",
-      "tools/parity/check-e-idparity.mjs": "sha256:457b78a1d9e9662eca3cce3dd588df63f1fcf70f64327e78e8946576eb5274ef",
+      "tools/parity/check-e-idparity.mjs": "sha256:d8cfc3780c34fa161abc38f1ce50b42fdfdfc9d7e0c668463c6f297adb99df6d",
       "tools/parity/compare.mjs": "sha256:45a43dbece2850dd595df0809c03cf43a590c6923a53f9ba2ec34d625dcdb4ec",
       "tools/parity/engine-frames.mjs": "sha256:66fb07e912acc2c44bdf1bb45bc322ae7adb309152e7c305e4d4bd4bb4fd4059",
       "tools/parity/reference-runner.mjs": "sha256:9fe1fcd36a17d6baceb0e208951a2c72b796100ed9781c047080839136b8c9f7",
@@ -37,12 +37,20 @@
     "engineDigests": {
       "app/engine/wizardRig.js": "sha256:5f51f05686d9e752bd0bcafc296774772e9f46d95d0b72342ee1b22fc4c2012e",
       "app/engine/rigRecolor.js": "sha256:08f8609c7021073ad1dda1b4ee6af4e4b90a54b980ddbe54a8f22f05f9306889",
+      "app/engine/presentationTimeline.js": "sha256:6277d3ce941c9d4214d13e18e6fb963c20187e0e57a18041e47f41227fe92d98",
       "app/data/rigManifest.js": "sha256:1cbfbf90f8e0a564b63bc2cc63be8c7d6cdf931185d68b4af55838ce42b85577",
       "app/data/rigPalette.js": "sha256:ef4f749e6f4b2178c315d191f0d544a38fc166ed541d5e237e6fad3c3bf729e8",
+      "app/data/tunables.json": "sha256:a5a70fd90299eb96517284b74c71b6ff078d4e0c9ccf010cf85ac0721f5eac26",
       "app/ui/components/battle/rigAssets.js": "sha256:4b446e8ed538104189011462107112b4433093cd4c9fe80a1429f70a89621557",
       "app/ui/components/battle/rigStage.js": "sha256:817a2087b169112a2243d82ee2bc5f9be536aa8a0bb3e2a43b343e4038b2714b",
+      "app/ui/components/dom.js": "sha256:a931fc84c9ba56e64ffab6d49b21e09ee8847458cbdea4beae208d5d3a2201a3",
       "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90",
-      "assets/cw/reference/Animation-index.js": "sha256:e767e06ae0789f31dbc100ef004e620ae4906df44de648a81e5b3ba4ef204488"
+      "assets/cw/reference/Animation-index.js": "sha256:e767e06ae0789f31dbc100ef004e620ae4906df44de648a81e5b3ba4ef204488",
+      "assets/cw/client-static/img/wizards/empty.svg": "sha256:ca24e4cbc170f30edc94a0ed9a6ee3960766c20b80d1d71fd47b60f3ca06beae",
+      "assets/cw/client-static/img/wizards/fire.svg": "sha256:a368794bad492472a43e63cba5822097238cb5f313b698de9eb81da29aa12eef",
+      "assets/cw/client-static/img/wizards/neutral.svg": "sha256:b3b4c25b16eb260bdaa70823a07f57f4aa06968c86c8f1b73bfe580f59165a2f",
+      "assets/cw/client-static/img/wizards/water.svg": "sha256:1b59581f8a714f42611910985a92c0c28cfa4df8f4ccc67513b99f11b9e61aba",
+      "assets/cw/client-static/img/wizards/wind.svg": "sha256:b08f16e877e8033e770fc296aa4caac1bc12031ce4f033a51aec9400b3c4a22b"
     },
     "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check E being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
   },
@@ -1876,7 +1884,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3927
+      "elapsedMs": 5162
     },
     {
       "wizardId": "parity015-884bbe80-1",
@@ -3357,7 +3365,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3494
+      "elapsedMs": 4631
     },
     {
       "wizardId": "parity015-884bbe80-2",
@@ -4855,7 +4863,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3415
+      "elapsedMs": 3447
     },
     {
       "wizardId": "parity015-884bbe80-3",
@@ -6332,7 +6340,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3253
+      "elapsedMs": 3447
     },
     {
       "wizardId": "parity015-884bbe80-4",
@@ -7818,7 +7826,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3274
+      "elapsedMs": 3441
     },
     {
       "wizardId": "parity015-884bbe80-5",
@@ -9308,7 +9316,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3482
+      "elapsedMs": 3248
     },
     {
       "wizardId": "parity015-884bbe80-6",
@@ -10785,7 +10793,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3308
+      "elapsedMs": 3276
     },
     {
       "wizardId": "parity015-884bbe80-7",
@@ -12262,7 +12270,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3343
+      "elapsedMs": 3184
     },
     {
       "wizardId": "parity015-884bbe80-8",
@@ -13751,7 +13759,7 @@
       ],
       "verdict": "PASS",
       "pass": true,
-      "elapsedMs": 3523
+      "elapsedMs": 3234
     }
   ]
 }

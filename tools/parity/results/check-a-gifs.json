@@ -1,14 +1,21 @@
 {
-  "ranAt": "2026-09-17T02:34:15.405Z",
+  "ranAt": "2026-09-17T03:55:09.132Z",
   "node": "v22.22.0",
   "provenance": {
     "check": "A",
     "available": true,
-    "commit": "0c43a0c423e094b27e204e4dadeaf832babc091c",
-    "shortCommit": "0c43a0c",
-    "branch": "rtp/task-4b9567a3-foreman-g1",
-    "dirty": false,
-    "dirtyFiles": [],
+    "commit": "60478e0e3567a32433802855aae6371765ca32de",
+    "shortCommit": "60478e0",
+    "branch": "rtp/task-4b9567a3-foreman",
+    "dirty": true,
+    "dirtyFiles": [
+      "ools/parity/PARITY-REPORT.md",
+      "tools/parity/RESULTS.md",
+      "tools/parity/results/check-a-gifs.json",
+      "tools/parity/results/check-c-timing.json",
+      "tools/parity/results/check-d-ac1.json",
+      "tools/parity/results/check-e-idparity.json"
+    ],
     "dirtySources": [],
     "node": "v22.22.0",
     "harnessDigests": {
@@ -20,7 +27,16 @@
       "app/engine/rigRecolor.js": "sha256:08f8609c7021073ad1dda1b4ee6af4e4b90a54b980ddbe54a8f22f05f9306889",
       "app/data/rigPalette.js": "sha256:ef4f749e6f4b2178c315d191f0d544a38fc166ed541d5e237e6fad3c3bf729e8",
       "app/data/rigManifest.js": "sha256:1cbfbf90f8e0a564b63bc2cc63be8c7d6cdf931185d68b4af55838ce42b85577",
-      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90"
+      "app/vendor/lottie.min.js": "sha256:a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90",
+      "assets/cw/renders/gifs/CW_Attack.gif": "sha256:282b221535a21727d17265c6d4d88b81270f3824b43dba15c83d0bcce7ad3306",
+      "assets/cw/renders/gifs/CW_Battle Idle.gif": "sha256:89e1c6c8239ea362a4c098add1dc488d5e0ff628bf1d2fbd5753e8aca6ba843c",
+      "assets/cw/renders/gifs/CW_Charge.gif": "sha256:9509e0752247f4787b51c35ec01c4a9c7331efcb73bcc53054828b44454c3762",
+      "assets/cw/renders/gifs/CW_Hit Success.gif": "sha256:5a286a991f4ff68f9e81a3808c12205ee172cbfd1adec257238176e194e23d3c",
+      "assets/cw/renders/gifs/CW_Hit.gif": "sha256:db9b8d5f7cf07a74c65e29d45e3abdbcb8d18869bb231c63a34cc308b025ff28",
+      "assets/cw/renders/gifs/CW_Idle.gif": "sha256:639d575a3806e5c79a1c701e386b368e9b43f51f534e7c04488d73914f8f5862",
+      "assets/cw/renders/gifs/CW_Lose.gif": "sha256:6dc62bd10dfab383e20ee1255927ecb84319ff72fd6297c284768af7e17bb1e3",
+      "assets/cw/renders/gifs/CW_Power.gif": "sha256:be7cec5a5db9f244555f617a9257dc7f48dff604041db4e06810125e9831633e",
+      "assets/cw/renders/gifs/CW_Win.gif": "sha256:2440908561a4ce3eaef2400821fd97576de8143684eaa162f1865103a3d1f295"
     },
     "note": "harnessDigests AND engineDigests are both asserted by app/tests/parity-harness.test.js (tools/parity/freshness.mjs holds the verdict): if any of these files changes without check A being re-run, the root suite fails. Verify in one command: node tools/parity/freshness.mjs."
   },
